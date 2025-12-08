@@ -1,5 +1,7 @@
 # Frontend
 
+If you are learning Angular while working in this codebase, start with `docs/LEARNING_GUIDE.md` for how to explain changes (what/why), which Angular topics to cover, and how to keep comments lean. Current UI work uses Google’s library (e.g., Angular Material); avoid GCore UI Kit specifics until access is available.
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.2.
 
 ## Development server

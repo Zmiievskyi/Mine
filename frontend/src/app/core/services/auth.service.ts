@@ -74,7 +74,9 @@ export class AuthService {
 
   private handleAuthResponse(response: AuthResponse): void {
     localStorage.setItem(TOKEN_KEY, response.accessToken);
-    localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
+    if (response.refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
+    }
     localStorage.setItem(USER_KEY, JSON.stringify(response.user));
     this.currentUserSignal.set(response.user);
   }

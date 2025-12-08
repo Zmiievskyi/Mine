@@ -390,22 +390,22 @@ PUT  /profile
 ## 12. Implementation Phases
 
 ### Phase 1: Foundation
-- [ ] Project setup (Angular + NestJS)
-- [ ] Database schema
-- [ ] Auth (register, login, JWT)
-- [ ] Basic UI layout with GCore UI Kit
+- [x] Project setup (Angular + NestJS) (2025-12-08)
+- [x] Database schema (TypeORM entities) (2025-12-08)
+- [x] Auth (register, login, JWT) (2025-12-08)
+- [ ] Basic UI layout with GCore UI Kit (pending kit access)
 
 ### Phase 2: Dashboard & Mock Data
-- [ ] Dashboard page with cards
+- [x] Dashboard page with cards (2025-12-08)
 - [ ] Earnings chart (mock data)
-- [ ] Node list (mock data)
+- [x] Node list (skeleton) (2025-12-08)
 - [ ] User profile page
 
 ### Phase 3: Gonka Integration
-- [ ] Gonka API research (identify endpoints)
-- [ ] Hyperfusion tracker integration
-- [ ] Hashiro integration
-- [ ] Backend caching layer
+- [x] Gonka API research (identify endpoints) (2025-12-08)
+- [x] Hyperfusion tracker integration (2025-12-08)
+- [ ] Hashiro integration (skipped - no public API)
+- [x] Backend caching layer (2025-12-08)
 
 ### Phase 4: Node Management
 - [ ] Node details page
@@ -454,7 +454,11 @@ PUT  /profile
 
 ## 14. Open Research Items
 
-1. **Node Identifiers**: Какой identifier использовать (wallet, operator, validator)?
-2. **Tracker APIs**: Документация API Hyperfusion/Hashiro
-3. **Gonka Epochs**: Формат данных в `/v1/epochs/current/participants`
-4. **Earnings Calculation**: Как рассчитывается доход на трекерах?
+1. ~~**Node Identifiers**: Какой identifier использовать?~~ **RESOLVED**: `gonka1...` address
+2. ~~**Tracker APIs**: Документация API Hyperfusion/Hashiro~~ **RESOLVED**: See `docs/API_RESEARCH.md`
+3. ~~**Gonka Epochs**: Формат данных~~ **RESOLVED**: See `docs/api-samples/`
+4. ~~**Earnings Calculation**~~ **RESOLVED**: `earned_coins` field from Hyperfusion
+
+### Remaining Research
+- Hashiro API (no public API found, skipped for MVP)
+- Gcore API integration (LOW priority)

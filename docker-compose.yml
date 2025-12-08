@@ -1,13 +1,20 @@
-   services:
-     db:
-       image: postgres:16
-       environment:
-         POSTGRES_DB: minegnk
-         POSTGRES_USER: minegnk
-         POSTGRES_PASSWORD: minegnk
-       ports:
-         - "5432:5432"
-       volumes:
-         - db-data:/var/lib/postgresql/data
-   volumes:
-     db-data:
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: minegnk-postgres
+    environment:
+      POSTGRES_USER: minegnk
+      POSTGRES_PASSWORD: minegnk
+      POSTGRES_DB: minegnk
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U minegnk']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

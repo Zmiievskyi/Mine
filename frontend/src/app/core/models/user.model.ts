@@ -3,7 +3,7 @@ export interface User {
   email: string;
   name: string;
   role: 'user' | 'admin';
-  createdAt: Date;
+  createdAt?: Date;
 }
 
 export interface LoginRequest {
@@ -20,5 +20,5 @@ export interface RegisterRequest {
 export interface AuthResponse {
   user: User;
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string; // Optional until backend implements refresh tokens
 }

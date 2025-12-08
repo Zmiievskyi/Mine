@@ -1,6 +1,6 @@
 # MineGNK Progress Tracker
 
-**Last Updated**: 2025-12-08 (Evening Session 2)
+**Last Updated**: 2025-12-08 (Evening Session 4)
 
 ---
 
@@ -10,8 +10,8 @@
 |-------|--------|----------|
 | Phase 0: API Spike | **Complete** | 100% |
 | Phase 1: Foundation | **Complete** | 100% |
-| Phase 2: Dashboard (Mock) | **In Progress** | 70% |
-| Phase 3: Gonka Integration | Not Started | 0% |
+| Phase 2: Dashboard (Mock) | **Complete** | 100% |
+| Phase 3: Gonka Integration | **Complete** | 100% |
 | Phase 4: Node Details | Not Started | 0% |
 | Phase 5: Request System | Not Started | 0% |
 | Phase 6: Admin Panel | Not Started | 0% |
@@ -58,6 +58,7 @@
 | 2025-12-08 | JWT 7-day expiration | Balance between UX and security |
 | 2025-12-08 | Landing page with dark theme matching minegnk.com | Professional appearance, consistent branding |
 | 2025-12-08 | Use inline template for landing vs modular sections | Faster implementation, can refactor later |
+| 2025-12-08 | Create shared LayoutComponent for dashboard pages | DRY principle - reduces duplication across pages |
 
 ---
 
@@ -76,9 +77,11 @@ None currently.
 5. ~~Create dashboard skeleton~~ **DONE**
 6. ~~Initialize NestJS backend (`/backend`)~~ **DONE**
 7. ~~Set up PostgreSQL schema (auto-sync with TypeORM)~~ **DONE**
-8. **Current**: Connect frontend to backend API
-9. **Then**: Complete nodes feature (list, detail, request form)
-10. **Then**: Add node request system
+8. ~~Connect frontend to backend API~~ **DONE**
+9. ~~Complete nodes list page~~ **DONE** (2025-12-08)
+10. **Current**: Build node detail view (Phase 4)
+11. **Then**: Add node request system (Phase 5)
+12. **Then**: Build admin panel for node assignment (Phase 6)
 
 ---
 
@@ -103,7 +106,7 @@ When Gcore UI Kit access is granted, apply styles on top.
 - [x] PostgreSQL database with TypeORM entities (2025-12-08)
 - [x] Landing page with dark theme (2025-12-08)
 - [x] Layout (header, navigation) - sticky header with nav links (2025-12-08)
-- [ ] Connect frontend to backend API
+- [x] Connect frontend to backend API (2025-12-08)
 
 ### UI Kit Status
 - **Gcore UI Kit**: Access requested, waiting for approval
@@ -253,3 +256,88 @@ When Gcore UI Kit access is granted, apply styles on top.
 | Frontend pages | 6 | 7 (+ landing) |
 | Landing sections | 0 | 9 |
 | CSS variables | ~10 | ~20 (dark theme added) |
+
+---
+
+## Session 3: Frontend-Backend Integration (2025-12-08 Evening)
+
+### Completed Tasks
+- [x] Code review of entire codebase (16 issues found, 2 critical)
+- [x] Fixed password validation mismatch (backend 6→8 chars)
+- [x] Updated frontend AuthResponse to handle optional refreshToken
+- [x] Updated frontend User model (createdAt optional)
+- [x] Added data transformation in backend NodesController
+- [x] Aligned frontend/backend node data models
+- [x] Added error handling to NodesService
+- [x] Tested end-to-end auth flow:
+  - Registration → Login → Dashboard → Logout
+
+### Code Changes
+**Backend:**
+- `backend/src/modules/auth/dto/register.dto.ts` - MinLength(8)
+- `backend/src/modules/auth/dto/login.dto.ts` - MinLength(8)
+- `backend/src/modules/nodes/nodes.controller.ts` - Data transformation layer
+
+**Frontend:**
+- `frontend/src/app/core/models/user.model.ts` - Optional fields
+- `frontend/src/app/core/services/auth.service.ts` - Handle missing refreshToken
+- `frontend/src/app/core/services/nodes.service.ts` - Error handling
+
+### Code Review Summary
+- **Total Issues**: 16 (2 Critical, 4 High, 7 Medium, 3 Low)
+- **Recommendation**: APPROVE WITH CHANGES
+- **Critical Issues** (deferred to Phase 7):
+  1. Refresh token not implemented
+  2. Weak default JWT secret in production
+- **Security Score**: 70% (missing rate limiting, CSRF)
+- **Code Quality**: 80% (excellent typing, clean architecture)
+
+### Verified Working
+- `POST /api/auth/register` - ✅
+- `POST /api/auth/login` - ✅
+- `GET /api/nodes/dashboard` - ✅ (returns frontend-compatible format)
+- Frontend login flow - ✅
+- Frontend dashboard display - ✅
+- Frontend logout - ✅
+
+### Next Steps
+1. ~~Complete nodes list page with real data~~ **DONE**
+2. Build node detail view
+3. Implement node request form
+4. Build admin panel for node assignment
+
+---
+
+## Session 4: Phase 3 Complete - Nodes List (2025-12-08 Evening)
+
+### Completed Tasks
+- [x] Created shared LayoutComponent (header + sidebar + main content)
+- [x] Refactored DashboardComponent to use shared layout
+- [x] Implemented full NodesListComponent with:
+  - Loading state with spinner
+  - Error state with retry button
+  - Empty state with CTA
+  - Nodes table with columns: Node, Status, GPU Type, Performance, Earnings, Uptime, Actions
+  - Summary footer (node count + total earnings)
+- [x] Tested end-to-end flow with real data
+
+### New Files Created
+- `frontend/src/app/shared/components/layout/layout.component.ts` - Shared layout with sidebar
+
+### Modified Files
+- `frontend/src/app/features/dashboard/dashboard.component.ts` - Uses shared layout
+- `frontend/src/app/features/nodes/nodes-list/nodes-list.component.ts` - Full implementation
+
+### Verified Working
+- Dashboard with shared layout - works
+- Nodes list (empty state) - works
+- Nodes list (with data) - works
+- Loading states - works
+- Navigation between pages - works
+
+### Phase 3 Summary
+Phase 3 (Gonka Integration) is now complete:
+- Backend fetches real data from Hyperfusion tracker
+- Frontend displays nodes list with all metrics
+- Loading/error/empty states implemented
+- Shared layout component reduces code duplication

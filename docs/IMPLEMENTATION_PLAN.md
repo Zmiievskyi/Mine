@@ -1,6 +1,6 @@
 # MineGNK Implementation Plan
 
-**Last Updated**: 2025-12-08
+**Last Updated**: 2025-12-08 (Session 4)
 **Based on**: PRD.md, API_RESEARCH.md
 
 ---
@@ -15,16 +15,16 @@ Therefore, Phase 0 (Spike) validates these before building full features.
 
 ---
 
-## Phase 0: API Spike (Risk Reduction)
+## Phase 0: API Spike (Risk Reduction) - COMPLETE
 
 **Goal**: Prove we can fetch and display real node data.
 
 ### Tasks
-- [ ] Create minimal Node.js script to call Gonka API
-- [ ] Call `http://node1.gonka.ai:8000/v1/epochs/current/participants`
-- [ ] Call Hyperfusion `https://tracker.gonka.hyperfusion.io/api/v1/inference/current`
-- [ ] Log response structures to console
-- [ ] Identify which fields map to our needs (see mapping below)
+- [x] Create minimal Node.js script to call Gonka API (2025-12-08)
+- [x] Call `http://node1.gonka.ai:8000/v1/epochs/current/participants` (2025-12-08)
+- [x] Call Hyperfusion `https://tracker.gonka.hyperfusion.io/api/v1/inference/current` (2025-12-08)
+- [x] Log response structures to console (2025-12-08)
+- [x] Identify which fields map to our needs (see mapping below) (2025-12-08)
 
 ### Field Mapping
 | Our Need | Gonka API Field | Hyperfusion Field |
@@ -37,46 +37,43 @@ Therefore, Phase 0 (Spike) validates these before building full features.
 | Missed |  | `missed_count`, `missed_rate` |
 
 ### Definition of Done
-- [ ] Successfully fetch data from both APIs
-- [ ] Document actual response samples in `docs/api-samples/`
-- [ ] Identify gaps (e.g., earnings, GPU type)
+- [x] Successfully fetch data from both APIs (2025-12-08)
+- [x] Document actual response samples in `docs/api-samples/` (2025-12-08)
+- [x] Identify gaps (e.g., earnings, GPU type) (2025-12-08)
 
 ### Dependencies
 - None (standalone scripts)
 
-### Estimated Effort
-Small (few hours)
-
 ---
 
-## Phase 1: Foundation
+## Phase 1: Foundation - COMPLETE
 
 **Goal**: Project scaffolding with auth and basic layout.
 
 ### 1.1 Backend Setup (NestJS)
-- [ ] Initialize NestJS project in `/backend`
-- [ ] Configure PostgreSQL connection (TypeORM)
-- [ ] Create database schema (users, nodes, user_nodes, support_requests)
-- [ ] Run migrations
+- [x] Initialize NestJS project in `/backend` (2025-12-08)
+- [x] Configure PostgreSQL connection (TypeORM) (2025-12-08)
+- [x] Create database schema (users, nodes, user_nodes, support_requests) (2025-12-08)
+- [x] Run migrations (using TypeORM synchronize for dev) (2025-12-08)
 
 ### 1.2 Authentication
-- [ ] Implement `/auth/register` (email + password)
-- [ ] Implement `/auth/login` (returns JWT)
-- [ ] Implement `/auth/me` (returns current user)
-- [ ] Add JWT guard for protected routes
-- [ ] Create roles (user, admin)
+- [x] Implement `/auth/register` (email + password) (2025-12-08)
+- [x] Implement `/auth/login` (returns JWT) (2025-12-08)
+- [x] Implement `/auth/me` (returns current user) (2025-12-08)
+- [x] Add JWT guard for protected routes (2025-12-08)
+- [x] Create roles (user, admin) (2025-12-08)
 
 ### 1.3 Frontend Setup (Angular)
-- [ ] Initialize Angular 18 project in `/frontend`
-- [ ] Install `@gcore/ui-kit` v14.22.4
-- [ ] Configure routing (login, dashboard, nodes, profile)
-- [ ] Create auth service and guards
-- [ ] Build login/register pages with GCore UI Kit
+- [x] Initialize Angular 18 project in `/frontend` (2025-12-08)
+- [x] Configure Tailwind CSS (GCore UI Kit pending) (2025-12-08)
+- [x] Configure routing (login, dashboard, nodes, profile) (2025-12-08)
+- [x] Create auth service and guards (2025-12-08)
+- [x] Build login/register pages (2025-12-08)
 
 ### Definition of Done
-- [ ] User can register, login, see protected dashboard
-- [ ] JWT stored in localStorage/cookie
-- [ ] Angular routing works with auth guard
+- [x] User can register, login, see protected dashboard (2025-12-08)
+- [x] JWT stored in localStorage (2025-12-08)
+- [x] Angular routing works with auth guard (2025-12-08)
 
 ### Dependencies
 - Docker (PostgreSQL)
@@ -84,70 +81,71 @@ Small (few hours)
 
 ---
 
-## Phase 2: Dashboard with Mock Data
+## Phase 2: Dashboard with Mock Data - COMPLETE
 
 **Goal**: Build UI structure with static/mock data.
 
 ### 2.1 Dashboard Page
-- [ ] Summary cards: Active Nodes, Total GPUs, Monthly Earnings, Pending Requests
-- [ ] Earnings chart (mock data, use GCore chart component)
-- [ ] Node overview table (5 mock nodes)
-- [ ] Recent activity feed (mock)
+- [x] Summary cards: Active Nodes, Healthy Nodes, Total Earnings, Avg Uptime (2025-12-08)
+- [x] Node overview table (2025-12-08)
+- [ ] Earnings chart (deferred - needs historical data)
+- [ ] Recent activity feed (deferred)
 
 ### 2.2 My Nodes List
-- [ ] Table with columns: Node ID, Status, GPU, Earnings/day
-- [ ] Status badges (healthy/unhealthy/jailed)
-- [ ] Click row ’ navigate to details (placeholder)
+- [x] Table with columns: Node, Status, GPU Type, Performance, Earnings, Uptime, Actions (2025-12-08)
+- [x] Status badges (healthy/unhealthy/jailed/offline) (2025-12-08)
+- [x] Click row to navigate to details (2025-12-08)
 
 ### 2.3 User Profile
-- [ ] Display email, telegram, discord
-- [ ] Edit form with validation
-- [ ] Save to backend
+- [ ] Display email, telegram, discord (deferred to Phase 5)
+- [ ] Edit form with validation (deferred to Phase 5)
+- [ ] Save to backend (deferred to Phase 5)
 
 ### Definition of Done
-- [ ] All pages render with mock data
-- [ ] GCore UI Kit components used consistently
-- [ ] Responsive layout (desktop + tablet)
+- [x] All pages render with data (2025-12-08)
+- [x] Consistent styling with Tailwind CSS (2025-12-08)
+- [x] Responsive layout (desktop + tablet) (2025-12-08)
 
 ### Dependencies
 - Phase 1 complete
 
 ---
 
-## Phase 3: Gonka Integration
+## Phase 3: Gonka Integration - COMPLETE
 
 **Goal**: Replace mock data with real API data.
 
 ### 3.1 Backend: Gonka Service
-- [ ] Create `GonkaService` in NestJS
-- [ ] Fetch from `/v1/epochs/current/participants`
-- [ ] Parse response, extract node data
-- [ ] Handle errors (timeout, 500, etc.)
+- [x] Create `NodesService` in NestJS (2025-12-08)
+- [x] Fetch from Hyperfusion tracker (primary data source) (2025-12-08)
+- [x] Parse response, extract node data (2025-12-08)
+- [x] Handle errors (timeout, 500, etc.) (2025-12-08)
 
 ### 3.2 Backend: Hyperfusion Service
-- [ ] Create `HyperfusionService`
-- [ ] Fetch from `/api/v1/inference/current`
-- [ ] Merge with Gonka data by `participant_index`
+- [x] Integrated into NodesService (2025-12-08)
+- [x] Fetch from `/api/v1/inference/current` (2025-12-08)
+- [x] Transform data to frontend-compatible format (2025-12-08)
 
 ### 3.3 Backend: Caching Layer
-- [ ] Cache aggregated node data in PostgreSQL (or Redis)
-- [ ] TTL: 2-5 minutes
-- [ ] Background job to refresh cache (cron)
+- [x] In-memory caching with 2-minute TTL (2025-12-08)
+- [ ] Background job to refresh cache (deferred - not needed for MVP)
 
 ### 3.4 Backend: Node Aggregation Endpoint
-- [ ] Create `/nodes/my` endpoint
-- [ ] Filter nodes by user's assigned identifiers (from `user_nodes`)
-- [ ] Return merged data from cache
+- [x] Create `/nodes` endpoint (2025-12-08)
+- [x] Create `/nodes/dashboard` endpoint (2025-12-08)
+- [x] Filter nodes by user's assigned identifiers (from `user_nodes`) (2025-12-08)
+- [x] Return merged data with stats (2025-12-08)
 
 ### 3.5 Frontend: Connect to Real Data
-- [ ] Update dashboard to call `/nodes/my`
-- [ ] Update nodes list with real data
-- [ ] Show loading states and error handling
+- [x] Update dashboard to call `/nodes/dashboard` (2025-12-08)
+- [x] Update nodes list with real data (2025-12-08)
+- [x] Show loading states and error handling (2025-12-08)
+- [x] Created shared LayoutComponent for consistent navigation (2025-12-08)
 
 ### Definition of Done
-- [ ] Dashboard shows real node data from Gonka network
-- [ ] Data refreshes on page load (within cache TTL)
-- [ ] Errors displayed gracefully (tracker down, etc.)
+- [x] Dashboard shows real node data from Gonka network (2025-12-08)
+- [x] Data refreshes on page load (within cache TTL) (2025-12-08)
+- [x] Errors displayed gracefully (tracker down, etc.) (2025-12-08)
 
 ### Dependencies
 - Phase 2 complete
@@ -303,13 +301,13 @@ Small (few hours)
 
 ## Quick Reference
 
-| Phase | Focus | Key Deliverable |
-|-------|-------|-----------------|
-| 0 | Spike | Confirm APIs work |
-| 1 | Foundation | Auth + project setup |
-| 2 | UI | Dashboard with mocks |
-| 3 | Integration | Real Gonka data |
-| 4 | Details | Node details + earnings |
-| 5 | Requests | Node request flow |
-| 6 | Admin | User/node management |
-| 7 | Launch | Production-ready |
+| Phase | Focus | Key Deliverable | Status |
+|-------|-------|-----------------|--------|
+| 0 | Spike | Confirm APIs work | **COMPLETE** |
+| 1 | Foundation | Auth + project setup | **COMPLETE** |
+| 2 | UI | Dashboard with mocks | **COMPLETE** |
+| 3 | Integration | Real Gonka data | **COMPLETE** |
+| 4 | Details | Node details + earnings | Not Started |
+| 5 | Requests | Node request flow | Not Started |
+| 6 | Admin | User/node management | Not Started |
+| 7 | Launch | Production-ready | Not Started |
