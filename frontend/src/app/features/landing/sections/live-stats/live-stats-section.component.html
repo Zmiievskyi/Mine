@@ -1,0 +1,18 @@
+<section class="live-stats-section">
+  <div class="container">
+    <!-- Section Header -->
+    <div class="section-header">
+      <h2 class="section-title">Live Gonka Network Stats</h2>
+      <p class="section-subtitle">Snapshot of the network at page load.</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card" *ngFor="let stat of stats">
+        <div class="stat-label">{{ stat.label }}</div>
+        <div class="stat-value">{{ stat.value }}</div>
+        <div class="stat-subtext">{{ stat.subtext }}</div>
+      </div>
+    </div>
+  </div>
+</section>

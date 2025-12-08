@@ -1,0 +1,65 @@
+<section id="pricing" class="pricing-section">
+  <div class="container">
+    <!-- Section Header -->
+    <div class="section-header">
+      <div class="badge">Simple Pricing</div>
+      <h2 class="section-title">Choose your GPU mining package</h2>
+      <p class="section-subtitle">
+        All packages include access to our mining network and token earning capabilities.
+        No setup fees or hidden costs.
+      </p>
+    </div>
+
+    <!-- Pricing Cards Grid -->
+    <div class="pricing-grid">
+      @for (pkg of packages; track pkg.tier) {
+        <div
+          class="pricing-card"
+          [class.highlighted]="pkg.highlighted">
+
+          <!-- Card Header -->
+          <div class="card-header">
+            <h3 class="package-name">{{ pkg.name }}</h3>
+            <p class="package-description">{{ pkg.description }}</p>
+          </div>
+
+          <!-- Features List -->
+          <ul class="features-list">
+            @for (feature of pkg.features; track $index) {
+              <li class="feature-item">
+                <svg class="check-icon" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                <span>{{ feature }}</span>
+              </li>
+            }
+          </ul>
+
+          <!-- Price -->
+          <div class="price-container">
+            <span class="currency">$</span>
+            <span class="amount">{{ pkg.price }}</span>
+            <span class="period">/ hour</span>
+          </div>
+
+          <!-- CTA Button -->
+          <button
+            class="cta-button"
+            [class.primary]="!pkg.highlighted"
+            [class.highlighted]="pkg.highlighted"
+            (click)="onSelectPackage(pkg.tier)">
+            {{ pkg.cta }}
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Footer Note -->
+    <div class="footer-note">
+      <svg class="shield-icon" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+      </svg>
+      <span>No credit card required</span>
+    </div>
+  </div>
+</section>

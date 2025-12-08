@@ -1,0 +1,45 @@
+<section id="how-it-works" class="how-it-works-section">
+  <div class="container">
+    <!-- Section Header -->
+    <div class="section-header">
+      <div class="badge">How it works</div>
+      <h2 class="section-title">Start mining in 3 steps</h2>
+      <p class="section-subtitle">We handle the infrastructure while you focus on earning tokens.</p>
+    </div>
+
+    <!-- Steps List -->
+    <div class="steps-list">
+      <div
+        class="step-item"
+        *ngFor="let step of steps"
+        [class.image-left]="step.imagePosition === 'left'"
+        [class.image-right]="step.imagePosition === 'right'"
+      >
+        <!-- Image Placeholder -->
+        <div class="step-image">
+          <div class="image-placeholder">
+            <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="100" height="100" rx="8" [attr.fill]="'url(#stepGradient)'" opacity="0.1"/>
+              <path d="M30 50L45 65L70 35" [attr.stroke]="'url(#stepGradient)'" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              <defs>
+                <linearGradient id="stepGradient" x1="0" y1="0" x2="100" y2="100">
+                  <stop offset="0%" stop-color="#a855f7"/>
+                  <stop offset="100%" stop-color="#6366f1"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Step Content -->
+        <div class="step-content">
+          <div class="step-badge">
+            <span class="step-number">{{ step.stepNumber }}</span>
+          </div>
+          <h3 class="step-title">{{ step.title }}</h3>
+          <p class="step-description">{{ step.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

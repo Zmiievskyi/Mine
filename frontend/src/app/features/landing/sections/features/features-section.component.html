@@ -1,0 +1,21 @@
+<section id="features" class="features-section">
+  <div class="container">
+    <!-- Section Header -->
+    <div class="section-header">
+      <span class="badge">Why mine with us</span>
+      <h2 class="section-title">Simple onboarding, powerful results</h2>
+      <p class="section-subtitle">
+        Mining as a service: pay in fiat, use enterprise GPUs, earn AI-focused tokens.
+      </p>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="features-grid">
+      <div class="feature-card" *ngFor="let feature of features">
+        <div class="feature-icon">{{ feature.icon }}</div>
+        <h3 class="feature-title">{{ feature.title }}</h3>
+        <p class="feature-description">{{ feature.description }}</p>
+      </div>
+    </div>
+  </div>
+</section>

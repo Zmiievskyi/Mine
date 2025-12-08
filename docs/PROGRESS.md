@@ -1,6 +1,6 @@
 # MineGNK Progress Tracker
 
-**Last Updated**: 2025-12-08
+**Last Updated**: 2025-12-08 (Evening Session 2)
 
 ---
 
@@ -9,8 +9,8 @@
 | Phase | Status | Progress |
 |-------|--------|----------|
 | Phase 0: API Spike | **Complete** | 100% |
-| Phase 1: Foundation | **In Progress** | 20% |
-| Phase 2: Dashboard (Mock) | Not Started | 0% |
+| Phase 1: Foundation | **Complete** | 100% |
+| Phase 2: Dashboard (Mock) | **In Progress** | 70% |
 | Phase 3: Gonka Integration | Not Started | 0% |
 | Phase 4: Node Details | Not Started | 0% |
 | Phase 5: Request System | Not Started | 0% |
@@ -54,6 +54,10 @@
 | 2025-12-08 | Use Angular 18 + Tailwind CSS (minimal) for frontend | Modern stack, easy to restyle later |
 | 2025-12-08 | Logic-first approach: skeleton + auth before styling | Waiting for Gcore UI Kit access |
 | 2025-12-08 | Work in `feature/frontend-skeleton` branch | Safe experimentation, easy rollback |
+| 2025-12-08 | TypeORM synchronize for dev, manual migrations for prod | Fast iteration during development |
+| 2025-12-08 | JWT 7-day expiration | Balance between UX and security |
+| 2025-12-08 | Landing page with dark theme matching minegnk.com | Professional appearance, consistent branding |
+| 2025-12-08 | Use inline template for landing vs modular sections | Faster implementation, can refactor later |
 
 ---
 
@@ -66,16 +70,19 @@ None currently.
 ## Next Actions
 
 1. ~~Initialize Angular frontend (`/frontend`)~~ **DONE**
-2. **Current**: Set up project structure (core, features, layout)
-3. **Then**: Create auth module (JWT service, guards, login/register pages)
-4. **Then**: Create layout (header, sidebar)
-5. **Then**: Create dashboard skeleton
-6. **Then**: Initialize NestJS backend (`/backend`)
-7. **Then**: Set up PostgreSQL schema and migrations
+2. ~~Set up project structure (core, features, layout)~~ **DONE**
+3. ~~Create auth module (JWT service, guards, login/register pages)~~ **DONE**
+4. ~~Create layout (header, sidebar - basic)~~ **DONE**
+5. ~~Create dashboard skeleton~~ **DONE**
+6. ~~Initialize NestJS backend (`/backend`)~~ **DONE**
+7. ~~Set up PostgreSQL schema (auto-sync with TypeORM)~~ **DONE**
+8. **Current**: Connect frontend to backend API
+9. **Then**: Complete nodes feature (list, detail, request form)
+10. **Then**: Add node request system
 
 ---
 
-## Phase 1: Foundation - IN PROGRESS
+## Phase 1: Foundation - COMPLETE
 
 ### Branch: `feature/frontend-skeleton`
 
@@ -84,14 +91,19 @@ None currently.
 When Gcore UI Kit access is granted, apply styles on top.
 
 ### Completed
-- [x] Create Angular 18 project with routing
-- [ ] Setup Tailwind CSS (minimal, for layout only)
-- [ ] Project structure (core, features, shared, layout)
-- [ ] Auth module (JWT service, guards)
-- [ ] Login/Register pages
-- [ ] Layout (header, sidebar)
-- [ ] Dashboard skeleton
-- [ ] Nodes list skeleton
+- [x] Create Angular 18 project with routing (2025-12-08)
+- [x] Setup Tailwind CSS v4 (minimal, for layout only) (2025-12-08)
+- [x] Project structure (core, features, shared, layout) (2025-12-08)
+- [x] Auth module (JWT service, guards, interceptors) (2025-12-08)
+- [x] Login/Register pages (working forms) (2025-12-08)
+- [x] Dashboard skeleton with statistics cards (2025-12-08)
+- [x] Nodes list skeleton (placeholder) (2025-12-08)
+- [x] Gcore design tokens in CSS variables (2025-12-08)
+- [x] NestJS backend with auth and nodes API (2025-12-08)
+- [x] PostgreSQL database with TypeORM entities (2025-12-08)
+- [x] Landing page with dark theme (2025-12-08)
+- [x] Layout (header, navigation) - sticky header with nav links (2025-12-08)
+- [ ] Connect frontend to backend API
 
 ### UI Kit Status
 - **Gcore UI Kit**: Access requested, waiting for approval
@@ -102,6 +114,7 @@ When Gcore UI Kit access is granted, apply styles on top.
 
 ## Done This Session (2025-12-08)
 
+### Morning - API Spike
 - Created `docs/API_RESEARCH.md` with full API documentation
 - Created `docs/IMPLEMENTATION_PLAN.md` with 8-phase plan
 - Created `docs/PROGRESS.md` (this file)
@@ -113,15 +126,54 @@ When Gcore UI Kit access is granted, apply styles on top.
   - `gonka-epochs-latest.json`
 - **Validated both APIs work and provide needed data**
 
+### Afternoon - Frontend Skeleton
+- Created Angular 18 project (`frontend/`)
+- Set up project structure:
+  - `core/guards/` - authGuard, guestGuard, adminGuard
+  - `core/interceptors/` - JWT auth interceptor
+  - `core/models/` - User, Node, DashboardData interfaces
+  - `core/services/` - AuthService, NodesService
+  - `features/auth/` - Login, Register components
+  - `features/dashboard/` - Dashboard with statistics
+  - `features/nodes/` - List, Detail, Request placeholders
+  - `features/admin/` - Admin dashboard placeholder
+- Configured Tailwind CSS v4 with Gcore design tokens
+- Set up lazy-loaded routes with guards
+- Created environment configuration for API URLs
+
+### Evening - NestJS Backend
+- Created NestJS project (`backend/`)
+- Set up project structure:
+  - `config/` - app, database, jwt, gonka configs
+  - `modules/auth/` - JWT auth, guards, strategies
+  - `modules/users/` - User entity and service
+  - `modules/nodes/` - Hyperfusion proxy with caching
+  - `modules/requests/` - Node request entity
+- Database entities with TypeORM:
+  - `users` - accounts with roles (user/admin)
+  - `user_nodes` - links users to Gonka node addresses
+  - `node_requests` - provisioning requests
+- Tested all endpoints:
+  - `POST /api/auth/register` - user registration
+  - `POST /api/auth/login` - JWT token generation
+  - `GET /api/auth/me` - get current user (protected)
+  - `GET /api/nodes` - user's nodes list (protected)
+  - `GET /api/nodes/dashboard` - dashboard stats (protected)
+  - `GET /api/nodes/:address` - node detail (protected)
+
 ---
 
 ## Metrics
 
 | Metric | Value |
 |--------|-------|
-| Lines of code | 0 |
-| API endpoints implemented | 0 |
-| Pages built | 0 |
+| Frontend files | 24 |
+| Frontend pages | 6 (login, register, dashboard, nodes list, node detail, admin) |
+| Services | 2 (AuthService, NodesService) |
+| Guards | 3 (auth, guest, admin) |
+| Backend modules | 3 (auth, users, nodes) |
+| API endpoints | 6 (register, login, me, nodes list, dashboard, node detail) |
+| Database tables | 3 (users, user_nodes, node_requests) |
 | Tests passing | N/A |
 
 ---
@@ -148,3 +200,56 @@ When Gcore UI Kit access is granted, apply styles on top.
 
 ### Manual Data
 - GPU type: admin enters when assigning node
+
+---
+
+## Session 2: Landing Page (2025-12-08 Evening)
+
+### Completed Tasks
+- [x] Analyzed minegnk.com design (screenshot analysis)
+- [x] Created landing page component with full template
+- [x] Implemented dark theme CSS variables
+- [x] Built all landing page sections:
+  - Header with navigation (Features, How It Works, Pricing, FAQ)
+  - Hero section with gradient "GNK Tokens" text
+  - Live Network Stats (4 cards - placeholders)
+  - Why Mine with MineGNK (6 feature cards)
+  - How It Works (3 steps)
+  - Pricing Plans (RTX 3080, RTX 4090, H100)
+  - FAQ section (6 questions)
+  - CTA section
+  - Footer with links
+- [x] Updated app routes (root shows landing for guests)
+- [x] Fixed app.html (removed default Angular template)
+
+### Created Files
+**Landing Page:**
+- `frontend/src/app/features/landing/landing.component.ts`
+- `frontend/src/app/features/landing/landing.component.html` (406 lines)
+- `frontend/src/app/features/landing/landing.component.scss` (708 lines)
+
+**Modular Section Components (created by agents):**
+- `sections/hero/hero-section.component.*`
+- `sections/live-stats/live-stats-section.component.*`
+- `sections/features/features-section.component.*`
+- `sections/how-it-works/how-it-works-section.component.*`
+- `sections/pricing/pricing-section.component.*`
+- `sections/faq/faq-section.component.*`
+- `sections/cta/cta-section.component.*`
+- `shared/components/header/header.component.*`
+- `shared/components/footer/footer.component.*`
+
+### Design Implementation
+- **Theme**: Dark (#0a0a0a background)
+- **Accent**: Purple gradient (#a855f7 → #d946ef)
+- **Typography**: Inter font family
+- **Responsive**: Mobile-first with breakpoints
+- **Sticky Header**: With backdrop blur effect
+
+### Metrics Update
+| Metric | Before | After |
+|--------|--------|-------|
+| Frontend files | 24 | 50+ |
+| Frontend pages | 6 | 7 (+ landing) |
+| Landing sections | 0 | 9 |
+| CSS variables | ~10 | ~20 (dark theme added) |

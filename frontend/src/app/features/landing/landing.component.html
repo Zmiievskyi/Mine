@@ -1,0 +1,405 @@
+<!-- Landing Page for MineGNK -->
+<div class="landing-page">
+
+  <!-- Header/Navigation -->
+  <header class="landing-header">
+    <div class="container">
+      <nav class="navbar">
+        <!-- Logo -->
+        <div class="logo">
+          <span class="logo-text">Mine<span class="logo-accent">GNK</span></span>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <ul class="nav-links desktop-nav">
+          <li *ngFor="let link of navLinks">
+            <a [href]="link.href" (click)="scrollToSection(link.href); $event.preventDefault()">
+              {{ link.label }}
+            </a>
+          </li>
+        </ul>
+
+        <!-- Auth Buttons -->
+        <div class="auth-buttons desktop-auth">
+          <a routerLink="/auth/login" class="btn btn-secondary">Login</a>
+          <a routerLink="/auth/register" class="btn btn-primary">Get Started</a>
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" (click)="toggleMobileMenu()" aria-label="Toggle menu">
+          <span class="hamburger-icon" [class.active]="isMobileMenuOpen"></span>
+        </button>
+      </nav>
+
+      <!-- Mobile Navigation -->
+      <div class="mobile-nav" [class.active]="isMobileMenuOpen">
+        <ul class="mobile-nav-links">
+          <li *ngFor="let link of navLinks">
+            <a [href]="link.href" (click)="scrollToSection(link.href); $event.preventDefault()">
+              {{ link.label }}
+            </a>
+          </li>
+        </ul>
+        <div class="mobile-auth">
+          <a routerLink="/auth/login" class="btn btn-secondary btn-block">Login</a>
+          <a routerLink="/auth/register" class="btn btn-primary btn-block">Get Started</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="hero-content">
+        <h1 class="hero-title">
+          Earn <span class="text-gradient">GNK Tokens</span><br>
+          Mining with Your GPU
+        </h1>
+        <p class="hero-subtitle">
+          Join the Gonka network and turn your GPU power into consistent rewards.
+          Professional infrastructure, transparent earnings, 24/7 monitoring.
+        </p>
+        <div class="hero-cta">
+          <a routerLink="/auth/register" class="btn btn-primary btn-large">Start Mining Now</a>
+          <a href="#how-it-works" class="btn btn-secondary btn-large" (click)="scrollToSection('#how-it-works'); $event.preventDefault()">
+            Learn More
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Stats Section -->
+  <section id="stats" class="stats-section">
+    <div class="container">
+      <h2 class="section-title">Live Network Stats</h2>
+      <p class="section-subtitle">Real-time data from the Gonka network</p>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">=Ê</div>
+          <div class="stat-value">--</div>
+          <div class="stat-label">Active Nodes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">=°</div>
+          <div class="stat-value">--</div>
+          <div class="stat-label">Daily Rewards</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">¡</div>
+          <div class="stat-value">--</div>
+          <div class="stat-label">Network Hashrate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><</div>
+          <div class="stat-value">--</div>
+          <div class="stat-label">Total Miners</div>
+        </div>
+      </div>
+
+      <p class="stats-note">
+        Stats will be populated from Gonka API in production
+      </p>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features-section">
+    <div class="container">
+      <h2 class="section-title">Why Mine with <span class="text-gradient">MineGNK</span></h2>
+      <p class="section-subtitle">Enterprise-grade infrastructure for your GPU mining operations</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">=€</div>
+          <h3 class="feature-title">High Performance</h3>
+          <p class="feature-description">
+            Optimized mining setup with premium Gcore infrastructure for maximum efficiency
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">=È</div>
+          <h3 class="feature-title">Real-Time Monitoring</h3>
+          <p class="feature-description">
+            Track your nodes, earnings, and performance metrics 24/7 from your dashboard
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">=Ž</div>
+          <h3 class="feature-title">Transparent Earnings</h3>
+          <p class="feature-description">
+            Clear visibility into your GNK rewards with detailed breakdowns and history
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">=</div>
+          <h3 class="feature-title">Secure & Reliable</h3>
+          <p class="feature-description">
+            Enterprise security standards with 99.9% uptime SLA on Gcore Cloud
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">™</div>
+          <h3 class="feature-title">Easy Management</h3>
+          <p class="feature-description">
+            Request new nodes, monitor health, and manage your mining fleet with ease
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><¯</div>
+          <h3 class="feature-title">Expert Support</h3>
+          <p class="feature-description">
+            Dedicated support team to help with setup, optimization, and troubleshooting
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="how-it-works-section">
+    <div class="container">
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-subtitle">Get started mining in three simple steps</p>
+
+      <div class="steps-container">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3 class="step-title">Create Account</h3>
+          <p class="step-description">
+            Sign up with your email and choose your mining plan based on GPU type and quantity
+          </p>
+        </div>
+
+        <div class="step-connector"></div>
+
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3 class="step-title">Request Nodes</h3>
+          <p class="step-description">
+            Submit a node request through our portal. Our team provisions your GPUs on Gcore Cloud
+          </p>
+        </div>
+
+        <div class="step-connector"></div>
+
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3 class="step-title">Start Earning</h3>
+          <p class="step-description">
+            Your nodes automatically join the Gonka network and start earning GNK tokens
+          </p>
+        </div>
+      </div>
+
+      <div class="how-it-works-note">
+        <p>
+          <strong>Note:</strong> Node provisioning is handled by our support team to ensure optimal
+          configuration and performance. Typical setup time is 24-48 hours.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" class="pricing-section">
+    <div class="container">
+      <h2 class="section-title">Pricing Plans</h2>
+      <p class="section-subtitle">Choose the GPU configuration that fits your mining goals</p>
+
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <div class="pricing-header">
+            <h3 class="pricing-title">RTX 3080</h3>
+            <div class="pricing-badge">Popular</div>
+          </div>
+          <div class="pricing-amount">
+            <span class="currency">$</span>
+            <span class="price">--</span>
+            <span class="period">/month</span>
+          </div>
+          <ul class="pricing-features">
+            <li>~8-10 GNK tokens/day</li>
+            <li>10GB VRAM</li>
+            <li>Premium Gcore hosting</li>
+            <li>24/7 monitoring</li>
+            <li>Email support</li>
+          </ul>
+          <a routerLink="/auth/register" class="btn btn-secondary btn-block">Get Started</a>
+        </div>
+
+        <div class="pricing-card featured">
+          <div class="pricing-header">
+            <h3 class="pricing-title">RTX 4090</h3>
+            <div class="pricing-badge">Best Value</div>
+          </div>
+          <div class="pricing-amount">
+            <span class="currency">$</span>
+            <span class="price">--</span>
+            <span class="period">/month</span>
+          </div>
+          <ul class="pricing-features">
+            <li>~15-20 GNK tokens/day</li>
+            <li>24GB VRAM</li>
+            <li>Premium Gcore hosting</li>
+            <li>24/7 monitoring</li>
+            <li>Priority support</li>
+          </ul>
+          <a routerLink="/auth/register" class="btn btn-primary btn-block">Get Started</a>
+        </div>
+
+        <div class="pricing-card">
+          <div class="pricing-header">
+            <h3 class="pricing-title">H100</h3>
+            <div class="pricing-badge">Enterprise</div>
+          </div>
+          <div class="pricing-amount">
+            <span class="currency">$</span>
+            <span class="price">--</span>
+            <span class="period">/month</span>
+          </div>
+          <ul class="pricing-features">
+            <li>~50-60 GNK tokens/day</li>
+            <li>80GB VRAM</li>
+            <li>Premium Gcore hosting</li>
+            <li>24/7 monitoring</li>
+            <li>Dedicated support</li>
+          </ul>
+          <a routerLink="/auth/register" class="btn btn-secondary btn-block">Get Started</a>
+        </div>
+      </div>
+
+      <p class="pricing-note">
+        Pricing will be updated based on actual Gcore Cloud costs and market rates
+      </p>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section id="faq" class="faq-section">
+    <div class="container">
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <p class="section-subtitle">Everything you need to know about mining with MineGNK</p>
+
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h3 class="faq-question">What is Gonka network?</h3>
+          <p class="faq-answer">
+            Gonka is a decentralized AI inference network using Proof-of-Work. Miners earn GNK tokens
+            by processing AI inference jobs with their GPUs.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-question">How much can I earn?</h3>
+          <p class="faq-answer">
+            Earnings depend on GPU type, network difficulty, and uptime. Check our pricing section for
+            estimated daily rewards per GPU model.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-question">Do I need my own hardware?</h3>
+          <p class="faq-answer">
+            No! MineGNK provides fully managed GPU nodes hosted on Gcore Cloud infrastructure. You just
+            monitor and collect rewards.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-question">How long does setup take?</h3>
+          <p class="faq-answer">
+            After you request nodes, our team provisions them within 24-48 hours. You'll receive an
+            email when your nodes are ready to start mining.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-question">Can I scale up my mining operation?</h3>
+          <p class="faq-answer">
+            Yes! You can request additional nodes at any time through your dashboard. There's no limit
+            to the number of GPUs you can run.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3 class="faq-question">What payment methods do you accept?</h3>
+          <p class="faq-answer">
+            We accept credit cards, bank transfers, and cryptocurrency payments. Billing is monthly with
+            no long-term contracts required.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-content">
+        <h2 class="cta-title">Ready to Start Mining?</h2>
+        <p class="cta-subtitle">
+          Join hundreds of miners already earning GNK tokens with MineGNK
+        </p>
+        <a routerLink="/auth/register" class="btn btn-primary btn-large">Create Free Account</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3 class="footer-title">Mine<span class="text-gradient">GNK</span></h3>
+          <p class="footer-description">
+            Professional GPU mining infrastructure for the Gonka network. Earn GNK tokens with
+            enterprise-grade hosting and monitoring.
+          </p>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Product</h4>
+          <ul class="footer-links">
+            <li><a href="#features" (click)="scrollToSection('#features'); $event.preventDefault()">Features</a></li>
+            <li><a href="#pricing" (click)="scrollToSection('#pricing'); $event.preventDefault()">Pricing</a></li>
+            <li><a routerLink="/auth/register">Get Started</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Resources</h4>
+          <ul class="footer-links">
+            <li><a href="#how-it-works" (click)="scrollToSection('#how-it-works'); $event.preventDefault()">How It Works</a></li>
+            <li><a href="#faq" (click)="scrollToSection('#faq'); $event.preventDefault()">FAQ</a></li>
+            <li><a href="https://gonka.ai" target="_blank" rel="noopener">Gonka Network</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Company</h4>
+          <ul class="footer-links">
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copyright">
+          &copy; 2024 MineGNK. All rights reserved. Powered by Gcore Cloud.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+</div>

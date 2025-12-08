@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  // GCore brand colors (for authenticated app)
   --gcore-primary: #FF4C00;
   --gcore-primary-hover: #f04800;
   --gcore-bg: #f5f4f4;
@@ -8,10 +9,20 @@
   --gcore-text-muted: #818181;
   --gcore-border: #e9e9e9;
   --gcore-danger: #f6413b;
+
+  // Dark theme colors (for landing page)
+  --dark-bg: #0a0a0a;
+  --dark-bg-secondary: #111111;
+  --dark-text: #ffffff;
+  --dark-text-muted: #888888;
+  --accent-purple: #a855f7;
+  --accent-gradient: linear-gradient(90deg, #a855f7, #d946ef);
 }
 
 body {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--gcore-bg);
   color: var(--gcore-text);
+  margin: 0;
+  padding: 0;
 }
