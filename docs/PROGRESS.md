@@ -9,7 +9,7 @@
 | Phase | Status | Progress |
 |-------|--------|----------|
 | Phase 0: API Spike | **Complete** | 100% |
-| Phase 1: Foundation | Not Started | 0% |
+| Phase 1: Foundation | **In Progress** | 20% |
 | Phase 2: Dashboard (Mock) | Not Started | 0% |
 | Phase 3: Gonka Integration | Not Started | 0% |
 | Phase 4: Node Details | Not Started | 0% |
@@ -51,6 +51,9 @@
 | 2025-12-08 | Skip Hashiro for MVP | No public API, would require scraping |
 | 2025-12-08 | Hyperfusion as primary data source | Has earnings, health, all needed fields |
 | 2025-12-08 | Start with API spike before building UI | Reduce risk - validate data first |
+| 2025-12-08 | Use Angular 18 + Tailwind CSS (minimal) for frontend | Modern stack, easy to restyle later |
+| 2025-12-08 | Logic-first approach: skeleton + auth before styling | Waiting for Gcore UI Kit access |
+| 2025-12-08 | Work in `feature/frontend-skeleton` branch | Safe experimentation, easy rollback |
 
 ---
 
@@ -62,10 +65,38 @@ None currently.
 
 ## Next Actions
 
-1. **Next**: Initialize NestJS backend (`/backend`)
-2. **Then**: Initialize Angular frontend (`/frontend`)
-3. **Then**: Set up PostgreSQL schema and migrations
-4. **Then**: Build auth flow (register/login/JWT)
+1. ~~Initialize Angular frontend (`/frontend`)~~ **DONE**
+2. **Current**: Set up project structure (core, features, layout)
+3. **Then**: Create auth module (JWT service, guards, login/register pages)
+4. **Then**: Create layout (header, sidebar)
+5. **Then**: Create dashboard skeleton
+6. **Then**: Initialize NestJS backend (`/backend`)
+7. **Then**: Set up PostgreSQL schema and migrations
+
+---
+
+## Phase 1: Foundation - IN PROGRESS
+
+### Branch: `feature/frontend-skeleton`
+
+### Approach
+**Logic-first development**: Build skeleton and business logic without heavy styling.
+When Gcore UI Kit access is granted, apply styles on top.
+
+### Completed
+- [x] Create Angular 18 project with routing
+- [ ] Setup Tailwind CSS (minimal, for layout only)
+- [ ] Project structure (core, features, shared, layout)
+- [ ] Auth module (JWT service, guards)
+- [ ] Login/Register pages
+- [ ] Layout (header, sidebar)
+- [ ] Dashboard skeleton
+- [ ] Nodes list skeleton
+
+### UI Kit Status
+- **Gcore UI Kit**: Access requested, waiting for approval
+- **Fallback**: Tailwind CSS for basic layout
+- **Plan**: Replace native elements with `<gc-*>` components when kit available
 
 ---
 
