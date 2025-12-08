@@ -1,0 +1,179 @@
+{
+  "_meta": {
+    "fetched_at": "2025-12-08T13:56:58.380Z",
+    "endpoint": "http://node1.gonka.ai:8000/v1/epochs/current/participants",
+    "note": "Truncated to 3 participants/validators for readability"
+  },
+  "active_participants": {
+    "participants": [
+      {
+        "index": "gonka10535msenynlc4ssvyegm7jjjv498f4dqzwgzl6",
+        "validator_key": "yzkyZhga0C0ynMKJwHqnJuyHXCTncnursFGFfIbUX0U=",
+        "weight": 2128,
+        "inference_url": "http://185.216.21.164:8000",
+        "models": [
+          "Qwen/Qwen2.5-7B-Instruct"
+        ],
+        "seed": {
+          "participant": "gonka10535msenynlc4ssvyegm7jjjv498f4dqzwgzl6",
+          "epoch_index": 105,
+          "signature": "e1440c7c42e1124345a21f6c0bb34c5e320de3336afeaa246d4793c6caee78a6547bf0f19eb7c77b6ebc157df87c1989c9a168008aba5994971992df692a2e97"
+        },
+        "ml_nodes": [
+          {
+            "ml_nodes": [
+              {
+                "node_id": "node1",
+                "poc_weight": 2128,
+                "timeslot_allocation": [
+                  true,
+                  true
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "index": "gonka109g8dnt43nj45xhg83jyjt5f2ywz336w36qzyl",
+        "validator_key": "vsdFhxlNhSo6hT3f+L5xOkbQ//WG3MPrVnj6oQVSm3s=",
+        "weight": 9512,
+        "inference_url": "http://85.234.78.183:8000",
+        "models": [
+          "Qwen/Qwen3-235B-A22B-Instruct-2507-FP8",
+          "Qwen/Qwen3-32B-FP8"
+        ],
+        "seed": {
+          "participant": "gonka109g8dnt43nj45xhg83jyjt5f2ywz336w36qzyl",
+          "epoch_index": 105,
+          "signature": "59fe30c5485a01975cf9ba777929e5c51fff9f42136d4226e5e9693ec2c3fc33046cf5a7e1781f1922c3663484c06e12825bd8b36e8cfed9dec638631b32354a"
+        },
+        "ml_nodes": [
+          {
+            "ml_nodes": [
+              {
+                "node_id": "mlnode-large-8b88e29a",
+                "poc_weight": 4112,
+                "timeslot_allocation": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "node_id": "mlnode-large-8cd2d39b",
+                "poc_weight": 4256,
+                "timeslot_allocation": [
+                  true,
+                  false
+                ]
+              }
+            ]
+          },
+          {
+            "ml_nodes": [
+              {
+                "node_id": "mlnode-small-9f3cfcb4-5",
+                "poc_weight": 576,
+                "timeslot_allocation": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "node_id": "mlnode-small-bd02a60a-5",
+                "poc_weight": 568,
+                "timeslot_allocation": [
+                  true,
+                  false
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "index": "gonka109xyam3aq9xt6tjgkgtwwahky7hfd84nl8tvup",
+        "validator_key": "EAn7eWGYoU/+wm6hJzmcuUWQ9vK1nSnbEM1aJ94io48=",
+        "weight": 1034,
+        "inference_url": "http://64.34.82.237:8000",
+        "models": [
+          "Qwen/Qwen2.5-7B-Instruct",
+          "Qwen/Qwen3-32B-FP8"
+        ],
+        "seed": {
+          "participant": "gonka109xyam3aq9xt6tjgkgtwwahky7hfd84nl8tvup",
+          "epoch_index": 105,
+          "signature": "f925849c646ea7fb2dea10f49089f9a93e6bd798236838292b3b968978c4e89456ceb5065fdf39d29d1142a65b31536aa8d3cc7bd8eff5d16ea9e2c6970f6526"
+        },
+        "ml_nodes": [
+          {
+            "ml_nodes": [
+              {
+                "node_id": "node3",
+                "poc_weight": 300,
+                "timeslot_allocation": [
+                  true,
+                  true
+                ]
+              }
+            ]
+          },
+          {
+            "ml_nodes": [
+              {
+                "node_id": "node1",
+                "poc_weight": 370,
+                "timeslot_allocation": [
+                  true,
+                  false
+                ]
+              },
+              {
+                "node_id": "node2",
+                "poc_weight": 364,
+                "timeslot_allocation": [
+                  true,
+                  true
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "epoch_group_id": 105,
+    "poc_start_block_height": 1627410,
+    "effective_block_height": 1627597,
+    "created_at_block_height": 1627595,
+    "epoch_id": 105
+  },
+  "addresses": [
+    "C11CB5647FC52EAE7FDCD3F6D70A5156118C0B9F",
+    "3E72A45F506E96DFE7ACD02CE3CB88BDF17492AC",
+    "B63BB339003CE6809E6C06CEEC49AED6BD7BD4EE"
+  ],
+  "validators": [
+    {
+      "address": "E7567E7B0B137E84748C467E4DBF282353B0FB9E",
+      "pub_key": "tsx6Tn1U0a2omvRXHc55XRxptSiSL/vwGbEMS3WVSEY=",
+      "voting_power": 172456,
+      "proposer_priority": 535165
+    },
+    {
+      "address": "B17DEF89A08A7A6B48B69144509654526390F62F",
+      "pub_key": "buCQ1A8fTVtAtyQj7TI9Cz7OWOAYzhHWbyvO23IDQt8=",
+      "voting_power": 109333,
+      "proposer_priority": 788939
+    },
+    {
+      "address": "4D668C3B519318AE2440F94082EB8AC74FF4A9D7",
+      "pub_key": "f7qXhIjKN8O2zzPoHmQPncbJCg0hCiPwpSzoTcYWnxM=",
+      "voting_power": 74353,
+      "proposer_priority": 8408
+    }
+  ],
+  "excluded_participants": [],
+  "active_participants_bytes": "[truncated]",
+  "proof_ops": "[truncated]",
+  "block": "[truncated]"
+}

@@ -1,0 +1,70 @@
+{
+  "block_height": 1634326,
+  "latest_epoch": {
+    "index": 105,
+    "poc_start_block_height": 1627410
+  },
+  "phase": "Inference",
+  "epoch_stages": {
+    "epoch_index": 105,
+    "poc_start": 1627410,
+    "poc_generation_wind_down": 1627458,
+    "poc_generation_end": 1627470,
+    "poc_validation_start": 1627475,
+    "poc_validation_wind_down": 1627571,
+    "poc_validation_end": 1627595,
+    "set_new_validators": 1627715,
+    "claim_money": 1627716,
+    "inference_validation_cutoff": 1642721,
+    "next_poc_start": 1642801,
+    "poc_exchange_window": {
+      "start": 1627411,
+      "end": 1627475
+    },
+    "poc_validation_exchange_window": {
+      "start": 1627476,
+      "end": 1627595
+    }
+  },
+  "next_epoch_stages": {
+    "epoch_index": 106,
+    "poc_start": 1642801,
+    "poc_generation_wind_down": 1642849,
+    "poc_generation_end": 1642861,
+    "poc_validation_start": 1642866,
+    "poc_validation_wind_down": 1642962,
+    "poc_validation_end": 1642986,
+    "set_new_validators": 1643106,
+    "claim_money": 1643107,
+    "inference_validation_cutoff": 1658112,
+    "next_poc_start": 1658192,
+    "poc_exchange_window": {
+      "start": 1642802,
+      "end": 1642866
+    },
+    "poc_validation_exchange_window": {
+      "start": 1642867,
+      "end": 1642986
+    }
+  },
+  "epoch_params": {
+    "epoch_length": 15391,
+    "epoch_multiplier": 1,
+    "epoch_shift": 16980,
+    "default_unit_of_compute_price": 100,
+    "poc_stage_duration": 60,
+    "poc_exchange_duration": 5,
+    "poc_validation_delay": 5,
+    "poc_validation_duration": 120,
+    "set_new_validators_delay": 120,
+    "inference_validation_cutoff": 80,
+    "inference_pruning_epoch_threshold": 2,
+    "inference_pruning_max": 5000,
+    "poc_pruning_max": 1000,
+    "poc_slot_allocation": {
+      "value": 1,
+      "exponent": -1
+    }
+  },
+  "is_confirmation_poc_active": false
+}

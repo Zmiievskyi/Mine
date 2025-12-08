@@ -1,0 +1,145 @@
+{
+  "_meta": {
+    "fetched_at": "2025-12-08T13:56:58.750Z",
+    "endpoint": "https://tracker.gonka.hyperfusion.io/api/v1/inference/current",
+    "note": "Truncated to 3 participants for readability"
+  },
+  "epoch_id": 105,
+  "height": 1634323,
+  "cached_at": "2025-12-08T13:56:38.900851",
+  "is_current": true,
+  "total_assigned_rewards_gnk": null,
+  "current_block_height": 1634323,
+  "current_block_timestamp": "2025-12-08T13:56:28.426061722Z",
+  "avg_block_time": 6.02,
+  "next_poc_start_block": 1642801,
+  "set_new_validators_block": 1643106,
+  "participants": [
+    {
+      "index": "gonka1qzmhx83xnamk0uqup3lxpf2te9karrwjm9cjh7",
+      "address": "gonka1qzmhx83xnamk0uqup3lxpf2te9karrwjm9cjh7",
+      "weight": 3965,
+      "validator_key": "f0pIRnCz3CR8Llv/A8dMkyGITRDp0ukI7+5dhHQWk1Y=",
+      "inference_url": "http://93.119.168.43:8000",
+      "status": "ACTIVE",
+      "models": [
+        "Qwen/Qwen3-235B-A22B-Instruct-2507-FP8"
+      ],
+      "current_epoch_stats": {
+        "inference_count": "6",
+        "missed_requests": "0",
+        "earned_coins": "3805",
+        "rewarded_coins": "0",
+        "burned_coins": "0",
+        "validated_inferences": "5",
+        "invalidated_inferences": "0"
+      },
+      "is_jailed": false,
+      "jailed_until": null,
+      "ready_to_unjail": false,
+      "node_healthy": true,
+      "node_health_checked_at": "2025-12-08T13:55:10.619478",
+      "moniker": null,
+      "identity": null,
+      "keybase_username": null,
+      "keybase_picture_url": null,
+      "website": null,
+      "validator_consensus_key": "f0pIRnCz3CR8Llv/A8dMkyGITRDp0ukI7+5dhHQWk1Y=",
+      "consensus_key_mismatch": false,
+      "seed_signature": "757a0c932e607e6afbf5cd3989c9b0e209307d525e0666a618ae472d6bdf018f1024eb8da325a42c2cf9e65620a8e42eecaf50cf9405422d40606609ce3b2d90",
+      "ml_nodes_map": {
+        "node1": 3965
+      },
+      "weight_to_confirm": 3965,
+      "confirmation_weight": 3965,
+      "confirmation_poc_ratio": 1,
+      "participant_status": "ACTIVE",
+      "missed_rate": 0,
+      "invalidation_rate": 0
+    },
+    {
+      "index": "gonka1qygkrhu964zy4r2t9fmlz8fe0q7s0nujw9hvu8",
+      "address": "gonka1qygkrhu964zy4r2t9fmlz8fe0q7s0nujw9hvu8",
+      "weight": 521,
+      "validator_key": "zfHjWiJM5/WCB/qcxjq+1G2DlsfSz4bJp71kYeBt2uE=",
+      "inference_url": "http://163.5.212.79:64935",
+      "status": "ACTIVE",
+      "models": [
+        "Qwen/Qwen3-32B-FP8"
+      ],
+      "current_epoch_stats": {
+        "inference_count": "14",
+        "missed_requests": "0",
+        "earned_coins": "3935",
+        "rewarded_coins": "0",
+        "burned_coins": "0",
+        "validated_inferences": "13",
+        "invalidated_inferences": "0"
+      },
+      "is_jailed": null,
+      "jailed_until": null,
+      "ready_to_unjail": null,
+      "node_healthy": true,
+      "node_health_checked_at": "2025-12-08T13:55:10.619478",
+      "moniker": null,
+      "identity": null,
+      "keybase_username": null,
+      "keybase_picture_url": null,
+      "website": null,
+      "validator_consensus_key": null,
+      "consensus_key_mismatch": null,
+      "seed_signature": "2871574b95ae74a307c5e4ea0da5b895ab6916d8530ed4a26b364dcb5ed7a5110b90842c28c8f1f7c83baf2551e35c1b663a2a68764d1a3a2cc89b18aa737ac7",
+      "ml_nodes_map": {
+        "node1": 521
+      },
+      "weight_to_confirm": 0,
+      "confirmation_weight": 0,
+      "confirmation_poc_ratio": null,
+      "participant_status": "ACTIVE",
+      "missed_rate": 0,
+      "invalidation_rate": 0
+    },
+    {
+      "index": "gonka1qy72uqasgd00un7qwexvfdl4zzy8ejaqj2zkqc",
+      "address": "gonka1qy72uqasgd00un7qwexvfdl4zzy8ejaqj2zkqc",
+      "weight": 1065,
+      "validator_key": "UwkYqukGfcJUuZUXbhHGJUggSdd90Xxo+h1htbaXrwE=",
+      "inference_url": "http://147.185.41.155:20243",
+      "status": "ACTIVE",
+      "models": [
+        "Qwen/Qwen3-32B-FP8"
+      ],
+      "current_epoch_stats": {
+        "inference_count": "35",
+        "missed_requests": "2",
+        "earned_coins": "10852",
+        "rewarded_coins": "0",
+        "burned_coins": "0",
+        "validated_inferences": "30",
+        "invalidated_inferences": "0"
+      },
+      "is_jailed": false,
+      "jailed_until": null,
+      "ready_to_unjail": false,
+      "node_healthy": true,
+      "node_health_checked_at": "2025-12-08T13:55:10.619478",
+      "moniker": null,
+      "identity": null,
+      "keybase_username": null,
+      "keybase_picture_url": null,
+      "website": null,
+      "validator_consensus_key": "UwkYqukGfcJUuZUXbhHGJUggSdd90Xxo+h1htbaXrwE=",
+      "consensus_key_mismatch": false,
+      "seed_signature": "d21d6f991ecd351fd5bcb7f428dace694db4ad245be98449889de96b1d36b6d851052b92e6bc57bfcb83ab6228ee7b704db370b8a0ccd51fc19a44041e938159",
+      "ml_nodes_map": {
+        "node1": 1065
+      },
+      "weight_to_confirm": 0,
+      "confirmation_weight": 0,
+      "confirmation_poc_ratio": null,
+      "participant_status": "ACTIVE",
+      "missed_rate": 0.0541,
+      "invalidation_rate": 0
+    }
+  ]
+}
