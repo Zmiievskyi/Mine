@@ -18,10 +18,10 @@
   .badge {
     display: inline-block;
     padding: 0.5rem 1rem;
-    background-color: rgba(168, 85, 247, 0.1);
-    border: 1px solid rgba(168, 85, 247, 0.3);
+    background-color: rgba(255, 76, 0, 0.1);
+    border: 1px solid rgba(255, 76, 0, 0.3);
     border-radius: 2rem;
-    color: #a855f7;
+    color: #FF4C00;
     font-size: 0.875rem;
     font-weight: 500;
     text-transform: uppercase;
@@ -53,12 +53,12 @@
     transition: all 0.3s ease;
 
     &:hover {
-      border-color: rgba(168, 85, 247, 0.3);
+      border-color: rgba(255, 76, 0, 0.3);
     }
 
     &.is-open {
       background-color: rgba(255, 255, 255, 0.05);
-      border-color: rgba(168, 85, 247, 0.4);
+      border-color: rgba(255, 76, 0, 0.4);
 
       .toggle-icon svg {
         transform: rotate(180deg);
@@ -90,7 +90,7 @@
     }
 
     &:focus {
-      outline: 2px solid rgba(168, 85, 247, 0.5);
+      outline: 2px solid rgba(255, 76, 0, 0.5);
       outline-offset: -2px;
     }
   }
@@ -106,7 +106,7 @@
   .toggle-icon {
     flex-shrink: 0;
     margin-left: 1rem;
-    color: #a855f7;
+    color: #FF4C00;
     display: flex;
     align-items: center;
     justify-content: center;

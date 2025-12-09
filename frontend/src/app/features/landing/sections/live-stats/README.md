@@ -21,7 +21,7 @@ export class LandingPageComponent {}
 ## Features
 
 - 3-column grid layout (responsive: 2 columns on tablet, 1 column on mobile)
-- Dark theme with purple accent (#a855f7)
+- Dark theme with orange accent (#FF4C00) - GCore brand color
 - Hover effects on stat cards
 - Static mock data (ready for API integration)
 
@@ -41,7 +41,7 @@ Replace mock data with real-time data from Gonka API:
 
 - Background: #0a0a0a (dark)
 - Card border: rgba(255,255,255,0.1)
-- Purple title: #a855f7
+- Orange title: #FF4C00 (GCore brand)
 - Responsive breakpoints: 992px (tablet), 576px (mobile)
 
 ## Accessibility

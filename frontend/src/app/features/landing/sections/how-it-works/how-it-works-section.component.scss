@@ -18,10 +18,10 @@
   .badge {
     display: inline-block;
     padding: 0.5rem 1.25rem;
-    background-color: rgba(168, 85, 247, 0.1);
-    border: 1px solid rgba(168, 85, 247, 0.3);
+    background-color: rgba(255, 76, 0, 0.1);
+    border: 1px solid rgba(255, 76, 0, 0.3);
     border-radius: 2rem;
-    color: #a855f7;
+    color: #FF4C00;
     font-size: 0.875rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -88,7 +88,7 @@
     .image-placeholder {
       width: 100%;
       aspect-ratio: 16 / 10;
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(99, 102, 241, 0.05) 100%);
+      background: linear-gradient(135deg, rgba(255, 76, 0, 0.05) 0%, rgba(230, 69, 0, 0.05) 100%);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 1rem;
       display: flex;
@@ -97,8 +97,8 @@
       transition: all 0.3s ease;
 
       &:hover {
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%);
-        border-color: rgba(168, 85, 247, 0.3);
+        background: linear-gradient(135deg, rgba(255, 76, 0, 0.08) 0%, rgba(230, 69, 0, 0.08) 100%);
+        border-color: rgba(255, 76, 0, 0.3);
         transform: scale(1.02);
       }
 
@@ -117,13 +117,13 @@
   .step-badge {
     width: 3.5rem;
     height: 3.5rem;
-    background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+    background: linear-gradient(135deg, #FF4C00 0%, #E64500 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 1.5rem;
-    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
+    box-shadow: 0 4px 20px rgba(255, 76, 0, 0.3);
 
     .step-number {
       font-size: 1.5rem;

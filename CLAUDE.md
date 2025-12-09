@@ -236,7 +236,7 @@ The project uses **Tailwind CSS v4** as the primary styling solution across all 
 
 | Area | Style Approach | Theme |
 |------|----------------|-------|
-| Landing page | Tailwind utilities | Dark (purple accents) |
+| Landing page | Tailwind utilities | Dark (orange accents - GCore brand) |
 | Dashboard/App | Tailwind utilities | Light (GCore brand colors) |
 | Components | Tailwind utilities | Inherits from parent |
 
@@ -268,7 +268,7 @@ Usage: `class="font-heading"` or `class="font-body"`
 
 // Landing page (dark theme)
 --dark-bg: #0a0a0a;
---accent-purple: #a855f7;
+--accent-orange: #FF4C00;
 ```
 
 ### Scroll Reveal Animation

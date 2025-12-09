@@ -45,7 +45,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #a855f7;
+    outline: 2px solid #FF4C00;
     outline-offset: 2px;
   }
 
@@ -87,7 +87,7 @@
 
 /* Gradient text for "GNK" */
 .gradient-text {
-  background: linear-gradient(90deg, #a855f7, #d946ef);
+  background: linear-gradient(90deg, #FF4C00, #FF7A45);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -113,7 +113,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, #a855f7, #d946ef);
+  background: linear-gradient(135deg, #FF4C00, #FF7A45);
   border: none;
   border-radius: 0.5rem;
   font-size: 1.125rem;
@@ -121,11 +121,11 @@
   color: #ffffff;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 6px rgba(168, 85, 247, 0.2);
+  box-shadow: 0 4px 6px rgba(255, 76, 0, 0.2);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 12px rgba(168, 85, 247, 0.3);
+    box-shadow: 0 8px 12px rgba(255, 76, 0, 0.3);
   }
 
   &:active {
@@ -133,7 +133,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid #a855f7;
+    outline: 2px solid #FF4C00;
     outline-offset: 2px;
   }
 

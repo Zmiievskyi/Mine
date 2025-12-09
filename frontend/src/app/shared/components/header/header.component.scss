@@ -82,7 +82,7 @@
 
   // Active link indicator
   &.active {
-    color: var(--accent-purple);
+    color: var(--accent-orange);
 
     &::after {
       content: '';
@@ -91,7 +91,7 @@
       left: 0;
       right: 0;
       height: 2px;
-      background-color: var(--accent-purple);
+      background-color: var(--accent-orange);
       border-radius: 2px;
     }
   }
@@ -134,12 +134,12 @@
   }
 
   &.btn-primary {
-    background: linear-gradient(135deg, var(--accent-purple) 0%, #9333ea 100%);
+    background: linear-gradient(135deg, var(--accent-orange) 0%, #E64500 100%);
     color: var(--dark-text);
-    box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.3);
+    box-shadow: 0 4px 6px -1px rgba(255, 76, 0, 0.3);
 
     &:hover {
-      box-shadow: 0 6px 8px -1px rgba(168, 85, 247, 0.4);
+      box-shadow: 0 6px 8px -1px rgba(255, 76, 0, 0.4);
       transform: translateY(-1px);
     }
 
@@ -229,8 +229,8 @@
   }
 
   &.active {
-    color: var(--accent-purple);
-    background-color: rgba(168, 85, 247, 0.1);
+    color: var(--accent-orange);
+    background-color: rgba(255, 76, 0, 0.1);
   }
 }
 

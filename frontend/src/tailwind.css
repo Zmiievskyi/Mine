@@ -16,8 +16,8 @@
   --color-card-foreground: #fafafa;
   --color-primary: #fafafa;
   --color-primary-foreground: #18181b;
-  --color-accent: #a855f7;
-  --color-accent-pink: #d946ef;
+  --color-accent: #FF4C00;
+  --color-accent-light: #FF7A45;
 }
 
 /* Utility classes for fonts */

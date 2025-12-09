@@ -18,7 +18,7 @@
   .section-title {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #a855f7; // Purple accent
+    color: #FF4C00; // Orange accent (GCore brand)
     margin: 0 0 1rem 0;
     letter-spacing: -0.02em;
   }
@@ -47,7 +47,7 @@
 
     &:hover {
       background-color: rgba(255, 255, 255, 0.05);
-      border-color: rgba(168, 85, 247, 0.3); // Purple border on hover
+      border-color: rgba(255, 76, 0, 0.3); // Orange border on hover
       transform: translateY(-2px);
     }
   }
