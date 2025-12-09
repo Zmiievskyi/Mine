@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
@@ -17,6 +18,8 @@ import {
 
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
@@ -103,7 +106,7 @@ export class AdminService {
   }
 
   async assignNode(userId: string, assignNodeDto: AssignNodeDto): Promise<UserNode> {
-    return this.dataSource.transaction(async (manager) => {
+    const node = await this.dataSource.transaction(async (manager) => {
       // Verify user exists
       const user = await manager.findOne(User, { where: { id: userId } });
       if (!user) {
@@ -120,7 +123,7 @@ export class AdminService {
         throw new ConflictException('This node is already assigned to a user');
       }
 
-      const node = manager.create(UserNode, {
+      const newNode = manager.create(UserNode, {
         userId,
         nodeAddress: assignNodeDto.nodeAddress,
         label: assignNodeDto.label,
@@ -129,8 +132,13 @@ export class AdminService {
         notes: assignNodeDto.notes,
       });
 
-      return manager.save(node);
+      return manager.save(newNode);
     });
+
+    this.logger.log(
+      `Node assigned: ${assignNodeDto.nodeAddress} -> user ${userId} (GPU: ${assignNodeDto.gpuType || 'N/A'})`,
+    );
+    return node;
   }
 
   async removeNode(userId: string, nodeId: string): Promise<void> {
@@ -142,7 +150,10 @@ export class AdminService {
       throw new NotFoundException('Node not found or does not belong to this user');
     }
 
+    const nodeAddress = node.nodeAddress;
     await this.userNodesRepository.remove(node);
+
+    this.logger.warn(`Node removed: ${nodeAddress} from user ${userId}`);
   }
 
   async updateNode(

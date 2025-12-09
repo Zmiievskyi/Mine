@@ -77,8 +77,10 @@ export interface NodeWithStats extends UserNode {
 @Injectable()
 export class NodesService {
   private readonly logger = new Logger(NodesService.name);
-  private readonly cache: LruCache<HyperfusionNode[]>;
-  private readonly cacheKey = 'hyperfusion_nodes';
+  private readonly nodeCache: LruCache<HyperfusionNode[]>;
+  private readonly fullCache: LruCache<HyperfusionResponse>;
+  private readonly NODES_CACHE_KEY = 'hyperfusion_nodes';
+  private readonly FULL_CACHE_KEY = 'hyperfusion_full';
 
   constructor(
     private configService: ConfigService,
@@ -86,7 +88,8 @@ export class NodesService {
     private userNodeRepository: Repository<UserNode>,
   ) {
     const cacheTtl = this.configService.get<number>('gonka.cacheTtlSeconds') ?? 120;
-    this.cache = new LruCache<HyperfusionNode[]>(10, cacheTtl);
+    this.nodeCache = new LruCache<HyperfusionNode[]>(10, cacheTtl);
+    this.fullCache = new LruCache<HyperfusionResponse>(10, cacheTtl);
   }
 
   async getUserNodes(userId: string): Promise<NodeWithStats[]> {
@@ -155,44 +158,16 @@ export class NodesService {
   }
 
   private async fetchHyperfusionData(): Promise<HyperfusionNode[]> {
-    const cached = this.cache.get(this.cacheKey);
+    const cached = this.nodeCache.get(this.NODES_CACHE_KEY);
     if (cached) {
       return cached;
     }
 
-    try {
-      const url = this.configService.get<string>('gonka.hyperfusionUrl');
-      const timeout = this.configService.get<number>('retry.maxDelayMs') ?? 10000;
-
-      const response = await withRetry(
-        async () => {
-          const res = await axios.get(`${url}/api/v1/inference/current`, {
-            timeout,
-          });
-          return res;
-        },
-        {
-          maxRetries: this.configService.get<number>('retry.maxRetries') ?? 3,
-          baseDelayMs: this.configService.get<number>('retry.baseDelayMs') ?? 1000,
-          maxDelayMs: this.configService.get<number>('retry.maxDelayMs') ?? 5000,
-        },
-        this.logger,
-        'Hyperfusion API fetch',
-      );
-
-      const data = response.data.ml_nodes || [];
-      this.cache.set(this.cacheKey, data);
-      return data;
-    } catch (error) {
-      this.logger.error('Failed to fetch Hyperfusion data after all retries', error);
-      // Return stale cache if available (graceful degradation)
-      const stale = this.cache.getStale(this.cacheKey);
-      if (stale) {
-        this.logger.warn('Returning stale cache data');
-        return stale;
-      }
-      return [];
-    }
+    // Reuse full data fetch to avoid duplicate API calls
+    const fullData = await this.fetchHyperfusionFullData();
+    const nodes = fullData.ml_nodes || [];
+    this.nodeCache.set(this.NODES_CACHE_KEY, nodes);
+    return nodes;
   }
 
   private getNodeStatus(
@@ -262,8 +237,7 @@ export class NodesService {
 
   // Fetch full Hyperfusion response (includes epoch data)
   private async fetchHyperfusionFullData(): Promise<HyperfusionResponse> {
-    const cacheKey = 'hyperfusion_full';
-    const cached = this.cache.get(cacheKey) as unknown as HyperfusionResponse;
+    const cached = this.fullCache.get(this.FULL_CACHE_KEY);
     if (cached) {
       return cached;
     }
@@ -286,33 +260,36 @@ export class NodesService {
           maxDelayMs: this.configService.get<number>('retry.maxDelayMs') ?? 5000,
         },
         this.logger,
-        'Hyperfusion API full fetch',
+        'Hyperfusion API fetch',
       );
 
       const data = response.data;
-      this.cache.set(cacheKey, data as unknown as HyperfusionNode[]);
+      this.fullCache.set(this.FULL_CACHE_KEY, data);
       return data;
     } catch (error) {
-      this.logger.error('Failed to fetch Hyperfusion full data', error);
-      const stale = this.cache.getStale(cacheKey) as unknown as HyperfusionResponse;
+      this.logger.error('Failed to fetch Hyperfusion data', error);
+      const stale = this.fullCache.getStale(this.FULL_CACHE_KEY);
       if (stale) {
-        this.logger.warn('Returning stale full cache data');
+        this.logger.warn('Returning stale cache data');
         return stale;
       }
-      // Return empty response structure
-      return {
-        epoch_id: 0,
-        height: 0,
-        current_block_height: 0,
-        current_block_timestamp: new Date().toISOString(),
-        avg_block_time: 6,
-        next_poc_start_block: 0,
-        set_new_validators_block: 0,
-        is_current: false,
-        cached_at: new Date().toISOString(),
-        total_assigned_rewards_gnk: null,
-        participants: [],
-      };
+      return this.getEmptyResponse();
     }
+  }
+
+  private getEmptyResponse(): HyperfusionResponse {
+    return {
+      epoch_id: 0,
+      height: 0,
+      current_block_height: 0,
+      current_block_timestamp: new Date().toISOString(),
+      avg_block_time: 6,
+      next_poc_start_block: 0,
+      set_new_validators_block: 0,
+      is_current: false,
+      cached_at: new Date().toISOString(),
+      total_assigned_rewards_gnk: null,
+      participants: [],
+    };
   }
 }
