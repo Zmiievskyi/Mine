@@ -16,6 +16,7 @@ build/
 # IDE
 .idea/
 .vscode/
+.cursor/
 *.swp
 *.swo
 
@@ -41,3 +42,10 @@ coverage/
 # Local tool configs
 .mcp.json
 .playwright-mcp/
+.claude/
+
+# Local documentation (research, notes)
+docs/
+
+# Secrets/credentials
+hyperfusion_cookies.md
