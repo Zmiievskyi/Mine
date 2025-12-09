@@ -893,6 +893,9 @@ npm run migration:revert # Rollback last migration
 - `node_requests`: user_id, status, created_at
 - `users`: role, is_active (partial)
 
+### Bug Fixed
+- **TypeORM "Object" type error**: Fixed `Data type "Object" in "User.telegram" is not supported by "postgres"` by adding explicit `type: 'varchar'` to nullable columns with union types (`string | null`)
+
 ### Metrics Update
 | Metric | Before | After |
 |--------|--------|-------|
