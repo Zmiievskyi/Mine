@@ -2,6 +2,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import {
+  GPU_PRICING,
+  GpuPricing,
+  CURRENCY,
+  formatMonthlyPrice
+} from '../../core/constants/pricing.constants';
 
 /**
  * Landing page component for MineGNK
@@ -31,6 +37,10 @@ export class LandingComponent implements OnInit {
 
   // Navigation state
   isMobileMenuOpen = false;
+
+  // GPU pricing data from constants
+  gpuPricing = GPU_PRICING;
+  currency = CURRENCY;
 
   // Navigation links
   navLinks = [
@@ -71,5 +81,12 @@ export class LandingComponent implements OnInit {
   navigateToAuth(mode: 'login' | 'register'): void {
     // This will be handled by router
     this.isMobileMenuOpen = false;
+  }
+
+  /**
+   * Format monthly price for display
+   */
+  getMonthlyPrice(gpu: GpuPricing): string {
+    return formatMonthlyPrice(gpu.pricePerMonth);
   }
 }

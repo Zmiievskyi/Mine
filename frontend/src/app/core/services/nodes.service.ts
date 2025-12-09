@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError, of } from 'rxjs';
-import { Node, NodeStats, DashboardData } from '../models/node.model';
+import { Node, NodeDetail, NodeStats, DashboardData } from '../models/node.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -59,8 +59,8 @@ export class NodesService {
     );
   }
 
-  getNode(address: string): Observable<Node | null> {
-    return this.http.get<Node>(`${this.apiUrl}/${address}`).pipe(
+  getNode(address: string): Observable<NodeDetail | null> {
+    return this.http.get<NodeDetail>(`${this.apiUrl}/${address}`).pipe(
       catchError(() => of(null))
     );
   }

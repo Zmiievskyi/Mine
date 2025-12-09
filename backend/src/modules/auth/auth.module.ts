@@ -17,9 +17,7 @@ import { UsersModule } from '../users/users.module';
       useFactory: (configService: ConfigService): JwtModuleOptions => {
         const expiresIn = configService.get<string>('jwt.expiresIn') || '7d';
         return {
-          secret:
-            configService.get<string>('jwt.secret') ||
-            'minegnk-dev-secret-change-in-production',
+          secret: configService.get<string>('jwt.secret'),
           signOptions: {
             expiresIn: expiresIn as `${number}d`,
           },

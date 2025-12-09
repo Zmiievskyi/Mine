@@ -15,6 +15,18 @@ export interface Node {
   lastSeen: Date;
 }
 
+export interface NodeDetail extends Node {
+  models: string[];
+  inferenceCount: number;
+  missedCount: number;
+  missedRate: number;
+  invalidationRate: number;
+  blocksClaimed: number;
+  weight: number;
+  isBlacklisted: boolean;
+  inferenceUrl?: string;
+}
+
 export interface NodeStats {
   totalNodes: number;
   healthyNodes: number;

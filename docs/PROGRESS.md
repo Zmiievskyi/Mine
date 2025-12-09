@@ -1,6 +1,6 @@
 # MineGNK Progress Tracker
 
-**Last Updated**: 2025-12-08 (Evening Session 4)
+**Last Updated**: 2025-12-09 (Session 8)
 
 ---
 
@@ -12,10 +12,10 @@
 | Phase 1: Foundation | **Complete** | 100% |
 | Phase 2: Dashboard (Mock) | **Complete** | 100% |
 | Phase 3: Gonka Integration | **Complete** | 100% |
-| Phase 4: Node Details | Not Started | 0% |
-| Phase 5: Request System | Not Started | 0% |
-| Phase 6: Admin Panel | Not Started | 0% |
-| Phase 7: Polish & Launch | Not Started | 0% |
+| Phase 4: Node Details | **Complete** | 100% (4.1 done, 4.2-4.3 optional) |
+| Phase 5: Request System | **Complete** | 100% |
+| Phase 6: Admin Panel | **Complete** | 100% |
+| Phase 7: Polish & Launch | In Progress | 20% (7.3 Security done) |
 
 ---
 
@@ -59,6 +59,10 @@
 | 2025-12-08 | Landing page with dark theme matching minegnk.com | Professional appearance, consistent branding |
 | 2025-12-08 | Use inline template for landing vs modular sections | Faster implementation, can refactor later |
 | 2025-12-08 | Create shared LayoutComponent for dashboard pages | DRY principle - reduces duplication across pages |
+| 2025-12-09 | JWT secret must be 32+ chars in production | Prevents weak secrets, fails fast on misconfiguration |
+| 2025-12-09 | Rate limiting 5 req/min on auth endpoints | Prevents brute force attacks on login/register |
+| 2025-12-09 | Helmet middleware for security headers | Industry standard XSS/clickjacking protection |
+| 2025-12-09 | Password requires uppercase+lowercase+number | Balance between security and usability |
 
 ---
 
@@ -79,9 +83,10 @@ None currently.
 7. ~~Set up PostgreSQL schema (auto-sync with TypeORM)~~ **DONE**
 8. ~~Connect frontend to backend API~~ **DONE**
 9. ~~Complete nodes list page~~ **DONE** (2025-12-08)
-10. **Current**: Build node detail view (Phase 4)
-11. **Then**: Add node request system (Phase 5)
-12. **Then**: Build admin panel for node assignment (Phase 6)
+10. ~~Build node detail view (Phase 4.1)~~ **DONE** (2025-12-08)
+11. ~~Add node request system (Phase 5)~~ **DONE** (2025-12-08)
+12. ~~Build admin panel for node assignment (Phase 6)~~ **DONE** (2025-12-09)
+13. **Current**: Polish & Launch (Phase 7)
 
 ---
 
@@ -341,3 +346,245 @@ Phase 3 (Gonka Integration) is now complete:
 - Frontend displays nodes list with all metrics
 - Loading/error/empty states implemented
 - Shared layout component reduces code duplication
+
+---
+
+## Session 5: Phase 4.1 - Node Details Page (2025-12-08 Evening)
+
+### Completed Tasks
+- [x] Added `NodeDetail` interface extending `Node` with detailed metrics (2025-12-08)
+- [x] Added `NodeDetailResponse` interface in backend controller (2025-12-08)
+- [x] Extended `HyperfusionNode` interface with optional fields (2025-12-08)
+- [x] Created `transformNodeDetail()` method for detailed node data (2025-12-08)
+- [x] Implemented full `NodeDetailComponent` with 3 tabs:
+  - **Overview tab**: Node info (GPU, status, weight, blocks), models list, earnings card
+  - **Metrics tab**: Stats cards + performance progress bars
+  - **History tab**: Placeholder for future earnings history
+- [x] Added quick actions: "View Inference API" link, "Refresh Data" button
+- [x] Tested end-to-end with real data via Playwright
+
+### New/Modified Files
+**Frontend:**
+- `frontend/src/app/core/models/node.model.ts` - Added `NodeDetail` interface
+- `frontend/src/app/core/services/nodes.service.ts` - Updated `getNode()` return type
+- `frontend/src/app/features/nodes/node-detail/node-detail.component.ts` - Full implementation
+
+**Backend:**
+- `backend/src/modules/nodes/nodes.controller.ts` - Added `NodeDetailResponse`, `transformNodeDetail()`
+- `backend/src/modules/nodes/nodes.service.ts` - Extended `HyperfusionNode` interface
+
+### Node Detail Features
+| Tab | Content |
+|-----|---------|
+| Overview | GPU type, status, weight, blocks claimed, models list, earnings |
+| Metrics | Inference count, missed jobs/rate, invalidation rate, uptime, progress bars |
+| History | Coming soon placeholder (for earnings history chart) |
+
+### Verified Working
+- Node detail page loads correctly
+- All three tabs switch properly
+- Data displayed from backend API
+- Loading/error states work
+- Quick actions functional
+
+### Phase 4 Progress
+- [x] 4.1 Node Details Page - **COMPLETE**
+- [ ] 4.2 Earnings History (optional for MVP)
+- [ ] 4.3 Health Timeline (optional for MVP)
+
+---
+
+## Session 6: Phase 5 - Request System (2025-12-08 Evening)
+
+### Completed Tasks
+- [x] Created RequestsModule with service and controller (2025-12-08)
+- [x] Created AdminGuard for protected admin routes (2025-12-08)
+- [x] Implemented request DTOs (create, update) (2025-12-08)
+- [x] Created frontend request model and service (2025-12-08)
+- [x] Implemented full NodeRequestComponent with:
+  - GPU type selection (RTX 3080, 4090, H100, H200) with pricing
+  - Quantity selector (1-10)
+  - Region dropdown (optional)
+  - Request summary before submit
+  - Success state with navigation
+- [x] Created RequestsListComponent with:
+  - Requests table with status badges
+  - Cancel functionality for pending requests
+  - Admin notes modal
+  - Empty/loading/error states
+- [x] Added "My Requests" to sidebar navigation (2025-12-08)
+- [x] Tested end-to-end flow via Playwright (2025-12-08)
+
+### New Files Created
+**Backend:**
+- `backend/src/modules/requests/requests.module.ts`
+- `backend/src/modules/requests/requests.service.ts`
+- `backend/src/modules/requests/requests.controller.ts`
+- `backend/src/modules/requests/dto/create-request.dto.ts`
+- `backend/src/modules/requests/dto/update-request.dto.ts`
+- `backend/src/modules/auth/guards/admin.guard.ts`
+
+**Frontend:**
+- `frontend/src/app/core/models/request.model.ts`
+- `frontend/src/app/core/services/requests.service.ts`
+- `frontend/src/app/features/requests/requests-list.component.ts`
+
+### Modified Files
+- `backend/src/app.module.ts` - Added RequestsModule
+- `backend/src/modules/auth/guards/index.ts` - Exported AdminGuard
+- `frontend/src/app/app.routes.ts` - Added /requests route
+- `frontend/src/app/shared/components/layout/layout.component.ts` - Added sidebar link
+- `frontend/src/app/features/nodes/node-request/node-request.component.ts` - Full implementation
+
+### API Endpoints Added
+```
+POST   /api/requests       → Create new request (user)
+GET    /api/requests/my    → User's requests (user)
+GET    /api/requests/:id   → Single request (user/admin)
+DELETE /api/requests/:id   → Cancel pending request (user)
+GET    /api/requests       → All requests (admin)
+PUT    /api/requests/:id   → Update status (admin)
+GET    /api/requests/stats → Request statistics (admin)
+```
+
+### Verified Working
+- GPU selection with visual feedback
+- Quantity +/- buttons
+- Form submission creates request in database
+- Success message displays correctly
+- Requests list shows all user requests
+- Status badges (pending/approved/rejected/completed)
+- Cancel button works for pending requests
+
+### Metrics Update
+| Metric | Before | After |
+|--------|--------|-------|
+| Backend modules | 3 | 4 (+requests) |
+| API endpoints | 6 | 13 (+7 requests) |
+| Frontend pages | 7 | 8 (+requests list) |
+| Services | 2 | 3 (+RequestsService) |
+| Guards | 3 | 4 (+AdminGuard) |
+
+---
+
+## Session 7: Phase 6 - Admin Panel (2025-12-09)
+
+### Completed Tasks
+- [x] Created backend AdminModule with service and controller (2025-12-09)
+- [x] Created admin DTOs (assign-node, update-user) (2025-12-09)
+- [x] Created frontend admin models and service (2025-12-09)
+- [x] Implemented AdminDashboardComponent with:
+  - Stats cards (users, nodes, pending/approved requests)
+  - Quick action cards linking to requests/users management
+- [x] Implemented AdminRequestsComponent with:
+  - Stats cards for request counts
+  - Filter by status (all/pending/approved/rejected/completed)
+  - Requests table with user info, GPU type, status
+  - Approve/Reject/Complete actions
+  - Admin notes modal
+- [x] Implemented AdminUsersComponent with:
+  - Expandable user cards showing nodes
+  - Toggle admin role / activate-deactivate user
+  - Assign node modal with validation
+  - Remove node functionality
+- [x] Updated admin routes (dashboard, requests, users)
+- [x] Verified both builds pass successfully
+
+### New Files Created
+**Backend:**
+- `backend/src/modules/admin/admin.module.ts`
+- `backend/src/modules/admin/admin.service.ts`
+- `backend/src/modules/admin/admin.controller.ts`
+- `backend/src/modules/admin/dto/assign-node.dto.ts`
+- `backend/src/modules/admin/dto/update-user.dto.ts`
+- `backend/src/modules/admin/dto/index.ts`
+
+**Frontend:**
+- `frontend/src/app/core/models/admin.model.ts`
+- `frontend/src/app/core/services/admin.service.ts`
+- `frontend/src/app/features/admin/admin-dashboard/admin-dashboard.component.ts` (updated)
+- `frontend/src/app/features/admin/admin-requests/admin-requests.component.ts`
+- `frontend/src/app/features/admin/admin-users/admin-users.component.ts`
+
+### Modified Files
+- `backend/src/app.module.ts` - Added AdminModule
+- `frontend/src/app/features/admin/admin.routes.ts` - Added routes
+
+### API Endpoints Added
+```
+GET    /api/admin/dashboard                  → Dashboard stats
+GET    /api/admin/users                      → List all users with nodes
+GET    /api/admin/users/:id                  → Get user with nodes
+PUT    /api/admin/users/:id                  → Update user role/status
+POST   /api/admin/users/:id/nodes            → Assign node to user
+PUT    /api/admin/users/:userId/nodes/:nodeId → Update node
+DELETE /api/admin/users/:userId/nodes/:nodeId → Remove node from user
+```
+
+### Admin Panel Features
+| Page | Features |
+|------|----------|
+| Dashboard | Stats cards, quick action links |
+| Requests | Filter by status, approve/reject/complete, admin notes |
+| Users | Expandable cards, toggle role, node assignment modal |
+
+### Metrics Update
+| Metric | Before | After |
+|--------|--------|-------|
+| Backend modules | 4 | 5 (+admin) |
+| API endpoints | 13 | 20 (+7 admin) |
+| Frontend pages | 8 | 10 (+admin requests, users) |
+| Services | 3 | 4 (+AdminService) |
+
+---
+
+## Session 8: Phase 7.3 - Security Review (2025-12-09)
+
+### Completed Tasks
+- [x] Audited current JWT configuration (2025-12-09)
+- [x] Added production JWT secret validation (min 32 chars) (2025-12-09)
+- [x] Installed and configured @nestjs/throttler for rate limiting (2025-12-09)
+- [x] Applied rate limiting to auth endpoints (5 req/min) (2025-12-09)
+- [x] Installed and configured Helmet for security headers (2025-12-09)
+- [x] Strengthened password validation (uppercase+lowercase+number) (2025-12-09)
+- [x] Added max length validation to prevent DoS (72 chars for bcrypt limit) (2025-12-09)
+- [x] Updated .env.example with security documentation (2025-12-09)
+
+### Security Audit Summary
+
+| Area | Before | After |
+|------|--------|-------|
+| JWT Secret | Weak default fallback | Fails in production if missing/short |
+| Rate Limiting | None | 5 req/min on login/register |
+| Security Headers | None | Full Helmet middleware |
+| Password Strength | 8 chars min | 8+ chars, upper+lower+number |
+| Input Validation | whitelist: true | + max lengths |
+
+### New/Modified Files
+**Backend:**
+- `backend/src/config/jwt.config.ts` - Production secret validation
+- `backend/src/app.module.ts` - ThrottlerModule + global guard
+- `backend/src/modules/auth/auth.controller.ts` - @Throttle decorators
+- `backend/src/modules/auth/auth.module.ts` - Cleaned up
+- `backend/src/modules/auth/dto/register.dto.ts` - Strong password regex
+- `backend/src/modules/auth/dto/login.dto.ts` - Max length
+- `backend/src/main.ts` - Helmet middleware
+- `backend/.env.example` - Security notes
+
+### Packages Added
+- `helmet` - Security headers (XSS, clickjacking, MIME sniffing)
+- `@nestjs/throttler` - Rate limiting
+
+### Security Headers Provided by Helmet
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: SAMEORIGIN`
+- `X-XSS-Protection`
+- `Strict-Transport-Security` (HSTS)
+- Content Security Policy defaults
+
+### Phase 7 Progress
+- [ ] 7.1 Error Handling & Fallbacks
+- [ ] 7.2 Monitoring (Sentry)
+- [x] 7.3 Security Review - **COMPLETE** (2025-12-09)
+- [ ] 7.4 Documentation (Swagger)
+- [ ] 7.5 Deployment (Docker)

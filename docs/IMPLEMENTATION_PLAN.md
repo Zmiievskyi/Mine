@@ -1,6 +1,6 @@
 # MineGNK Implementation Plan
 
-**Last Updated**: 2025-12-08 (Session 4)
+**Last Updated**: 2025-12-09 (Session 7)
 **Based on**: PRD.md, API_RESEARCH.md
 
 ---
@@ -153,28 +153,30 @@ Therefore, Phase 0 (Spike) validates these before building full features.
 
 ---
 
-## Phase 4: Node Details & Earnings
+## Phase 4: Node Details & Earnings - COMPLETE
 
 **Goal**: Detailed view per node with historical data.
 
-### 4.1 Node Details Page
-- [ ] Tabs: Overview, Metrics, History
-- [ ] Overview: status, GPU type, models, inference URL
-- [ ] Metrics: inference count, missed rate, invalidation rate
+### 4.1 Node Details Page - COMPLETE (2025-12-08)
+- [x] Tabs: Overview, Metrics, History (2025-12-08)
+- [x] Overview: status, GPU type, models, inference URL (2025-12-08)
+- [x] Metrics: inference count, missed rate, invalidation rate (2025-12-08)
+- [x] Added NodeDetail interface with extended fields (2025-12-08)
+- [x] Backend returns detailed node response (2025-12-08)
 
-### 4.2 Earnings History
+### 4.2 Earnings History (Optional for MVP)
 - [ ] Store daily earnings snapshots in `earnings_history` table
 - [ ] Backend job to calculate and store daily earnings
 - [ ] Chart showing earnings over time (7/30 days)
 
-### 4.3 Health Timeline
+### 4.3 Health Timeline (Optional for MVP)
 - [ ] Store status changes in history table
 - [ ] Show timeline of healthy/unhealthy/jailed states
 
 ### Definition of Done
-- [ ] User can view detailed info for each node
-- [ ] Earnings chart shows historical data
-- [ ] Status history is visible
+- [x] User can view detailed info for each node (2025-12-08)
+- [ ] Earnings chart shows historical data (deferred)
+- [ ] Status history is visible (deferred)
 
 ### Dependencies
 - Phase 3 complete
@@ -182,57 +184,59 @@ Therefore, Phase 0 (Spike) validates these before building full features.
 
 ---
 
-## Phase 5: Request System
+## Phase 5: Request System - COMPLETE
 
 **Goal**: Users can request new nodes, support manages queue.
 
-### 5.1 Add Node Request Form
-- [ ] Form: GPU type, quantity, budget, comments
-- [ ] Validation (required fields)
-- [ ] Submit creates `support_request` record
+### 5.1 Add Node Request Form - COMPLETE (2025-12-08)
+- [x] Form: GPU type, quantity, region, message (2025-12-08)
+- [x] Validation (required fields) (2025-12-08)
+- [x] Submit creates `node_request` record (2025-12-08)
 
-### 5.2 User Request List
-- [ ] Page showing user's requests
-- [ ] Status badges (pending, in_progress, completed, rejected)
+### 5.2 User Request List - COMPLETE (2025-12-08)
+- [x] Page showing user's requests (2025-12-08)
+- [x] Status badges (pending, approved, rejected, completed) (2025-12-08)
+- [x] Cancel functionality for pending requests (2025-12-08)
 
-### 5.3 Admin: Request Management
-- [ ] Admin sees all requests
-- [ ] Can update status
-- [ ] Can add internal notes
+### 5.3 Admin: Request Management - COMPLETE (2025-12-09)
+- [x] Admin sees all requests (2025-12-09)
+- [x] Can update status (approve/reject/complete) (2025-12-09)
+- [x] Can add admin notes (2025-12-09)
 
 ### Definition of Done
-- [ ] User can submit node request
-- [ ] User sees request status
-- [ ] Admin can process requests
+- [x] User can submit node request (2025-12-08)
+- [x] User sees request status (2025-12-08)
+- [x] Admin can process requests (2025-12-09)
 
 ### Dependencies
 - Phase 1 auth (admin role)
 
 ---
 
-## Phase 6: Admin Panel
+## Phase 6: Admin Panel - COMPLETE
 
 **Goal**: Admins manage users and node assignments.
 
-### 6.1 Users Management
-- [ ] List all users
-- [ ] View user details
-- [ ] Assign role (user/admin)
+### 6.1 Users Management - COMPLETE (2025-12-09)
+- [x] List all users with assigned nodes (2025-12-09)
+- [x] View user details (expandable cards) (2025-12-09)
+- [x] Assign role (user/admin) (2025-12-09)
+- [x] Activate/deactivate users (2025-12-09)
 
-### 6.2 Node Assignment
-- [ ] Interface to link node identifier to user
-- [ ] Input: user email/ID + node identifier (gonka1...)
-- [ ] Creates record in `user_nodes`
-- [ ] Assigned node appears in user's dashboard
+### 6.2 Node Assignment - COMPLETE (2025-12-09)
+- [x] Interface to link node identifier to user (modal) (2025-12-09)
+- [x] Input: node address (gonka1...) + label + GPU type + notes (2025-12-09)
+- [x] Creates record in `user_nodes` (2025-12-09)
+- [x] Remove node from user (2025-12-09)
 
-### 6.3 System Overview
-- [ ] Total users, nodes, requests
-- [ ] Recent activity log
+### 6.3 System Overview - COMPLETE (2025-12-09)
+- [x] Dashboard with stats: total users, nodes, pending/approved requests (2025-12-09)
+- [x] Quick action cards linking to management pages (2025-12-09)
 
 ### Definition of Done
-- [ ] Admin can assign nodes to users
-- [ ] User immediately sees assigned node
-- [ ] Assignment audit trail (who assigned when)
+- [x] Admin can assign nodes to users (2025-12-09)
+- [x] User immediately sees assigned node (2025-12-09)
+- [ ] Assignment audit trail (deferred - who assigned when)
 
 ### Dependencies
 - Phase 3 (node data available)
@@ -307,7 +311,7 @@ Therefore, Phase 0 (Spike) validates these before building full features.
 | 1 | Foundation | Auth + project setup | **COMPLETE** |
 | 2 | UI | Dashboard with mocks | **COMPLETE** |
 | 3 | Integration | Real Gonka data | **COMPLETE** |
-| 4 | Details | Node details + earnings | Not Started |
-| 5 | Requests | Node request flow | Not Started |
-| 6 | Admin | User/node management | Not Started |
+| 4 | Details | Node details + earnings | **COMPLETE** (4.1 done, 4.2-4.3 deferred) |
+| 5 | Requests | Node request flow | **COMPLETE** |
+| 6 | Admin | User/node management | **COMPLETE** |
 | 7 | Launch | Production-ready | Not Started |

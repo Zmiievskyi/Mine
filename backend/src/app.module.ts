@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { appConfig, databaseConfig, jwtConfig, gonkaConfig } from './config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { NodesModule } from './modules/nodes/nodes.module';
+import { RequestsModule } from './modules/requests/requests.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { User } from './modules/users/entities/user.entity';
 import { UserNode } from './modules/users/entities/user-node.entity';
 import { NodeRequest } from './modules/requests/entities/node-request.entity';
@@ -15,6 +19,23 @@ import { NodeRequest } from './modules/requests/entities/node-request.entity';
       isGlobal: true,
       load: [appConfig, databaseConfig, jwtConfig, gonkaConfig],
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 1000,
+        limit: 3,
+      },
+      {
+        name: 'medium',
+        ttl: 10000,
+        limit: 20,
+      },
+      {
+        name: 'long',
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -33,6 +54,14 @@ import { NodeRequest } from './modules/requests/entities/node-request.entity';
     AuthModule,
     UsersModule,
     NodesModule,
+    RequestsModule,
+    AdminModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

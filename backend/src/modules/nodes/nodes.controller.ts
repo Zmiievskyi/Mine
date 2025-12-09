@@ -25,6 +25,18 @@ interface NodeResponse {
   lastSeen: Date;
 }
 
+interface NodeDetailResponse extends NodeResponse {
+  models: string[];
+  inferenceCount: number;
+  missedCount: number;
+  missedRate: number;
+  invalidationRate: number;
+  blocksClaimed: number;
+  weight: number;
+  isBlacklisted: boolean;
+  inferenceUrl?: string;
+}
+
 interface DashboardResponse {
   stats: {
     totalNodes: number;
@@ -74,12 +86,12 @@ export class NodesController {
   async getNodeByAddress(
     @Request() req,
     @Param('address') address: string,
-  ): Promise<NodeResponse> {
+  ): Promise<NodeDetailResponse> {
     const node = await this.nodesService.getNodeByAddress(req.user.id, address);
     if (!node) {
       throw new NotFoundException('Node not found or access denied');
     }
-    return this.transformNode(node);
+    return this.transformNodeDetail(node);
   }
 
   private transformNode(node: NodeWithStats): NodeResponse {
@@ -101,6 +113,26 @@ export class NodesController {
       uptimePercent: this.calculateUptimePercent(stats),
       currentModel: stats?.models?.[0] || undefined,
       lastSeen: node.updatedAt,
+    };
+  }
+
+  private transformNodeDetail(node: NodeWithStats): NodeDetailResponse {
+    const baseNode = this.transformNode(node);
+    const stats = node.stats;
+
+    return {
+      ...baseNode,
+      models: stats?.models || [],
+      inferenceCount: stats?.inference_count || 0,
+      missedCount: stats?.missed_count || 0,
+      missedRate: stats?.missed_rate || 0,
+      invalidationRate: stats?.invalidation_rate || 0,
+      blocksClaimed: stats?.blocks_claimed || 0,
+      weight: stats?.weight || 0,
+      isBlacklisted: stats?.is_blacklisted || false,
+      inferenceUrl: node.nodeAddress
+        ? `https://api.gonka.ai/v1/inference/${node.nodeAddress}`
+        : undefined,
     };
   }
 

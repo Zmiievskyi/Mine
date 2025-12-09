@@ -8,4 +8,18 @@ export const ADMIN_ROUTES: Routes = [
         (m) => m.AdminDashboardComponent
       ),
   },
+  {
+    path: 'requests',
+    loadComponent: () =>
+      import('./admin-requests/admin-requests.component').then(
+        (m) => m.AdminRequestsComponent
+      ),
+  },
+  {
+    path: 'users',
+    loadComponent: () =>
+      import('./admin-users/admin-users.component').then(
+        (m) => m.AdminUsersComponent
+      ),
+  },
 ];

@@ -78,17 +78,17 @@
 
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon">=Ê</div>
+          <div class="stat-icon">=ï¿½</div>
           <div class="stat-value">--</div>
           <div class="stat-label">Active Nodes</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">=°</div>
+          <div class="stat-icon">=ï¿½</div>
           <div class="stat-value">--</div>
           <div class="stat-label">Daily Rewards</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">¡</div>
+          <div class="stat-icon">ï¿½</div>
           <div class="stat-value">--</div>
           <div class="stat-label">Network Hashrate</div>
         </div>
@@ -113,7 +113,7 @@
 
       <div class="features-grid">
         <div class="feature-card">
-          <div class="feature-icon">=€</div>
+          <div class="feature-icon">=ï¿½</div>
           <h3 class="feature-title">High Performance</h3>
           <p class="feature-description">
             Optimized mining setup with premium Gcore infrastructure for maximum efficiency
@@ -121,7 +121,7 @@
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon">=È</div>
+          <div class="feature-icon">=ï¿½</div>
           <h3 class="feature-title">Real-Time Monitoring</h3>
           <p class="feature-description">
             Track your nodes, earnings, and performance metrics 24/7 from your dashboard
@@ -129,7 +129,7 @@
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon">=Ž</div>
+          <div class="feature-icon">=ï¿½</div>
           <h3 class="feature-title">Transparent Earnings</h3>
           <p class="feature-description">
             Clear visibility into your GNK rewards with detailed breakdowns and history
@@ -145,7 +145,7 @@
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon">™</div>
+          <div class="feature-icon">ï¿½</div>
           <h3 class="feature-title">Easy Management</h3>
           <p class="feature-description">
             Request new nodes, monitor health, and manage your mining fleet with ease
@@ -153,7 +153,7 @@
         </div>
 
         <div class="feature-card">
-          <div class="feature-icon"><¯</div>
+          <div class="feature-icon"><ï¿½</div>
           <h3 class="feature-title">Expert Support</h3>
           <p class="feature-description">
             Dedicated support team to help with setup, optimization, and troubleshooting
@@ -215,69 +215,46 @@
       <p class="section-subtitle">Choose the GPU configuration that fits your mining goals</p>
 
       <div class="pricing-grid">
-        <div class="pricing-card">
+        <div *ngFor="let gpu of gpuPricing; let i = index"
+             class="pricing-card"
+             [class.featured]="gpu.id === 'H100'"
+             [class.disabled]="!gpu.available">
           <div class="pricing-header">
-            <h3 class="pricing-title">RTX 3080</h3>
-            <div class="pricing-badge">Popular</div>
+            <h3 class="pricing-title">{{ gpu.name }}</h3>
+            <div class="pricing-badge">{{ gpu.badge }}</div>
           </div>
           <div class="pricing-amount">
-            <span class="currency">$</span>
-            <span class="price">--</span>
-            <span class="period">/month</span>
+            <ng-container *ngIf="gpu.available; else contactSales">
+              <span class="currency">{{ currency }}</span>
+              <span class="price">{{ gpu.pricePerHour }}</span>
+              <span class="period">/hr per GPU</span>
+            </ng-container>
+            <ng-template #contactSales>
+              <span class="price contact-sales">Contact Sales</span>
+            </ng-template>
           </div>
           <ul class="pricing-features">
-            <li>~8-10 GNK tokens/day</li>
-            <li>10GB VRAM</li>
-            <li>Premium Gcore hosting</li>
-            <li>24/7 monitoring</li>
-            <li>Email support</li>
+            <li>{{ gpu.estimatedTokensPerDay }} tokens/day</li>
+            <li>{{ gpu.vram }} VRAM</li>
+            <li *ngFor="let feature of gpu.features.slice(2)">{{ feature }}</li>
           </ul>
-          <a routerLink="/auth/register" class="btn btn-secondary btn-block">Get Started</a>
-        </div>
-
-        <div class="pricing-card featured">
-          <div class="pricing-header">
-            <h3 class="pricing-title">RTX 4090</h3>
-            <div class="pricing-badge">Best Value</div>
-          </div>
-          <div class="pricing-amount">
-            <span class="currency">$</span>
-            <span class="price">--</span>
-            <span class="period">/month</span>
-          </div>
-          <ul class="pricing-features">
-            <li>~15-20 GNK tokens/day</li>
-            <li>24GB VRAM</li>
-            <li>Premium Gcore hosting</li>
-            <li>24/7 monitoring</li>
-            <li>Priority support</li>
-          </ul>
-          <a routerLink="/auth/register" class="btn btn-primary btn-block">Get Started</a>
-        </div>
-
-        <div class="pricing-card">
-          <div class="pricing-header">
-            <h3 class="pricing-title">H100</h3>
-            <div class="pricing-badge">Enterprise</div>
-          </div>
-          <div class="pricing-amount">
-            <span class="currency">$</span>
-            <span class="price">--</span>
-            <span class="period">/month</span>
-          </div>
-          <ul class="pricing-features">
-            <li>~50-60 GNK tokens/day</li>
-            <li>80GB VRAM</li>
-            <li>Premium Gcore hosting</li>
-            <li>24/7 monitoring</li>
-            <li>Dedicated support</li>
-          </ul>
-          <a routerLink="/auth/register" class="btn btn-secondary btn-block">Get Started</a>
+          <a *ngIf="gpu.available"
+             routerLink="/auth/register"
+             class="btn btn-block"
+             [class.btn-primary]="gpu.id === 'H100'"
+             [class.btn-secondary]="gpu.id !== 'H100'">
+            Get Started
+          </a>
+          <a *ngIf="!gpu.available"
+             href="mailto:sales@gcore.com"
+             class="btn btn-secondary btn-block">
+            Contact Sales
+          </a>
         </div>
       </div>
 
       <p class="pricing-note">
-        Pricing will be updated based on actual Gcore Cloud costs and market rates
+        Prices from <a href="https://gcore.com/pricing/ai" target="_blank" rel="noopener">gcore.com/pricing</a>. VAT not included.
       </p>
     </div>
   </section>

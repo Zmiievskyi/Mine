@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -11,6 +12,8 @@ async function bootstrap() {
   const corsOrigins = configService.get<string[]>('app.corsOrigins') ?? [
     'http://localhost:4200',
   ];
+
+  app.use(helmet());
 
   app.enableCors({
     origin: corsOrigins,

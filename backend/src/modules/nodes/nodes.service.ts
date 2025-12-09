@@ -15,6 +15,10 @@ export interface HyperfusionNode {
   earned_coins: string;
   blocks_claimed: number;
   models: string[];
+  missed_count?: number;
+  missed_rate?: number;
+  invalidation_rate?: number;
+  weight?: number;
 }
 
 export interface NodeWithStats extends UserNode {

@@ -348,41 +348,46 @@ CREATE TABLE earnings_history (
 
 ## 11. API Endpoints (Backend)
 
-### Auth
+### Auth (Implemented)
 ```
-POST /auth/register
-POST /auth/login
-POST /auth/refresh
-GET  /auth/me
-```
-
-### Nodes
-```
-GET  /nodes/my              -- List user's nodes
-GET  /nodes/:id             -- Node details
-GET  /nodes/:id/metrics     -- Node metrics history
-GET  /nodes/:id/earnings    -- Earnings history
+POST /api/auth/register     -- Register new user (email + password 8+ chars)
+POST /api/auth/login        -- Login, returns JWT token
+GET  /api/auth/me           -- Get current user profile (protected)
 ```
 
-### Support Requests
+### Nodes (Implemented)
 ```
-POST /support/requests      -- Create new request
-GET  /support/requests/my   -- User's requests
-```
-
-### Admin
-```
-GET  /admin/users           -- List all users
-GET  /admin/nodes           -- List all nodes
-POST /admin/nodes/assign    -- Assign node to user
-GET  /admin/requests        -- All support requests
-PUT  /admin/requests/:id    -- Update request status
+GET  /api/nodes             -- List user's nodes (protected)
+GET  /api/nodes/dashboard   -- Dashboard stats + top nodes (protected)
+GET  /api/nodes/:address    -- Detailed node info (protected)
 ```
 
-### Profile
+### Support Requests (Implemented)
 ```
-GET  /profile
-PUT  /profile
+POST /api/requests              -- Create new request (user)
+GET  /api/requests/my           -- User's requests (user)
+GET  /api/requests/:id          -- Get single request (user/admin)
+DELETE /api/requests/:id        -- Cancel pending request (user)
+GET  /api/requests/stats        -- Request statistics (admin)
+```
+
+### Admin (Implemented)
+```
+GET  /api/requests              -- All requests (admin only)
+PUT  /api/requests/:id          -- Update request status (admin only)
+GET  /api/admin/dashboard       -- Dashboard stats (admin only)
+GET  /api/admin/users           -- List all users with nodes (admin only)
+GET  /api/admin/users/:id       -- Get user with nodes (admin only)
+PUT  /api/admin/users/:id       -- Update user role/status (admin only)
+POST /api/admin/users/:id/nodes -- Assign node to user (admin only)
+PUT  /api/admin/users/:userId/nodes/:nodeId -- Update node (admin only)
+DELETE /api/admin/users/:userId/nodes/:nodeId -- Remove node (admin only)
+```
+
+### Profile (Not Implemented)
+```
+GET  /api/profile
+PUT  /api/profile
 ```
 
 ---
@@ -408,18 +413,25 @@ PUT  /profile
 - [x] Backend caching layer (2025-12-08)
 
 ### Phase 4: Node Management
-- [ ] Node details page
-- [ ] Metrics visualization
-- [ ] Earnings history
-- [ ] Admin: node assignment
+- [x] Node details page with tabs (2025-12-08)
+- [x] Metrics visualization (inference count, missed rate, uptime) (2025-12-08)
+- [ ] Earnings history (optional for MVP)
+- [x] Admin: node assignment (2025-12-09)
 
 ### Phase 5: Request System
-- [ ] Add Node request form
-- [ ] Support requests list
-- [ ] Admin: request management
+- [x] Add Node request form (2025-12-08)
+- [x] Support requests list (2025-12-08)
+- [x] Backend API (create, list, cancel requests) (2025-12-08)
+- [x] Admin: request management (UI) (2025-12-09)
 - [ ] Email notifications
 
-### Phase 6: Polish & Launch
+### Phase 6: Admin Panel - COMPLETE
+- [x] Admin dashboard with stats (2025-12-09)
+- [x] Request management (approve/reject/complete) (2025-12-09)
+- [x] User management (role, status) (2025-12-09)
+- [x] Node assignment to users (2025-12-09)
+
+### Phase 7: Polish & Launch
 - [ ] UI polish
 - [ ] Error handling
 - [ ] Monitoring (Sentry)

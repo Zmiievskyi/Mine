@@ -30,6 +30,14 @@ export const routes: Routes = [
       import('./features/nodes/nodes.routes').then((m) => m.NODES_ROUTES),
   },
   {
+    path: 'requests',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/requests/requests-list.component').then(
+        (m) => m.RequestsListComponent
+      ),
+  },
+  {
     path: 'admin',
     canActivate: [authGuard, adminGuard],
     loadChildren: () =>

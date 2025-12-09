@@ -62,6 +62,15 @@ import { AuthService } from '../../../core/services/auth.service';
                   Request Node
                 </a>
               </li>
+              <li>
+                <a
+                  routerLink="/requests"
+                  routerLinkActive="bg-[var(--gcore-primary)] text-white"
+                  class="block px-4 py-2 rounded text-[var(--gcore-text)] hover:bg-gray-100"
+                >
+                  My Requests
+                </a>
+              </li>
               @if (authService.isAdmin()) {
                 <li class="pt-4 border-t border-[var(--gcore-border)] mt-4">
                   <a
