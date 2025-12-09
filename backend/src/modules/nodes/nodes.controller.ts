@@ -6,6 +6,13 @@ import {
   Request,
   NotFoundException,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { NodesService, NodeWithStats } from './nodes.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -54,18 +61,25 @@ interface DashboardResponse {
   }>;
 }
 
+@ApiTags('nodes')
+@ApiBearerAuth('JWT-auth')
 @Controller('nodes')
 @UseGuards(JwtAuthGuard)
 export class NodesController {
   constructor(private nodesService: NodesService) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get all nodes for current user' })
+  @ApiResponse({ status: 200, description: 'List of user nodes with stats' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getUserNodes(@Request() req): Promise<NodeResponse[]> {
     const nodes = await this.nodesService.getUserNodes(req.user.id);
     return nodes.map((node) => this.transformNode(node));
   }
 
   @Get('dashboard')
+  @ApiOperation({ summary: 'Get dashboard statistics' })
+  @ApiResponse({ status: 200, description: 'Dashboard stats with node overview' })
   async getDashboardStats(@Request() req): Promise<DashboardResponse> {
     const data = await this.nodesService.getDashboardStats(req.user.id);
     const transformedNodes = data.nodes.map((node) => this.transformNode(node));
@@ -83,6 +97,10 @@ export class NodesController {
   }
 
   @Get(':address')
+  @ApiOperation({ summary: 'Get node details by address' })
+  @ApiParam({ name: 'address', description: 'Gonka node address' })
+  @ApiResponse({ status: 200, description: 'Node details with full stats' })
+  @ApiResponse({ status: 404, description: 'Node not found' })
   async getNodeByAddress(
     @Request() req,
     @Param('address') address: string,

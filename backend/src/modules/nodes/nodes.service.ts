@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import axios from 'axios';
 import { UserNode } from '../users/entities/user-node.entity';
+import { withRetry } from '../../common/utils';
 
 export interface HyperfusionNode {
   address: string;
@@ -113,7 +114,18 @@ export class NodesService {
 
     try {
       const url = this.configService.get<string>('gonka.hyperfusionUrl');
-      const response = await axios.get(`${url}/api/v1/inference/current`);
+
+      const response = await withRetry(
+        async () => {
+          const res = await axios.get(`${url}/api/v1/inference/current`, {
+            timeout: 10000,
+          });
+          return res;
+        },
+        { maxRetries: 3, baseDelayMs: 1000, maxDelayMs: 5000 },
+        this.logger,
+        'Hyperfusion API fetch',
+      );
 
       this.cache = {
         data: response.data.ml_nodes || [],
@@ -122,8 +134,13 @@ export class NodesService {
 
       return this.cache.data;
     } catch (error) {
-      this.logger.error('Failed to fetch Hyperfusion data', error);
-      return this.cache?.data || [];
+      this.logger.error('Failed to fetch Hyperfusion data after all retries', error);
+      // Return stale cache if available (graceful degradation)
+      if (this.cache?.data) {
+        this.logger.warn('Returning stale cache data');
+        return this.cache.data;
+      }
+      return [];
     }
   }
 

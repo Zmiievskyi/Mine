@@ -9,6 +9,7 @@ import { UsersModule } from './modules/users/users.module';
 import { NodesModule } from './modules/nodes/nodes.module';
 import { RequestsModule } from './modules/requests/requests.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { HealthModule } from './modules/health/health.module';
 import { User } from './modules/users/entities/user.entity';
 import { UserNode } from './modules/users/entities/user-node.entity';
 import { NodeRequest } from './modules/requests/entities/node-request.entity';
@@ -56,6 +57,7 @@ import { NodeRequest } from './modules/requests/entities/node-request.entity';
     NodesModule,
     RequestsModule,
     AdminModule,
+    HealthModule,
   ],
   providers: [
     {

@@ -1,8 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { GlobalExceptionFilter } from './common/filters';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,6 +22,8 @@ async function bootstrap() {
     credentials: true,
   });
 
+  app.useGlobalFilters(new GlobalExceptionFilter());
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -30,7 +34,31 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
+  // Swagger/OpenAPI setup
+  const config = new DocumentBuilder()
+    .setTitle('MineGNK API')
+    .setDescription('GPU Mining Customer Portal API for Gonka Network')
+    .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'JWT-auth',
+    )
+    .addTag('auth', 'Authentication endpoints')
+    .addTag('nodes', 'Node monitoring endpoints')
+    .addTag('requests', 'Node request management')
+    .addTag('admin', 'Admin panel endpoints')
+    .addTag('health', 'Health check endpoints')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
+
   await app.listen(port);
   console.log(`🚀 Backend running on http://localhost:${port}/api`);
+  console.log(`📚 Swagger docs at http://localhost:${port}/api/docs`);
 }
 void bootstrap();

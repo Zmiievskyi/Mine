@@ -11,7 +11,6 @@ import {
 import { environment } from '../../../environments/environment';
 
 const TOKEN_KEY = 'access_token';
-const REFRESH_TOKEN_KEY = 'refresh_token';
 const USER_KEY = 'user';
 
 @Injectable({
@@ -55,7 +54,6 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     this.currentUserSignal.set(null);
     this.router.navigate(['/auth/login']);
@@ -65,18 +63,8 @@ export class AuthService {
     return localStorage.getItem(TOKEN_KEY);
   }
 
-  refreshToken(): Observable<AuthResponse> {
-    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-    return this.http
-      .post<AuthResponse>(`${this.apiUrl}/refresh`, { refreshToken })
-      .pipe(tap((response) => this.handleAuthResponse(response)));
-  }
-
   private handleAuthResponse(response: AuthResponse): void {
     localStorage.setItem(TOKEN_KEY, response.accessToken);
-    if (response.refreshToken) {
-      localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
-    }
     localStorage.setItem(USER_KEY, JSON.stringify(response.user));
     this.currentUserSignal.set(response.user);
   }
