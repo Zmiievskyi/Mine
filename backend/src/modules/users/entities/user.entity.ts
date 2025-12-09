@@ -37,10 +37,10 @@ export class User {
   isActive: boolean;
 
   // Communication preferences
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 100, nullable: true })
   telegram: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 100, nullable: true })
   discord: string | null;
 
   @Column({ name: 'currency_preference', default: 'USD' })
