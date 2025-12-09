@@ -1,7 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError, of } from 'rxjs';
-import { Node, NodeDetail, NodeStats, DashboardData } from '../models/node.model';
+import { Node, NodeDetail, NodeStats, DashboardData, NetworkStats } from '../models/node.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -61,6 +61,16 @@ export class NodesService {
   getNode(address: string): Observable<NodeDetail | null> {
     return this.http.get<NodeDetail>(`${this.apiUrl}/${address}`).pipe(
       catchError(() => of(null))
+    );
+  }
+
+  // Public endpoint - no auth required (for landing page)
+  getPublicNetworkStats(): Observable<NetworkStats | null> {
+    return this.http.get<NetworkStats>(`${this.apiUrl}/public/stats`).pipe(
+      catchError((error) => {
+        console.error('Failed to fetch network stats:', error);
+        return of(null);
+      })
     );
   }
 }

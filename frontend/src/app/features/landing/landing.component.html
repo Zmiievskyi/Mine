@@ -128,23 +128,79 @@
     <section id="stats" class="py-16 md:py-24">
       <div class="mx-auto w-full max-w-screen-xl px-4 md:px-12 lg:px-20">
         <h2 appScrollReveal class="text-2xl md:text-3xl font-bold text-center mb-4">Live Gonka Network Stats</h2>
-        <p appScrollReveal [revealDelay]="100" class="text-muted-foreground text-center mb-12">Snapshot of the network at page load.</p>
+        <p appScrollReveal [revealDelay]="100" class="text-muted-foreground text-center mb-12">
+          Real-time network statistics
+          @if (!statsLoading() && networkStats()) {
+            <span class="text-xs opacity-60">&bull; Updates every 60s</span>
+          }
+        </p>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Current Epoch -->
           <div appScrollReveal [revealDelay]="0" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-6">
-            <div class="text-sm text-muted-foreground mb-2">Latest Block</div>
-            <div class="text-3xl font-bold text-foreground">#--</div>
-            <div class="text-sm text-muted-foreground mt-2">Loading...</div>
+            <div class="text-sm text-muted-foreground mb-2">Current Epoch</div>
+            @if (statsLoading()) {
+              <div class="text-3xl font-bold text-foreground animate-pulse">--</div>
+              <div class="text-sm text-muted-foreground mt-2">Loading...</div>
+            } @else if (networkStats()) {
+              <div class="text-3xl font-bold text-[#FF4C00]">{{ networkStats()!.currentEpoch }}</div>
+              <div class="text-sm text-muted-foreground mt-2">Block #{{ networkStats()!.currentBlock | number }}</div>
+            } @else {
+              <div class="text-3xl font-bold text-foreground">--</div>
+              <div class="text-sm text-destructive mt-2">Unavailable</div>
+            }
           </div>
+
+          <!-- Active Participants -->
           <div appScrollReveal [revealDelay]="100" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-6">
-            <div class="text-sm text-muted-foreground mb-2">Active Participants</div>
-            <div class="text-3xl font-bold text-foreground">--</div>
-            <div class="text-sm text-muted-foreground mt-2">Catching up: --</div>
+            <div class="text-sm text-muted-foreground mb-2">Network Nodes</div>
+            @if (statsLoading()) {
+              <div class="text-3xl font-bold text-foreground animate-pulse">--</div>
+              <div class="text-sm text-muted-foreground mt-2">Loading...</div>
+            } @else if (networkStats()) {
+              <div class="text-3xl font-bold text-foreground">{{ networkStats()!.totalParticipants }}</div>
+              <div class="text-sm text-muted-foreground mt-2">
+                <span class="text-green-500">{{ networkStats()!.healthyParticipants }} healthy</span>
+                @if (networkStats()!.catchingUp > 0) {
+                  <span class="opacity-60"> &bull; {{ networkStats()!.catchingUp }} catching up</span>
+                }
+              </div>
+            } @else {
+              <div class="text-3xl font-bold text-foreground">--</div>
+              <div class="text-sm text-destructive mt-2">Unavailable</div>
+            }
           </div>
+
+          <!-- Registered Models -->
           <div appScrollReveal [revealDelay]="200" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-6">
-            <div class="text-sm text-muted-foreground mb-2">Registered Models</div>
-            <div class="text-3xl font-bold text-foreground">--</div>
-            <div class="text-sm text-muted-foreground mt-2">Public listing at time of load</div>
+            <div class="text-sm text-muted-foreground mb-2">Active Models</div>
+            @if (statsLoading()) {
+              <div class="text-3xl font-bold text-foreground animate-pulse">--</div>
+              <div class="text-sm text-muted-foreground mt-2">Loading...</div>
+            } @else if (networkStats()) {
+              <div class="text-3xl font-bold text-foreground">{{ networkStats()!.registeredModels }}</div>
+              <div class="text-sm text-muted-foreground mt-2">AI models running</div>
+            } @else {
+              <div class="text-3xl font-bold text-foreground">--</div>
+              <div class="text-sm text-destructive mt-2">Unavailable</div>
+            }
+          </div>
+
+          <!-- Time to Next Epoch -->
+          <div appScrollReveal [revealDelay]="300" class="rounded-xl border border-[#FF4C00]/50 bg-card/50 backdrop-blur-sm p-6">
+            <div class="text-sm text-muted-foreground mb-2">Next Epoch In</div>
+            @if (statsLoading()) {
+              <div class="text-3xl font-bold text-foreground animate-pulse">--:--:--</div>
+              <div class="text-sm text-muted-foreground mt-2">Loading...</div>
+            } @else if (networkStats()) {
+              <div class="text-3xl font-bold text-[#FF4C00]">
+                {{ networkStats()!.timeToNextEpoch.hours }}h {{ networkStats()!.timeToNextEpoch.minutes }}m
+              </div>
+              <div class="text-sm text-muted-foreground mt-2">~{{ networkStats()!.avgBlockTime | number:'1.1-1' }}s per block</div>
+            } @else {
+              <div class="text-3xl font-bold text-foreground">--:--:--</div>
+              <div class="text-sm text-destructive mt-2">Unavailable</div>
+            }
           </div>
         </div>
       </div>
@@ -277,59 +333,11 @@
 
         <!-- Pricing Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <!-- Basic -->
+          <!-- A100 -->
           <div appScrollReveal [revealDelay]="0" class="rounded-xl border border-border bg-card/30 p-6 flex flex-col">
             <div class="mb-6">
-              <h3 class="text-xl font-bold text-foreground mb-2">A100 Basic</h3>
-              <p class="text-sm text-muted-foreground">High-performance GPU for entry-level mining</p>
-            </div>
-            <ul class="space-y-3 mb-6 flex-1">
-              <li class="flex items-center gap-2 text-sm text-muted-foreground">
-                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                40GB HBM2e memory
-              </li>
-              <li class="flex items-center gap-2 text-sm text-muted-foreground">
-                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                6,912 CUDA cores
-              </li>
-              <li class="flex items-center gap-2 text-sm text-muted-foreground">
-                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                Tensor performance optimized
-              </li>
-              <li class="flex items-center gap-2 text-sm text-muted-foreground">
-                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                24/7 monitoring
-              </li>
-              <li class="flex items-center gap-2 text-sm text-muted-foreground">
-                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                Email support
-              </li>
-            </ul>
-            <div class="mb-6">
-              <span class="text-3xl font-bold text-foreground">$1</span>
-              <span class="text-muted-foreground">/ hour</span>
-            </div>
-            <a routerLink="/auth/register"
-               class="w-full inline-flex items-center justify-center h-10 px-4 text-sm font-medium rounded-lg border border-border bg-transparent text-foreground hover:bg-white/5 transition-colors">
-              Start Mining
-            </a>
-          </div>
-
-          <!-- Premium -->
-          <div appScrollReveal [revealDelay]="100" class="rounded-xl border border-border bg-card/30 p-6 flex flex-col">
-            <div class="mb-6">
-              <h3 class="text-xl font-bold text-foreground mb-2">A100 Premium</h3>
-              <p class="text-sm text-muted-foreground">Enhanced A100 with premium features and support</p>
+              <h3 class="text-xl font-bold text-foreground mb-2">A100</h3>
+              <p class="text-sm text-muted-foreground">Data center GPU for AI workloads</p>
             </div>
             <ul class="space-y-3 mb-6 flex-1">
               <li class="flex items-center gap-2 text-sm text-muted-foreground">
@@ -348,7 +356,55 @@
                 <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                Advanced cooling
+                Ampere architecture
+              </li>
+              <li class="flex items-center gap-2 text-sm text-muted-foreground">
+                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                24/7 monitoring
+              </li>
+              <li class="flex items-center gap-2 text-sm text-muted-foreground">
+                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Email support
+              </li>
+            </ul>
+            <div class="mb-6">
+              <span class="text-3xl font-bold text-foreground">€1.67</span>
+              <span class="text-muted-foreground">/ hour</span>
+            </div>
+            <a routerLink="/auth/register"
+               class="w-full inline-flex items-center justify-center h-10 px-4 text-sm font-medium rounded-lg border border-border bg-transparent text-foreground hover:bg-white/5 transition-colors">
+              Start Mining
+            </a>
+          </div>
+
+          <!-- H100 -->
+          <div appScrollReveal [revealDelay]="100" class="rounded-xl border border-border bg-card/30 p-6 flex flex-col">
+            <div class="mb-6">
+              <h3 class="text-xl font-bold text-foreground mb-2">H100</h3>
+              <p class="text-sm text-muted-foreground">Next-gen Hopper GPU for maximum performance</p>
+            </div>
+            <ul class="space-y-3 mb-6 flex-1">
+              <li class="flex items-center gap-2 text-sm text-muted-foreground">
+                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                80GB HBM3 memory
+              </li>
+              <li class="flex items-center gap-2 text-sm text-muted-foreground">
+                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                16,896 CUDA cores
+              </li>
+              <li class="flex items-center gap-2 text-sm text-muted-foreground">
+                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Hopper architecture
               </li>
               <li class="flex items-center gap-2 text-sm text-muted-foreground">
                 <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -360,37 +416,37 @@
                 <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                Advanced analytics &amp; API access
+                3200 Gbps InfiniBand
               </li>
             </ul>
             <div class="mb-6">
-              <span class="text-3xl font-bold text-foreground">$1.55</span>
+              <span class="text-3xl font-bold text-foreground">€2.76</span>
               <span class="text-muted-foreground">/ hour</span>
             </div>
             <a routerLink="/auth/register"
                class="w-full inline-flex items-center justify-center h-10 px-4 text-sm font-medium rounded-lg border border-border bg-transparent text-foreground hover:bg-white/5 transition-colors">
-              Go Premium
+              Get Started
             </a>
           </div>
 
-          <!-- Enterprise -->
+          <!-- H200 -->
           <div appScrollReveal [revealDelay]="200" class="rounded-xl border border-border bg-card/30 p-6 flex flex-col">
             <div class="mb-6">
-              <h3 class="text-xl font-bold text-foreground mb-2">A200 Enterprise</h3>
-              <p class="text-sm text-muted-foreground">Next-generation GPU for maximum performance</p>
+              <h3 class="text-xl font-bold text-foreground mb-2">H200</h3>
+              <p class="text-sm text-muted-foreground">Latest Hopper with 141GB HBM3e memory</p>
             </div>
             <ul class="space-y-3 mb-6 flex-1">
               <li class="flex items-center gap-2 text-sm text-muted-foreground">
                 <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                Latest GPU architecture
+                141GB HBM3e memory
               </li>
               <li class="flex items-center gap-2 text-sm text-muted-foreground">
                 <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                Maximum performance
+                16,896 CUDA cores
               </li>
               <li class="flex items-center gap-2 text-sm text-muted-foreground">
                 <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -402,7 +458,7 @@
                 <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
-                Custom integrations
+                3200 Gbps InfiniBand
               </li>
               <li class="flex items-center gap-2 text-sm text-muted-foreground">
                 <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -412,8 +468,7 @@
               </li>
             </ul>
             <div class="mb-6">
-              <span class="text-3xl font-bold text-foreground">$1.99</span>
-              <span class="text-muted-foreground">/ hour</span>
+              <span class="text-xl font-bold text-foreground">Custom pricing</span>
             </div>
             <a href="mailto:sales&#64;gcore.com"
                class="w-full inline-flex items-center justify-center h-10 px-4 text-sm font-medium rounded-lg border border-border bg-transparent text-foreground hover:bg-white/5 transition-colors">

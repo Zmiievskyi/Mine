@@ -34,7 +34,7 @@ MineGNK is a monitoring portal that allows users to:
 
 ```bash
 git clone <repository-url>
-cd gonka
+cd MineGNK
 
 # Install frontend dependencies
 cd frontend && npm install && cd ..
@@ -87,7 +87,7 @@ Frontend runs on http://localhost:4200
 ## Project Structure
 
 ```
-/gonka
+/MineGNK
 ├── frontend/               # Angular 21 + Tailwind CSS v4
 │   └── src/app/
 │       ├── core/           # Services, guards, interceptors, models

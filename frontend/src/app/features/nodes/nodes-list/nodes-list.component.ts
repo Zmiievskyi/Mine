@@ -88,12 +88,14 @@ import { HlmBadge } from '@spartan-ng/helm/badge';
                     <th hlmTh class="text-muted-foreground uppercase tracking-wider">Performance</th>
                     <th hlmTh class="text-muted-foreground uppercase tracking-wider">Earnings</th>
                     <th hlmTh class="text-muted-foreground uppercase tracking-wider">Uptime</th>
+                    <th hlmTh class="text-muted-foreground uppercase tracking-wider">Missed</th>
+                    <th hlmTh class="text-muted-foreground uppercase tracking-wider">Invalid</th>
                     <th hlmTh class="text-muted-foreground uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody hlmTbody>
                   @for (node of nodes(); track node.id) {
-                    <tr hlmTr>
+                    <tr hlmTr [class.bg-red-50]="isProblematicNode(node)">
                       <td hlmTd>
                         <div>
                           <a
@@ -137,6 +139,16 @@ import { HlmBadge } from '@spartan-ng/helm/badge';
                           </div>
                           <span class="text-sm">{{ node.uptimePercent.toFixed(0) }}%</span>
                         </div>
+                      </td>
+                      <td hlmTd>
+                        <span [class]="getRateClass(node.missedRate || 0)">
+                          {{ ((node.missedRate || 0) * 100).toFixed(1) }}%
+                        </span>
+                      </td>
+                      <td hlmTd>
+                        <span [class]="getRateClass(node.invalidationRate || 0)">
+                          {{ ((node.invalidationRate || 0) * 100).toFixed(1) }}%
+                        </span>
                       </td>
                       <td hlmTd>
                         <a
@@ -230,5 +242,21 @@ export class NodesListComponent implements OnInit {
 
   getTotalEarnings(): number {
     return this.nodes().reduce((sum, node) => sum + node.earnedCoins, 0);
+  }
+
+  // Check if node has problems (>10% missed or invalid rate, or jailed)
+  isProblematicNode(node: Node): boolean {
+    return (
+      (node.missedRate || 0) > 0.1 ||
+      (node.invalidationRate || 0) > 0.1 ||
+      node.isJailed
+    );
+  }
+
+  // Color class for rate metrics
+  getRateClass(rate: number): string {
+    if (rate > 0.1) return 'text-destructive font-medium';
+    if (rate > 0.05) return 'text-yellow-600';
+    return 'text-muted-foreground';
   }
 }

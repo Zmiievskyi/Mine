@@ -13,6 +13,10 @@ export interface Node {
   uptimePercent: number;
   currentModel?: string;
   lastSeen: Date;
+  // Additional metrics for nodes list
+  missedRate?: number;
+  invalidationRate?: number;
+  weight?: number;
 }
 
 export interface NodeDetail extends Node {
@@ -46,4 +50,23 @@ export interface ActivityItem {
   nodeId: string;
   message: string;
   timestamp: Date;
+}
+
+// Public network stats for landing page (no auth required)
+export interface NetworkStats {
+  currentEpoch: number;
+  currentBlock: number;
+  totalParticipants: number;
+  healthyParticipants: number;
+  catchingUp: number;
+  registeredModels: number;
+  uniqueModels: string[];
+  timeToNextEpoch: {
+    hours: number;
+    minutes: number;
+    seconds: number;
+    totalSeconds: number;
+  };
+  avgBlockTime: number;
+  lastUpdated: Date;
 }

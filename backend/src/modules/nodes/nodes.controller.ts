@@ -13,7 +13,8 @@ import {
   ApiBearerAuth,
   ApiParam,
 } from '@nestjs/swagger';
-import { NodesService, NodeWithStats } from './nodes.service';
+import { Throttle } from '@nestjs/throttler';
+import { NodesService, NodeWithStats, NetworkStats } from './nodes.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 // Frontend-compatible response interfaces
@@ -30,6 +31,10 @@ interface NodeResponse {
   uptimePercent: number;
   currentModel?: string;
   lastSeen: Date;
+  // Additional metrics for nodes list display
+  missedRate?: number;
+  invalidationRate?: number;
+  weight?: number;
 }
 
 interface NodeDetailResponse extends NodeResponse {
@@ -62,13 +67,23 @@ interface DashboardResponse {
 }
 
 @ApiTags('nodes')
-@ApiBearerAuth('JWT-auth')
 @Controller('nodes')
-@UseGuards(JwtAuthGuard)
 export class NodesController {
   constructor(private nodesService: NodesService) {}
 
+  // PUBLIC ENDPOINT - No auth required
+  @Get('public/stats')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @ApiOperation({ summary: 'Get public network statistics (no auth required)' })
+  @ApiResponse({ status: 200, description: 'Network-wide statistics for landing page' })
+  @ApiResponse({ status: 429, description: 'Too many requests' })
+  async getPublicNetworkStats(): Promise<NetworkStats> {
+    return this.nodesService.getPublicNetworkStats();
+  }
+
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get all nodes for current user' })
   @ApiResponse({ status: 200, description: 'List of user nodes with stats' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -78,6 +93,8 @@ export class NodesController {
   }
 
   @Get('dashboard')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get dashboard statistics' })
   @ApiResponse({ status: 200, description: 'Dashboard stats with node overview' })
   async getDashboardStats(@Request() req): Promise<DashboardResponse> {
@@ -97,6 +114,8 @@ export class NodesController {
   }
 
   @Get(':address')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get node details by address' })
   @ApiParam({ name: 'address', description: 'Gonka node address' })
   @ApiResponse({ status: 200, description: 'Node details with full stats' })
@@ -131,6 +150,10 @@ export class NodesController {
       uptimePercent: this.calculateUptimePercent(stats),
       currentModel: stats?.models?.[0] || undefined,
       lastSeen: node.updatedAt,
+      // Additional metrics
+      missedRate: stats?.missed_rate ?? 0,
+      invalidationRate: stats?.invalidation_rate ?? 0,
+      weight: stats?.weight ?? 0,
     };
   }
 
@@ -157,8 +180,10 @@ export class NodesController {
   private calculateUptimePercent(stats?: NodeWithStats['stats']): number {
     if (!stats) return 0;
     if (stats.is_offline) return 0;
-    if (stats.is_jailed) return 50;
-    return 100;
+    // Calculate uptime based on missed_rate (0.0-1.0 scale)
+    // A missed_rate of 0.1 means 10% missed, so 90% uptime
+    const missedRate = stats.missed_rate ?? 0;
+    return Math.max(0, Math.round((1 - missedRate) * 100));
   }
 
   private calculateAverageUptime(nodes: NodeResponse[]): number {
