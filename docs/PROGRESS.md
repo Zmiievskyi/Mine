@@ -1,6 +1,6 @@
 # MineGNK Progress Tracker
 
-**Last Updated**: 2025-12-09 (Session 8)
+**Last Updated**: 2025-12-09 (Session 11)
 
 ---
 
@@ -15,7 +15,7 @@
 | Phase 4: Node Details | **Complete** | 100% (4.1 done, 4.2-4.3 optional) |
 | Phase 5: Request System | **Complete** | 100% |
 | Phase 6: Admin Panel | **Complete** | 100% |
-| Phase 7: Polish & Launch | In Progress | 20% (7.3 Security done) |
+| Phase 7: Polish & Launch | In Progress | 70% (7.1, 7.3, 7.4, 7.6 done) |
 
 ---
 
@@ -63,6 +63,10 @@
 | 2025-12-09 | Rate limiting 5 req/min on auth endpoints | Prevents brute force attacks on login/register |
 | 2025-12-09 | Helmet middleware for security headers | Industry standard XSS/clickjacking protection |
 | 2025-12-09 | Password requires uppercase+lowercase+number | Balance between security and usability |
+| 2025-12-09 | Retry with exponential backoff (1s, 2s, 4s) for API calls | Handles transient failures gracefully |
+| 2025-12-09 | Return stale cache when Hyperfusion API is down | Graceful degradation - better than showing errors |
+| 2025-12-09 | Health status types: healthy/degraded/unhealthy | Clear indication of system state for monitoring |
+| 2025-12-09 | Use Angular Material instead of Tailwind for base styling | Tailwind v4 + Angular 21 had PostCSS issues; Material provides reliable styling |
 
 ---
 
@@ -583,8 +587,173 @@ DELETE /api/admin/users/:userId/nodes/:nodeId → Remove node from user
 - Content Security Policy defaults
 
 ### Phase 7 Progress
-- [ ] 7.1 Error Handling & Fallbacks
+- [x] 7.1 Error Handling & Fallbacks - **COMPLETE** (2025-12-09)
 - [ ] 7.2 Monitoring (Sentry)
 - [x] 7.3 Security Review - **COMPLETE** (2025-12-09)
-- [ ] 7.4 Documentation (Swagger)
+- [x] 7.4 Documentation (Swagger) - **COMPLETE** (2025-12-09)
 - [ ] 7.5 Deployment (Docker)
+- [x] 7.6 UI Framework - **COMPLETE** (2025-12-09) - Angular Material installed
+
+---
+
+## Session 10: Phase 7.4 - Swagger/OpenAPI Documentation (2025-12-09)
+
+### Completed Tasks
+- [x] Installed @nestjs/swagger package (2025-12-09)
+- [x] Configured Swagger in main.ts with custom settings (2025-12-09)
+- [x] Added API tags for endpoint grouping (auth, nodes, requests, admin, health) (2025-12-09)
+- [x] Added JWT Bearer auth security scheme (2025-12-09)
+- [x] Added @ApiProperty/@ApiPropertyOptional decorators to all DTOs (2025-12-09)
+- [x] Added @ApiTags, @ApiOperation, @ApiResponse decorators to all controllers (2025-12-09)
+- [x] Verified Swagger UI accessible at /api/docs (2025-12-09)
+
+### New/Modified Files
+**Backend:**
+- `backend/src/main.ts` - Swagger configuration
+- `backend/src/modules/auth/dto/register.dto.ts` - @ApiProperty decorators
+- `backend/src/modules/auth/dto/login.dto.ts` - @ApiProperty decorators
+- `backend/src/modules/requests/dto/create-request.dto.ts` - @ApiProperty decorators
+- `backend/src/modules/requests/dto/update-request.dto.ts` - @ApiPropertyOptional decorators
+- `backend/src/modules/admin/dto/assign-node.dto.ts` - @ApiProperty decorators
+- `backend/src/modules/admin/dto/update-user.dto.ts` - @ApiPropertyOptional decorators
+- `backend/src/modules/auth/auth.controller.ts` - API documentation decorators
+- `backend/src/modules/nodes/nodes.controller.ts` - API documentation decorators
+- `backend/src/modules/requests/requests.controller.ts` - API documentation decorators
+- `backend/src/modules/admin/admin.controller.ts` - API documentation decorators
+- `backend/src/modules/health/health.controller.ts` - API documentation decorators
+
+### Packages Added
+- `@nestjs/swagger` - Swagger/OpenAPI documentation
+
+### Swagger Features
+| Feature | Description |
+|---------|-------------|
+| API Title | MineGNK API |
+| Description | GPU Mining Customer Portal API for Gonka Network |
+| Version | 1.0 |
+| Auth | JWT Bearer authentication scheme |
+| Tags | auth, nodes, requests, admin, health |
+| Try It Out | Interactive testing with auth token |
+| Persistence | Authorization persists across page refresh |
+
+### Swagger Endpoints
+```
+GET    /api/docs       → Swagger UI (interactive documentation)
+GET    /api/docs-json  → OpenAPI 3.0 JSON specification
+```
+
+### Documented Endpoints
+All 20 API endpoints are now fully documented with:
+- Operation summaries
+- Request/response schemas
+- Parameter descriptions
+- Example values
+- Response status codes
+
+---
+
+## Session 9: Phase 7.1 - Error Handling (2025-12-09)
+
+### Completed Tasks
+- [x] Created global exception filter for backend (2025-12-09)
+- [x] Added retry logic with exponential backoff to Hyperfusion API (2025-12-09)
+- [x] Created health check endpoint with liveness/readiness probes (2025-12-09)
+- [x] Created frontend error interceptor with user-friendly messages (2025-12-09)
+- [x] Created notification/toast service for error display (2025-12-09)
+- [x] Added retry interceptor for GET requests (2025-12-09)
+- [x] Verified both builds pass (2025-12-09)
+
+### New Files Created
+**Backend:**
+- `backend/src/common/filters/http-exception.filter.ts` - Global exception filter
+- `backend/src/common/filters/index.ts` - Filter exports
+- `backend/src/common/utils/retry.util.ts` - Retry with exponential backoff
+- `backend/src/common/utils/index.ts` - Utility exports
+- `backend/src/modules/health/health.module.ts` - Health module
+- `backend/src/modules/health/health.service.ts` - Health checks (DB, Hyperfusion)
+- `backend/src/modules/health/health.controller.ts` - Health endpoints
+
+**Frontend:**
+- `frontend/src/app/core/services/notification.service.ts` - Toast notification service
+- `frontend/src/app/core/interceptors/error.interceptor.ts` - Error handling interceptor
+- `frontend/src/app/core/interceptors/retry.interceptor.ts` - Retry logic interceptor
+- `frontend/src/app/shared/components/toast/toast.component.ts` - Toast UI component
+
+### Modified Files
+**Backend:**
+- `backend/src/main.ts` - Added global exception filter
+- `backend/src/app.module.ts` - Added HealthModule
+- `backend/src/modules/nodes/nodes.service.ts` - Added retry logic to API calls
+
+**Frontend:**
+- `frontend/src/app/app.config.ts` - Added error and retry interceptors
+- `frontend/src/app/app.ts` - Added ToastComponent import
+- `frontend/src/app/app.html` - Added <app-toast /> element
+
+### API Endpoints Added
+```
+GET    /api/health        → Full health status (services, uptime)
+GET    /api/health/live   → Kubernetes liveness probe
+GET    /api/health/ready  → Kubernetes readiness probe
+```
+
+### Error Handling Features
+| Feature | Description |
+|---------|-------------|
+| Global Exception Filter | Catches all errors, returns user-friendly messages |
+| User-Friendly Messages | Maps HTTP status codes to readable messages |
+| Backend Retry Logic | 3 retries with exponential backoff (1s, 2s, 4s) |
+| Stale Cache Fallback | Returns cached data when API is down |
+| Frontend Toast Notifications | Displays errors with auto-dismiss |
+| Frontend Retry | 2 retries for GET requests on network/server errors |
+| Health Checks | Monitors database and Hyperfusion API status |
+
+### Health Status Types
+- **healthy**: All services operational
+- **degraded**: Hyperfusion down, but serving cached data
+- **unhealthy**: Database down, critical failure
+
+---
+
+## Session 11: Phase 7.6 - Angular Material (2025-12-09)
+
+### Problem
+Frontend pages had no styles applied. Investigation revealed Tailwind CSS v4 with `@tailwindcss/postcss` was not processing correctly in Angular 21.
+
+### Attempted Fixes (Failed)
+1. Created `postcss.config.mjs` - styles still not working
+2. Added `@source` directives to styles.scss - no effect
+3. Created separate `tailwind.css` file - no effect
+4. Updated angular.json to include both CSS files - no effect
+
+### Root Cause
+Tailwind v4 PostCSS integration with Angular 21's SCSS processing has compatibility issues.
+
+### Solution
+Installed Angular Material 21 with Material 3 theming.
+
+### Completed Tasks
+- [x] Installed Angular Material 21 via `ng add @angular/material` (2025-12-09)
+- [x] Selected Cyan/Orange Material 3 theme (2025-12-09)
+- [x] Configured mat.theme() in styles.scss (2025-12-09)
+- [x] Added Roboto font and Material Icons (2025-12-09)
+- [x] Verified all pages render with proper styles (2025-12-09)
+
+### Modified Files
+**Frontend:**
+- `frontend/package.json` - Added @angular/material, @angular/cdk
+- `frontend/src/styles.scss` - Angular Material theme configuration
+- `frontend/src/index.html` - Roboto font and Material Icons links
+- `frontend/postcss.config.mjs` - PostCSS config (retained for Tailwind utilities)
+- `frontend/src/tailwind.css` - Tailwind import
+
+### Packages Added
+- `@angular/material` - Material Design components
+- `@angular/cdk` - Component Dev Kit (dependency)
+
+### Result
+All frontend pages now display correctly with:
+- Material 3 theming (Cyan primary, Orange accent)
+- Roboto font family
+- Material Icons available
+- Tailwind utility classes still functional
