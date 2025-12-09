@@ -188,8 +188,8 @@ User Login → Backend проверяет user_id
 
 ### 7.1 Authentication
 - Email + пароль (MVP)
-- Google OAuth (future)
-- JWT tokens
+- Google OAuth (implemented - auto-links by email)
+- JWT tokens (7-day expiry)
 - Roles: User, Admin
 
 ### 7.2 Dashboard
@@ -258,7 +258,7 @@ User Login → Backend проверяет user_id
 | Frontend | Angular 18+ with GCore UI Kit (`@gcore/ui-kit`) |
 | Backend | NestJS (Node.js) |
 | Database | PostgreSQL 16 |
-| Auth | JWT + bcrypt |
+| Auth | JWT + bcrypt + Google OAuth (passport-google-oauth20) |
 | External APIs | Gonka (trackers), Gcore (instances) |
 | UI Reference | Storybook: https://ui-storybook.gcore.top/ |
 
@@ -353,6 +353,8 @@ CREATE TABLE earnings_history (
 POST /api/auth/register     -- Register new user (email + password 8+ chars)
 POST /api/auth/login        -- Login, returns JWT token
 GET  /api/auth/me           -- Get current user profile (protected)
+GET  /api/auth/google       -- Initiate Google OAuth (redirects to Google)
+GET  /api/auth/google/callback -- Google OAuth callback (redirects to frontend)
 ```
 
 ### Nodes (Implemented)

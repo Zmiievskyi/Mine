@@ -63,6 +63,23 @@ export class AuthService {
     return localStorage.getItem(TOKEN_KEY);
   }
 
+  loginWithGoogle(): void {
+    window.location.href = `${environment.apiUrl}/auth/google`;
+  }
+
+  handleOAuthCallback(token: string, userJson: string): boolean {
+    try {
+      const user: User = JSON.parse(userJson);
+      localStorage.setItem(TOKEN_KEY, token);
+      localStorage.setItem(USER_KEY, userJson);
+      this.currentUserSignal.set(user);
+      return true;
+    } catch (error) {
+      console.error('Failed to parse OAuth callback data:', error);
+      return false;
+    }
+  }
+
   private handleAuthResponse(response: AuthResponse): void {
     localStorage.setItem(TOKEN_KEY, response.accessToken);
     localStorage.setItem(USER_KEY, JSON.stringify(response.user));

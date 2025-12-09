@@ -3,7 +3,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { appConfig, databaseConfig, jwtConfig, gonkaConfig } from './config';
+import {
+  appConfig,
+  databaseConfig,
+  jwtConfig,
+  gonkaConfig,
+  googleConfig,
+} from './config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { NodesModule } from './modules/nodes/nodes.module';
@@ -21,7 +27,7 @@ import { EarningsHistory } from './modules/nodes/entities/earnings-history.entit
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, jwtConfig, gonkaConfig],
+      load: [appConfig, databaseConfig, jwtConfig, gonkaConfig, googleConfig],
     }),
     ThrottlerModule.forRoot([
       {

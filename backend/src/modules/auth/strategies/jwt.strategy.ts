@@ -16,9 +16,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     configService: ConfigService,
     private usersService: UsersService,
   ) {
-    const secret =
-      configService.get<string>('jwt.secret') ||
-      'minegnk-dev-secret-change-in-production';
+    const secret = configService.get<string>('jwt.secret');
+    if (!secret) {
+      throw new Error(
+        'JWT_SECRET environment variable is required. Generate one with: openssl rand -base64 32',
+      );
+    }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,

@@ -1,18 +1,11 @@
-// Angular Material Theme
-@use '@angular/material' as mat;
-
-html {
-  @include mat.theme((
-    color: (
-      primary: mat.$cyan-palette,
-      tertiary: mat.$orange-palette,
-    ),
-    typography: Roboto,
-    density: 0,
-  ));
-}
+// Note: Tailwind is imported via tailwind.css (see angular.json styles array)
+// Tailwind v4 theme customization is defined in tailwind.css
 
 :root {
+  // Typography (matching minegnk.com style)
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
   // GCore brand colors (for authenticated app)
   --gcore-primary: #FF4C00;
   --gcore-primary-hover: #f04800;
@@ -37,8 +30,56 @@ html, body {
 
 body {
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: var(--font-body);
   background-color: var(--gcore-bg);
   color: var(--gcore-text);
   color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Badge spark animation (ball rolling in tube)
+@keyframes badge-rotate {
+  0% {
+    transform: translate(-50%, -15%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -15%) rotate(360deg);
+  }
+}
+
+.badge-spark {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 9999px;
+  mask: linear-gradient(white, transparent 50%);
+  -webkit-mask: linear-gradient(white, transparent 50%);
+
+  &::before {
+    content: '';
+    position: absolute;
+    aspect-ratio: 1;
+    width: 200%;
+    left: 50%;
+    top: 0;
+    transform: translate(-50%, -15%) rotate(0deg);
+    background: conic-gradient(from 0deg, transparent 0 340deg, white 360deg);
+    animation: badge-rotate 3s linear infinite;
+  }
+}
+
+.badge-backdrop {
+  position: absolute;
+  inset: 1px;
+  border-radius: 9999px;
+  background-color: rgb(10 10 10); // neutral-950
+  transition: background-color 200ms;
+}
+
+.badge-backdrop:hover,
+.group:hover .badge-backdrop {
+  background-color: rgb(23 23 23); // neutral-900
 }

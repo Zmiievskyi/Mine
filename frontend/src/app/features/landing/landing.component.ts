@@ -1,13 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import {
-  GPU_PRICING,
-  GpuPricing,
-  CURRENCY,
-  formatMonthlyPrice
-} from '../../core/constants/pricing.constants';
+import { ScrollRevealDirective } from '../../shared/directives/scroll-reveal.directive';
 
 /**
  * Landing page component for MineGNK
@@ -21,15 +16,16 @@ import {
  * - FAQ section
  * - Call-to-action for registration
  *
- * Uses dark theme with purple/violet accent colors
+ * Uses dark theme matching minegnk.com design
  * Redirects authenticated users to dashboard
  */
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ScrollRevealDirective],
   templateUrl: './landing.component.html',
-  styleUrl: './landing.component.scss'
+  styleUrl: './landing.component.scss',
+  encapsulation: ViewEncapsulation.None
 })
 export class LandingComponent implements OnInit {
   private authService = inject(AuthService);
@@ -37,10 +33,6 @@ export class LandingComponent implements OnInit {
 
   // Navigation state
   isMobileMenuOpen = false;
-
-  // GPU pricing data from constants
-  gpuPricing = GPU_PRICING;
-  currency = CURRENCY;
 
   // Navigation links
   navLinks = [
@@ -73,20 +65,5 @@ export class LandingComponent implements OnInit {
       element.scrollIntoView({ behavior: 'smooth' });
       this.isMobileMenuOpen = false;
     }
-  }
-
-  /**
-   * Navigate to auth page
-   */
-  navigateToAuth(mode: 'login' | 'register'): void {
-    // This will be handled by router
-    this.isMobileMenuOpen = false;
-  }
-
-  /**
-   * Format monthly price for display
-   */
-  getMonthlyPrice(gpu: GpuPricing): string {
-    return formatMonthlyPrice(gpu.pricePerMonth);
   }
 }

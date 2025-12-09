@@ -55,10 +55,10 @@ User Login -> Backend checks user_id
 
 ## Tech Stack
 
-- **Frontend**: Angular 18+ with Angular Material
+- **Frontend**: Angular 18+ with Tailwind CSS v4
 - **Backend**: NestJS with Swagger docs at /api/docs
 - **Database**: PostgreSQL 16
-- **Auth**: Email/password with JWT tokens (7-day expiry)
+- **Auth**: Email/password + Google OAuth with JWT tokens (7-day expiry)
 - **Security**: Helmet headers, rate limiting, strong password validation
 - **External APIs**: Gonka (trackers), Gcore (instance specs)
 
@@ -95,7 +95,7 @@ User Login -> Backend checks user_id
 
 ```
 /gonka
-  frontend/                 # Angular 18 + Angular Material
+  frontend/                 # Angular 18 + Tailwind CSS v4
     src/app/
       core/                 # Services, guards, interceptors, models
       features/             # Landing, auth, dashboard, nodes, requests, admin
@@ -192,9 +192,11 @@ DATABASE_URL=postgresql://minegnk:minegnk@localhost:5432/minegnk
 # JWT
 JWT_SECRET=your-secret-key
 
-# Google OAuth (future)
+# Google OAuth
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback
+FRONTEND_URL=http://localhost:4200
 
 # Gonka API
 GONKA_API_NODES=http://node1.gonka.ai:8000,http://node2.gonka.ai:8000
@@ -224,7 +226,83 @@ For visual inspiration only (no functional integration):
 2. **Node Linking**: Support assigns node identifiers to users via Admin Panel
 3. **Data Aggregation**: Backend fetches from Gonka trackers, caches results (1-5 min TTL)
 4. **Gonka = Data, Gcore = Infrastructure**: Gonka provides node stats, Gcore provides GPU servers
-5. **UI Library**: Use Angular Material until GCore UI Kit access is granted
+5. **Styling**: Tailwind CSS v4 for all UI (landing, dashboard, components)
+
+## Frontend Styling
+
+### Architecture
+
+The project uses **Tailwind CSS v4** as the primary styling solution across all pages:
+
+| Area | Style Approach | Theme |
+|------|----------------|-------|
+| Landing page | Tailwind utilities | Dark (purple accents) |
+| Dashboard/App | Tailwind utilities | Light (GCore brand colors) |
+| Components | Tailwind utilities | Inherits from parent |
+
+### File Structure
+
+```
+frontend/src/
+  tailwind.css          # Tailwind import + @theme customization
+  styles.scss           # CSS variables (GCore brand colors)
+```
+
+### Typography
+
+```scss
+// Fonts (matching minegnk.com style)
+--font-heading: 'Outfit', sans-serif;  // Headings, titles
+--font-body: 'Inter', sans-serif;      // Body text, UI
+```
+
+Usage: `class="font-heading"` or `class="font-body"`
+
+### CSS Variables
+
+```scss
+// GCore brand (dashboard/app - light theme)
+--gcore-primary: #FF4C00;
+--gcore-bg: #f5f4f4;
+--gcore-text: #363636;
+
+// Landing page (dark theme)
+--dark-bg: #0a0a0a;
+--accent-purple: #a855f7;
+```
+
+### Scroll Reveal Animation
+
+The landing page uses a custom `appScrollReveal` directive for scroll-triggered animations:
+
+```html
+<!-- Basic usage -->
+<div appScrollReveal>Content fades in when scrolled into view</div>
+
+<!-- With stagger delay -->
+<div appScrollReveal [revealDelay]="0">Card 1</div>
+<div appScrollReveal [revealDelay]="100">Card 2 (100ms delay)</div>
+<div appScrollReveal [revealDelay]="200">Card 3 (200ms delay)</div>
+```
+
+**File:** `shared/directives/scroll-reveal.directive.ts`
+
+### Guidelines for Developers
+
+1. **Use Tailwind utilities** for layout, spacing, colors, typography
+2. **Use CSS variables** (`var(--gcore-primary)`) for brand colors
+3. **Use `appScrollReveal`** for scroll-triggered animations on landing page
+4. **Keep component SCSS minimal** - only for `:host` styling or complex animations
+
+### Example
+
+```html
+<!-- Good: Tailwind utilities -->
+<div class="bg-white p-6 rounded-lg shadow-sm border border-[var(--gcore-border)]">
+
+<!-- Avoid: Custom CSS for simple styling -->
+<div class="custom-card">  <!-- Don't create .custom-card in SCSS -->
+```
 
 ## Testing
 

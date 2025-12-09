@@ -15,6 +15,11 @@ export enum UserRole {
   ADMIN = 'admin',
 }
 
+export enum AuthProvider {
+  LOCAL = 'local',
+  GOOGLE = 'google',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -23,15 +28,28 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ type: 'varchar', nullable: true })
   @Exclude()
-  password: string;
+  password: string | null;
 
-  @Column({ nullable: true })
-  name: string;
+  @Column({ type: 'varchar', nullable: true })
+  name: string | null;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;
+
+  @Column({
+    type: 'enum',
+    enum: AuthProvider,
+    default: AuthProvider.LOCAL,
+  })
+  provider: AuthProvider;
+
+  @Column({ type: 'varchar', nullable: true, unique: true })
+  googleId: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  avatarUrl: string | null;
 
   @Column({ default: true })
   isActive: boolean;

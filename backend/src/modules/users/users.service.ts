@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { User, AuthProvider } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -39,5 +39,39 @@ export class UsersService {
       where: { id },
       relations: ['nodes'],
     });
+  }
+
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { googleId } });
+  }
+
+  async createFromGoogle(data: {
+    email: string;
+    name?: string;
+    googleId: string;
+    avatarUrl?: string;
+  }): Promise<User> {
+    const user = this.usersRepository.create({
+      email: data.email,
+      name: data.name || null,
+      googleId: data.googleId,
+      avatarUrl: data.avatarUrl || null,
+      provider: AuthProvider.GOOGLE,
+      password: null,
+    });
+    return this.usersRepository.save(user);
+  }
+
+  async linkGoogleAccount(
+    userId: string,
+    googleId: string,
+    avatarUrl?: string,
+  ): Promise<User | null> {
+    const updateData: Partial<User> = { googleId };
+    if (avatarUrl) {
+      updateData.avatarUrl = avatarUrl;
+    }
+    await this.usersRepository.update(userId, updateData);
+    return this.findById(userId);
   }
 }
