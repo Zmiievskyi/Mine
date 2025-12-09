@@ -109,6 +109,44 @@ Available in `frontend/libs/ui/`:
 | `hlm-select` | `@spartan-ng/helm/select` | `<hlm-select>` |
 | `hlm-toaster` | `@spartan-ng/helm/sonner` | `<hlm-toaster />` |
 
+### Spartan UI Dialog (IMPORTANT)
+
+Dialogs **require** the `*brnDialogContent` structural directive for lazy rendering:
+
+```typescript
+@Component({
+  imports: [BrnDialogImports, HlmDialogImports, HlmButton],
+  template: `
+    <!-- ✅ Correct: content rendered only when dialog opens -->
+    <hlm-dialog [state]="isOpen() ? 'open' : 'closed'" (closed)="close()">
+      <hlm-dialog-content *brnDialogContent="let ctx" class="sm:max-w-md">
+        <hlm-dialog-header>
+          <h3 hlmDialogTitle>Dialog Title</h3>
+          <p hlmDialogDescription>Description text</p>
+        </hlm-dialog-header>
+
+        <div class="py-4">Content here</div>
+
+        <hlm-dialog-footer>
+          <button hlmBtn variant="outline" (click)="close()">Cancel</button>
+          <button hlmBtn (click)="confirm()">Confirm</button>
+        </hlm-dialog-footer>
+      </hlm-dialog-content>
+    </hlm-dialog>
+  `,
+})
+export class MyComponent {
+  isOpen = signal(false);
+  close() { this.isOpen.set(false); }
+}
+```
+
+**Common Error**: `NG0201: No provider found for BrnDialogRef`
+- **Cause**: Missing `*brnDialogContent` directive
+- **Fix**: Add `*brnDialogContent="let ctx"` to `<hlm-dialog-content>`
+
+Without `*brnDialogContent`, components like `hlmDialogTitle` try to inject `BrnDialogRef` before the dialog opens.
+
 ### NotificationService (Toasts)
 
 ```typescript

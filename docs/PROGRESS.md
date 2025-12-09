@@ -206,17 +206,18 @@ When Gcore UI Kit access is granted, apply styles on top.
 
 | Metric | Value |
 |--------|-------|
-| Frontend files | 59 TypeScript files |
-| Frontend pages | 11 (login, register, dashboard, nodes list, node detail, admin, requests, oauth-callback, landing) |
-| Services | 5 (AuthService, NodesService, RequestsService, AdminService, NotificationService) |
-| Guards | 3 (auth, guest, admin) |
-| Interceptors | 3 (auth, error, retry) |
+| Frontend TS files | 46 |
+| Frontend components | 19 |
+| Frontend pages | 11 (login, register, dashboard, nodes list, node detail, admin dashboard/requests/users, requests, oauth-callback, landing) |
+| Frontend services | 7 (auth, nodes, admin, requests, notification, storage, index) |
+| Frontend guards | 1 file (auth.guard.ts with authGuard, guestGuard, adminGuard) |
+| Frontend interceptors | 3 (auth, error, retry) |
 | Backend modules | 6 (auth, users, nodes, requests, admin, health) |
-| Backend files | 47 TypeScript files (excl. tests) |
-| API endpoints | 26 (auth: 7, nodes: 3, requests: 7, admin: 7, health: 3) |
+| Backend TS files | 68 (excl. tests) |
+| Backend configs | 10 (app, database, jwt, gonka, google, github, retry, throttler, index) |
+| API endpoints | 27 |
 | Database tables | 6 (users, user_nodes, node_requests, nodes, node_stats_cache, earnings_history) |
 | Migration files | 5 |
-| Config files | 9 (app, database, jwt, gonka, google, github, retry, throttler, index) |
 | Tests passing | 38 (auth: 10, nodes: 12, admin: 16) ✓ |
 | Auth strategies | 3 (JWT, Google OAuth, GitHub OAuth) |
 | Spartan UI components | 15 helm libraries (badge, button, card, dialog, form-field, icon, input, label, radio-group, select, sonner, table, tabs, textarea, utils) |

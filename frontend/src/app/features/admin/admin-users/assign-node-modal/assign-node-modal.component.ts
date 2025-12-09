@@ -23,7 +23,7 @@ import { HlmLabel } from '@spartan-ng/helm/label';
   ],
   template: `
     <hlm-dialog [state]="isOpen ? 'open' : 'closed'" (closed)="onClose()">
-      <hlm-dialog-content class="sm:max-w-lg">
+      <hlm-dialog-content *brnDialogContent="let ctx" class="sm:max-w-lg">
         <hlm-dialog-header>
           <h3 hlmDialogTitle>Assign Node to {{ user?.name || user?.email }}</h3>
         </hlm-dialog-header>

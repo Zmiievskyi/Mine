@@ -151,7 +151,7 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 
       <!-- Notes Modal -->
       <hlm-dialog [state]="selectedRequest() ? 'open' : 'closed'" (closed)="selectedRequest.set(null)">
-        <hlm-dialog-content class="sm:max-w-md">
+        <hlm-dialog-content *brnDialogContent="let ctx" class="sm:max-w-md">
           <hlm-dialog-header>
             <h3 hlmDialogTitle>Admin Notes</h3>
           </hlm-dialog-header>

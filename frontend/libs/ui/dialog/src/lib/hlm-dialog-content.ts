@@ -32,7 +32,7 @@ import { HlmDialogClose } from './hlm-dialog-close';
 	`,
 })
 export class HlmDialogContent {
-	private readonly _dialogRef = inject(BrnDialogRef);
+	private readonly _dialogRef = inject(BrnDialogRef, { optional: true });
 	private readonly _dialogContext = injectBrnDialogContext({ optional: true });
 
 	public readonly state = computed(() => this._dialogRef?.state() ?? 'closed');

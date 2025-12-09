@@ -99,7 +99,7 @@ User Login -> Backend checks user_id
     src/app/
       core/                 # Services, guards, interceptors, models
       features/             # Landing, auth, dashboard, nodes, requests, admin
-      shared/               # Layout, toast, reusable components
+      shared/               # Layout, loading-spinner, directives, utils
   backend/                  # NestJS API
     src/
       common/               # Filters, utils (retry logic), DTOs (pagination), services (LRU cache)
@@ -346,6 +346,30 @@ The dashboard uses **Spartan UI** (https://spartan.ng) - an Angular component li
 
 **Note**: Landing page uses custom Tailwind styling (not Spartan) for its dark theme.
 
+**Dialog Usage (IMPORTANT)**:
+Spartan UI dialogs require `*brnDialogContent` structural directive for lazy rendering:
+
+```html
+<!-- ✅ Correct: content rendered only when dialog opens -->
+<hlm-dialog [state]="isOpen ? 'open' : 'closed'" (closed)="onClose()">
+  <hlm-dialog-content *brnDialogContent="let ctx" class="sm:max-w-md">
+    <hlm-dialog-header>
+      <h3 hlmDialogTitle>Title</h3>
+    </hlm-dialog-header>
+    <!-- content -->
+  </hlm-dialog-content>
+</hlm-dialog>
+
+<!-- ❌ Wrong: causes "No provider for BrnDialogRef" error -->
+<hlm-dialog [state]="isOpen ? 'open' : 'closed'">
+  <hlm-dialog-content>  <!-- Missing *brnDialogContent -->
+    ...
+  </hlm-dialog-content>
+</hlm-dialog>
+```
+
+Without `*brnDialogContent`, components like `hlmDialogTitle` try to inject `BrnDialogRef` before the dialog is opened, causing runtime errors.
+
 ## Testing
 
 ```bash
@@ -356,10 +380,29 @@ cd backend && npm test
 cd backend && npm run test:cov
 ```
 
-**Test Files (38 total):**
+**Test Files (38 tests total):**
 - `auth.service.spec.ts` - 10 tests (register, login, validateUser)
 - `nodes.service.spec.ts` - 12 tests (getUserNodes, getDashboardStats)
 - `admin.service.spec.ts` - 16 tests (assignNode, updateUser, removeNode, pagination)
+
+## Project Metrics
+
+| Category | Count |
+|----------|-------|
+| Frontend TS files | 46 |
+| Frontend components | 19 |
+| Frontend services | 7 (auth, nodes, admin, requests, notification, storage, index) |
+| Frontend guards | 1 (auth.guard.ts with authGuard, guestGuard, adminGuard) |
+| Frontend interceptors | 3 (auth, error, retry) |
+| Backend TS files | 68 (excl. tests) |
+| Backend modules | 6 (auth, users, nodes, requests, admin, health) |
+| Backend configs | 10 (app, database, jwt, gonka, google, github, retry, throttler, index) |
+| API endpoints | 27 |
+| Database tables | 6 (users, user_nodes, node_requests, nodes, node_stats_cache, earnings_history) |
+| Migration files | 5 |
+| Spartan UI components | 15 helm libraries |
+| Auth strategies | 3 (JWT, Google OAuth, GitHub OAuth) |
+| Tests passing | 38 |
 
 ## Health Endpoints
 
