@@ -21,6 +21,11 @@ describe('AuthService', () => {
     name: 'Test User',
     role: UserRole.USER,
     isActive: true,
+    telegram: null,
+    discord: null,
+    currencyPreference: 'USD',
+    nodes: [],
+    requests: [],
     createdAt: new Date(),
     updatedAt: new Date(),
   };

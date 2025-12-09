@@ -13,6 +13,9 @@ import { HealthModule } from './modules/health/health.module';
 import { User } from './modules/users/entities/user.entity';
 import { UserNode } from './modules/users/entities/user-node.entity';
 import { NodeRequest } from './modules/requests/entities/node-request.entity';
+import { Node } from './modules/nodes/entities/node.entity';
+import { NodeStatsCache } from './modules/nodes/entities/node-stats-cache.entity';
+import { EarningsHistory } from './modules/nodes/entities/earnings-history.entity';
 
 @Module({
   imports: [
@@ -46,7 +49,14 @@ import { NodeRequest } from './modules/requests/entities/node-request.entity';
         username: configService.get<string>('database.username'),
         password: configService.get<string>('database.password'),
         database: configService.get<string>('database.database'),
-        entities: [User, UserNode, NodeRequest],
+        entities: [
+          User,
+          UserNode,
+          NodeRequest,
+          Node,
+          NodeStatsCache,
+          EarningsHistory,
+        ],
         synchronize: configService.get<boolean>('database.synchronize'),
         logging: configService.get<boolean>('database.logging'),
       }),

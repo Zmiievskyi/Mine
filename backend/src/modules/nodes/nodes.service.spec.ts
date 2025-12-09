@@ -27,7 +27,7 @@ describe('NodesService', () => {
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
-    user: null,
+    user: undefined as unknown as import('../users/entities/user.entity').User,
   };
 
   const mockHyperfusionNode: HyperfusionNode = {
