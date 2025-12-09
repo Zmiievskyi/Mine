@@ -11,7 +11,7 @@ import { NodeDetail } from '../../../../core/models/node.model';
       <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-6">
         <p class="text-sm text-[var(--gcore-text-muted)]">Inference Count</p>
         <p class="text-2xl font-bold text-[var(--gcore-text)]">
-          {{ node.inferenceCount?.toLocaleString() || 0 }}
+          {{ (node.inferenceCount || 0).toLocaleString() }}
         </p>
       </div>
       <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-6">
@@ -32,7 +32,7 @@ import { NodeDetail } from '../../../../core/models/node.model';
       <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-6">
         <p class="text-sm text-[var(--gcore-text-muted)]">Uptime</p>
         <p class="text-2xl font-bold text-[var(--gcore-text)]">
-          {{ node.uptimePercent?.toFixed(0) || 0 }}%
+          {{ (node.uptimePercent || 0).toFixed(0) }}%
         </p>
       </div>
     </div>
@@ -44,7 +44,7 @@ import { NodeDetail } from '../../../../core/models/node.model';
         <div>
           <div class="flex justify-between text-sm mb-1">
             <span class="text-[var(--gcore-text-muted)]">Inference Rate</span>
-            <span class="text-[var(--gcore-text)]">{{ node.tokensPerSecond?.toFixed(2) || 0 }} tok/s</span>
+            <span class="text-[var(--gcore-text)]">{{ (node.tokensPerSecond || 0).toFixed(2) }} tok/s</span>
           </div>
           <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
             <div

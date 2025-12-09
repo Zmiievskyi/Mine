@@ -31,7 +31,7 @@ import { getNodeStatusTextClass } from '../../../../shared/utils/status-styles.u
           </div>
           <div>
             <p class="text-sm text-[var(--gcore-text-muted)]">Network Weight</p>
-            <p class="text-[var(--gcore-text)] font-medium">{{ node.weight?.toFixed(4) || '0.0000' }}</p>
+            <p class="text-[var(--gcore-text)] font-medium">{{ (node.weight || 0).toFixed(4) }}</p>
           </div>
           <div>
             <p class="text-sm text-[var(--gcore-text-muted)]">Blocks Claimed</p>
@@ -61,7 +61,7 @@ import { getNodeStatusTextClass } from '../../../../shared/utils/status-styles.u
         <h2 class="text-lg font-semibold text-[var(--gcore-text)] mb-4">Earnings</h2>
         <div class="text-center py-4">
           <p class="text-4xl font-bold text-[var(--gcore-primary)]">
-            {{ node.earnedCoins?.toFixed(2) || '0.00' }}
+            {{ (node.earnedCoins || 0).toFixed(2) }}
           </p>
           <p class="text-[var(--gcore-text-muted)] mt-1">GNK Earned</p>
         </div>
@@ -69,7 +69,7 @@ import { getNodeStatusTextClass } from '../../../../shared/utils/status-styles.u
           <div class="flex justify-between items-center">
             <span class="text-sm text-[var(--gcore-text-muted)]">Performance</span>
             <span class="font-medium text-[var(--gcore-text)]">
-              {{ node.tokensPerSecond?.toFixed(2) || '0.00' }} tok/s
+              {{ (node.tokensPerSecond || 0).toFixed(2) }} tok/s
             </span>
           </div>
         </div>
