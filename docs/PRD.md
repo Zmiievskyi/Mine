@@ -384,6 +384,19 @@ PUT  /api/admin/users/:userId/nodes/:nodeId -- Update node (admin only)
 DELETE /api/admin/users/:userId/nodes/:nodeId -- Remove node (admin only)
 ```
 
+### Health (Implemented)
+```
+GET  /api/health           -- Full health status (DB, Hyperfusion, uptime)
+GET  /api/health/live      -- Kubernetes liveness probe
+GET  /api/health/ready     -- Kubernetes readiness probe
+```
+
+### Documentation (Implemented)
+```
+GET  /api/docs             -- Swagger UI (interactive API documentation)
+GET  /api/docs-json        -- OpenAPI 3.0 JSON specification
+```
+
 ### Profile (Not Implemented)
 ```
 GET  /api/profile
@@ -432,10 +445,11 @@ PUT  /api/profile
 - [x] Node assignment to users (2025-12-09)
 
 ### Phase 7: Polish & Launch
-- [ ] UI polish
-- [ ] Error handling
+- [x] UI Framework - Angular Material 21 (2025-12-09)
+- [x] Error handling - Global filters, retry logic, toast notifications (2025-12-09)
 - [ ] Monitoring (Sentry)
-- [ ] Documentation
+- [x] Documentation - Swagger/OpenAPI at /api/docs (2025-12-09)
+- [x] Security hardening - Rate limiting, Helmet headers, strong passwords (2025-12-09)
 - [ ] Deploy
 
 ---
