@@ -1,15 +1,18 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NodesService } from '../../../core/services/nodes.service';
 import { Node } from '../../../core/models/node.model';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { getNodeStatusClass } from '../../../shared/utils/status-styles.util';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmBadge } from '@spartan-ng/helm/badge';
 
 @Component({
   selector: 'app-nodes-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, LayoutComponent],
+  imports: [CommonModule, RouterLink, LayoutComponent, LoadingSpinnerComponent, HlmTableImports, HlmBadge],
   template: `
     <app-layout>
       <!-- Page Header -->
@@ -31,10 +34,7 @@ import { getNodeStatusClass } from '../../../shared/utils/status-styles.util';
       <!-- Loading State -->
       @if (loading()) {
         <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-12">
-          <div class="flex flex-col items-center justify-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--gcore-primary)] mb-4"></div>
-            <p class="text-[var(--gcore-text-muted)]">Loading nodes...</p>
-          </div>
+          <app-loading-spinner message="Loading nodes..." />
         </div>
       }
 
@@ -77,94 +77,70 @@ import { getNodeStatusClass } from '../../../shared/utils/status-styles.util';
               </a>
             </div>
           } @else {
-            <div class="overflow-x-auto">
-              <table class="w-full">
-                <thead class="bg-gray-50 border-b border-[var(--gcore-border)]">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase tracking-wider">
-                      Node
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase tracking-wider">
-                      GPU Type
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase tracking-wider">
-                      Performance
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase tracking-wider">
-                      Earnings
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase tracking-wider">
-                      Uptime
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase tracking-wider">
-                      Actions
-                    </th>
+            <div hlmTableContainer>
+              <table hlmTable>
+                <thead hlmThead>
+                  <tr hlmTr>
+                    <th hlmTh class="text-muted-foreground uppercase tracking-wider">Node</th>
+                    <th hlmTh class="text-muted-foreground uppercase tracking-wider">Status</th>
+                    <th hlmTh class="text-muted-foreground uppercase tracking-wider">GPU Type</th>
+                    <th hlmTh class="text-muted-foreground uppercase tracking-wider">Performance</th>
+                    <th hlmTh class="text-muted-foreground uppercase tracking-wider">Earnings</th>
+                    <th hlmTh class="text-muted-foreground uppercase tracking-wider">Uptime</th>
+                    <th hlmTh class="text-muted-foreground uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-[var(--gcore-border)]">
+                <tbody hlmTbody>
                   @for (node of nodes(); track node.id) {
-                    <tr class="hover:bg-gray-50 transition-colors">
-                      <td class="px-6 py-4">
+                    <tr hlmTr>
+                      <td hlmTd>
                         <div>
                           <a
                             [routerLink]="['/nodes', node.address]"
-                            class="text-[var(--gcore-primary)] hover:underline font-medium"
+                            class="text-primary hover:underline font-medium"
                           >
                             {{ node.alias || 'Node ' + node.address.slice(0, 8) }}
                           </a>
-                          <p class="text-xs text-[var(--gcore-text-muted)] mt-1 font-mono">
+                          <p class="text-xs text-muted-foreground mt-1 font-mono">
                             {{ node.address.slice(0, 16) }}...
                           </p>
                         </div>
                       </td>
-                      <td class="px-6 py-4">
+                      <td hlmTd>
                         <span
-                          class="px-2 py-1 text-xs rounded-full font-medium"
-                          [class]="getNodeStatusClass(node.status)"
+                          hlmBadge
+                          [variant]="getStatusVariant(node.status)"
                         >
                           {{ node.status }}
                         </span>
                         @if (node.isJailed) {
-                          <span class="ml-2 text-xs text-red-600">(jailed)</span>
+                          <span class="ml-2 text-xs text-destructive">(jailed)</span>
                         }
                       </td>
-                      <td class="px-6 py-4 text-[var(--gcore-text)]">
-                        {{ node.gpuType }}
+                      <td hlmTd>{{ node.gpuType }}</td>
+                      <td hlmTd>
+                        <div>{{ node.tokensPerSecond.toFixed(2) }} tok/s</div>
+                        <div class="text-xs text-muted-foreground">{{ node.jobsCompleted }} jobs</div>
                       </td>
-                      <td class="px-6 py-4">
-                        <div class="text-[var(--gcore-text)]">
-                          {{ node.tokensPerSecond.toFixed(2) }} tok/s
-                        </div>
-                        <div class="text-xs text-[var(--gcore-text-muted)]">
-                          {{ node.jobsCompleted }} jobs
-                        </div>
+                      <td hlmTd>
+                        <span class="text-primary font-medium">{{ node.earnedCoins.toFixed(2) }} GNK</span>
                       </td>
-                      <td class="px-6 py-4">
-                        <div class="text-[var(--gcore-primary)] font-medium">
-                          {{ node.earnedCoins.toFixed(2) }} GNK
-                        </div>
-                      </td>
-                      <td class="px-6 py-4">
+                      <td hlmTd>
                         <div class="flex items-center gap-2">
-                          <div class="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div class="w-16 h-2 bg-muted rounded-full overflow-hidden">
                             <div
                               class="h-full rounded-full"
                               [class]="getUptimeBarClass(node.uptimePercent)"
                               [style.width.%]="node.uptimePercent"
                             ></div>
                           </div>
-                          <span class="text-sm text-[var(--gcore-text)]">
-                            {{ node.uptimePercent.toFixed(0) }}%
-                          </span>
+                          <span class="text-sm">{{ node.uptimePercent.toFixed(0) }}%</span>
                         </div>
                       </td>
-                      <td class="px-6 py-4">
+                      <td hlmTd>
                         <a
                           [routerLink]="['/nodes', node.address]"
-                          class="text-[var(--gcore-primary)] hover:underline text-sm"
+                          class="text-primary hover:underline text-sm"
                         >
                           View Details
                         </a>
@@ -196,11 +172,11 @@ import { getNodeStatusClass } from '../../../shared/utils/status-styles.util';
   `,
 })
 export class NodesListComponent implements OnInit {
+  private nodesService = inject(NodesService);
+
   nodes = signal<Node[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
-
-  constructor(private nodesService: NodesService) {}
 
   ngOnInit(): void {
     this.loadNodes();
@@ -223,6 +199,23 @@ export class NodesListComponent implements OnInit {
   }
 
   getNodeStatusClass = getNodeStatusClass;
+
+  getStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+    switch (status?.toLowerCase()) {
+      case 'healthy':
+      case 'active':
+        return 'default';
+      case 'unhealthy':
+      case 'warning':
+        return 'secondary';
+      case 'jailed':
+      case 'offline':
+      case 'error':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  }
 
   getUptimeBarClass(uptime: number): string {
     if (uptime >= 90) return 'bg-green-500';

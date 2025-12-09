@@ -3,96 +3,97 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminUser, AssignNodeDto } from '../../../../core/models/admin.model';
 import { GPU_OPTIONS } from '../../../../core/models/request.model';
+import { BrnDialogImports } from '@spartan-ng/brain/dialog';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmInput } from '@spartan-ng/helm/input';
+import { HlmLabel } from '@spartan-ng/helm/label';
 
 @Component({
   selector: 'app-assign-node-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    BrnDialogImports,
+    HlmDialogImports,
+    HlmButton,
+    HlmInput,
+    HlmLabel,
+  ],
   template: `
-    @if (isOpen) {
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-lg max-w-lg w-full mx-4 p-6">
-          <h3 class="text-lg font-semibold text-[var(--gcore-text)] mb-4">
-            Assign Node to {{ user?.name || user?.email }}
-          </h3>
+    <hlm-dialog [state]="isOpen ? 'open' : 'closed'" (closed)="onClose()">
+      <hlm-dialog-content class="sm:max-w-lg">
+        <hlm-dialog-header>
+          <h3 hlmDialogTitle>Assign Node to {{ user?.name || user?.email }}</h3>
+        </hlm-dialog-header>
 
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-[var(--gcore-text)] mb-1">
-                Node Address *
-              </label>
-              <input
-                type="text"
-                [(ngModel)]="formData.nodeAddress"
-                placeholder="gonka1..."
-                class="w-full px-3 py-2 border border-[var(--gcore-border)] rounded-lg focus:ring-2 focus:ring-[var(--gcore-primary)] focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-[var(--gcore-text)] mb-1">
-                Label
-              </label>
-              <input
-                type="text"
-                [(ngModel)]="formData.label"
-                placeholder="e.g., Node-1"
-                class="w-full px-3 py-2 border border-[var(--gcore-border)] rounded-lg focus:ring-2 focus:ring-[var(--gcore-primary)] focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-[var(--gcore-text)] mb-1">
-                GPU Type
-              </label>
-              <select
-                [(ngModel)]="formData.gpuType"
-                class="w-full px-3 py-2 border border-[var(--gcore-border)] rounded-lg focus:ring-2 focus:ring-[var(--gcore-primary)] focus:border-transparent"
-              >
-                <option value="">Select GPU Type</option>
-                @for (gpu of gpuOptions; track gpu.value) {
-                  <option [value]="gpu.value">{{ gpu.label }}</option>
-                }
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-[var(--gcore-text)] mb-1">
-                Notes
-              </label>
-              <textarea
-                [(ngModel)]="formData.notes"
-                rows="2"
-                placeholder="Optional notes..."
-                class="w-full px-3 py-2 border border-[var(--gcore-border)] rounded-lg focus:ring-2 focus:ring-[var(--gcore-primary)] focus:border-transparent"
-              ></textarea>
-            </div>
+        <div class="space-y-4 py-4">
+          <div class="space-y-2">
+            <label hlmLabel>Node Address *</label>
+            <input
+              hlmInput
+              type="text"
+              [(ngModel)]="formData.nodeAddress"
+              placeholder="gonka1..."
+              class="w-full"
+            />
           </div>
 
-          @if (error()) {
-            <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded text-red-600 text-sm">
-              {{ error() }}
-            </div>
-          }
+          <div class="space-y-2">
+            <label hlmLabel>Label</label>
+            <input
+              hlmInput
+              type="text"
+              [(ngModel)]="formData.label"
+              placeholder="e.g., Node-1"
+              class="w-full"
+            />
+          </div>
 
-          <div class="flex gap-3 mt-6">
-            <button
-              (click)="onAssign()"
-              [disabled]="!isValid() || submitting()"
-              class="flex-1 py-2 bg-[var(--gcore-primary)] text-white rounded-lg hover:opacity-90 disabled:opacity-50"
+          <div class="space-y-2">
+            <label hlmLabel>GPU Type</label>
+            <select
+              [(ngModel)]="formData.gpuType"
+              class="w-full flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              {{ submitting() ? 'Assigning...' : 'Assign Node' }}
-            </button>
-            <button
-              (click)="onClose()"
-              class="flex-1 py-2 border border-[var(--gcore-border)] rounded-lg hover:bg-gray-50"
-            >
-              Cancel
-            </button>
+              <option value="">Select GPU Type</option>
+              @for (gpu of gpuOptions; track gpu.value) {
+                <option [value]="gpu.value">{{ gpu.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label hlmLabel>Notes</label>
+            <textarea
+              hlmInput
+              [(ngModel)]="formData.notes"
+              rows="2"
+              placeholder="Optional notes..."
+              class="w-full min-h-[60px]"
+            ></textarea>
           </div>
         </div>
-      </div>
-    }
+
+        @if (error()) {
+          <div class="p-3 bg-red-50 border border-red-200 rounded text-red-600 text-sm mb-4">
+            {{ error() }}
+          </div>
+        }
+
+        <hlm-dialog-footer>
+          <button hlmBtn variant="outline" (click)="onClose()">Cancel</button>
+          <button
+            hlmBtn
+            (click)="onAssign()"
+            [disabled]="!isValid() || submitting()"
+          >
+            {{ submitting() ? 'Assigning...' : 'Assign Node' }}
+          </button>
+        </hlm-dialog-footer>
+      </hlm-dialog-content>
+    </hlm-dialog>
   `,
 })
 export class AssignNodeModalComponent {

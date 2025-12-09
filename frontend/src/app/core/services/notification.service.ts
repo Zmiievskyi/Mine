@@ -1,56 +1,46 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { toast } from 'ngx-sonner';
 
-export interface Notification {
-  id: string;
-  type: 'success' | 'error' | 'warning' | 'info';
-  message: string;
-  duration?: number;
-}
+export type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotificationService {
-  private notificationsSignal = signal<Notification[]>([]);
-  readonly notifications = this.notificationsSignal.asReadonly();
-
-  show(type: Notification['type'], message: string, duration = 5000): void {
-    const id = crypto.randomUUID();
-    const notification: Notification = { id, type, message, duration };
-
-    this.notificationsSignal.update((notifications) => [
-      ...notifications,
-      notification,
-    ]);
-
-    if (duration > 0) {
-      setTimeout(() => this.dismiss(id), duration);
-    }
-  }
-
   success(message: string, duration = 5000): void {
-    this.show('success', message, duration);
+    toast.success(message, { duration });
   }
 
   error(message: string, duration = 7000): void {
-    this.show('error', message, duration);
+    toast.error(message, { duration });
   }
 
   warning(message: string, duration = 5000): void {
-    this.show('warning', message, duration);
+    toast.warning(message, { duration });
   }
 
   info(message: string, duration = 5000): void {
-    this.show('info', message, duration);
+    toast.info(message, { duration });
   }
 
-  dismiss(id: string): void {
-    this.notificationsSignal.update((notifications) =>
-      notifications.filter((n) => n.id !== id)
-    );
+  show(type: NotificationType, message: string, duration = 5000): void {
+    switch (type) {
+      case 'success':
+        this.success(message, duration);
+        break;
+      case 'error':
+        this.error(message, duration);
+        break;
+      case 'warning':
+        this.warning(message, duration);
+        break;
+      case 'info':
+        this.info(message, duration);
+        break;
+    }
   }
 
   dismissAll(): void {
-    this.notificationsSignal.set([]);
+    toast.dismiss();
   }
 }

@@ -1,15 +1,16 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NodesService } from '../../../core/services/nodes.service';
 import { NodeDetail } from '../../../core/models/node.model';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { NodeDetailOverviewComponent } from './node-detail-overview/node-detail-overview.component';
 import { NodeDetailMetricsComponent } from './node-detail-metrics/node-detail-metrics.component';
 import { NodeDetailHistoryComponent } from './node-detail-history/node-detail-history.component';
 import { getNodeStatusClass } from '../../../shared/utils/status-styles.util';
-
-type TabType = 'overview' | 'metrics' | 'history';
+import { HlmTabsImports } from '@spartan-ng/helm/tabs';
+import { BrnTabsImports } from '@spartan-ng/brain/tabs';
 
 @Component({
   selector: 'app-node-detail',
@@ -18,9 +19,12 @@ type TabType = 'overview' | 'metrics' | 'history';
     CommonModule,
     RouterLink,
     LayoutComponent,
+    LoadingSpinnerComponent,
     NodeDetailOverviewComponent,
     NodeDetailMetricsComponent,
     NodeDetailHistoryComponent,
+    BrnTabsImports,
+    HlmTabsImports,
   ],
   template: `
     <app-layout>
@@ -72,42 +76,47 @@ type TabType = 'overview' | 'metrics' | 'history';
       <!-- Loading State -->
       @if (loading()) {
         <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-12">
-          <div class="flex flex-col items-center justify-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--gcore-primary)] mb-4"></div>
-            <p class="text-[var(--gcore-text-muted)]">Loading node details...</p>
-          </div>
+          <app-loading-spinner message="Loading node details..." />
         </div>
       }
       <!-- Content -->
       @if (!loading() && !error() && node()) {
-        <!-- Tabs -->
-        <div class="border-b border-[var(--gcore-border)] mb-6">
-          <nav class="flex gap-8">
-            @for (tab of tabs; track tab.id) {
-              <button
-                (click)="activeTab.set(tab.id)"
-                class="py-3 text-sm font-medium border-b-2 transition-colors"
-                [class]="activeTab() === tab.id
-                  ? 'border-[var(--gcore-primary)] text-[var(--gcore-primary)]'
-                  : 'border-transparent text-[var(--gcore-text-muted)] hover:text-[var(--gcore-text)]'"
-              >
-                {{ tab.label }}
-              </button>
-            }
-          </nav>
-        </div>
-        <!-- Overview Tab -->
-        @if (activeTab() === 'overview' && node()) {
-          <app-node-detail-overview [node]="node()!" />
-        }
-        <!-- Metrics Tab -->
-        @if (activeTab() === 'metrics' && node()) {
-          <app-node-detail-metrics [node]="node()!" />
-        }
-        <!-- History Tab -->
-        @if (activeTab() === 'history') {
-          <app-node-detail-history />
-        }
+        <!-- Spartan Tabs -->
+        <hlm-tabs tab="overview" class="w-full">
+          <hlm-tabs-list class="mb-6 w-full justify-start bg-transparent p-0 border-b border-[var(--gcore-border)] rounded-none">
+            <button
+              hlmTabsTrigger="overview"
+              class="rounded-none border-b-2 border-transparent data-[state=active]:border-[var(--gcore-primary)] data-[state=active]:text-[var(--gcore-primary)] data-[state=active]:bg-transparent data-[state=active]:shadow-none bg-transparent"
+            >
+              Overview
+            </button>
+            <button
+              hlmTabsTrigger="metrics"
+              class="rounded-none border-b-2 border-transparent data-[state=active]:border-[var(--gcore-primary)] data-[state=active]:text-[var(--gcore-primary)] data-[state=active]:bg-transparent data-[state=active]:shadow-none bg-transparent"
+            >
+              Metrics
+            </button>
+            <button
+              hlmTabsTrigger="history"
+              class="rounded-none border-b-2 border-transparent data-[state=active]:border-[var(--gcore-primary)] data-[state=active]:text-[var(--gcore-primary)] data-[state=active]:bg-transparent data-[state=active]:shadow-none bg-transparent"
+            >
+              History
+            </button>
+          </hlm-tabs-list>
+
+          <div hlmTabsContent="overview">
+            <app-node-detail-overview [node]="node()!" />
+          </div>
+
+          <div hlmTabsContent="metrics">
+            <app-node-detail-metrics [node]="node()!" />
+          </div>
+
+          <div hlmTabsContent="history">
+            <app-node-detail-history />
+          </div>
+        </hlm-tabs>
+
         <!-- Quick Actions -->
         <div class="mt-6 flex gap-4">
           @if (node()?.inferenceUrl) {
@@ -124,23 +133,14 @@ type TabType = 'overview' | 'metrics' | 'history';
   `,
 })
 export class NodeDetailComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  private nodesService = inject(NodesService);
+
   node = signal<NodeDetail | null>(null);
   loading = signal(true);
   error = signal<string | null>(null);
-  activeTab = signal<TabType>('overview');
-
-  tabs: { id: TabType; label: string }[] = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'metrics', label: 'Metrics' },
-    { id: 'history', label: 'History' },
-  ];
 
   private nodeAddress: string = '';
-
-  constructor(
-    private route: ActivatedRoute,
-    private nodesService: NodesService
-  ) {}
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {

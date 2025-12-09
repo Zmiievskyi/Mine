@@ -1,16 +1,39 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { AdminUser, UserNode, AssignNodeDto, UserRole } from '../../../core/models/admin.model';
 import { AssignNodeModalComponent } from './assign-node-modal/assign-node-modal.component';
 import { UserListItemComponent } from './user-list-item/user-list-item.component';
+import { BrnDialogImports } from '@spartan-ng/brain/dialog';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmButton } from '@spartan-ng/helm/button';
+
+interface ConfirmDialogData {
+  title: string;
+  message: string;
+  confirmText?: string;
+  variant?: 'default' | 'destructive';
+  onConfirm: () => void;
+}
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, RouterLink, LayoutComponent, AssignNodeModalComponent, UserListItemComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    LayoutComponent,
+    LoadingSpinnerComponent,
+    AssignNodeModalComponent,
+    UserListItemComponent,
+    BrnDialogImports,
+    HlmDialogImports,
+    HlmButton,
+  ],
   template: `
     <app-layout>
       <div class="flex items-center justify-between mb-6">
@@ -31,10 +54,7 @@ import { UserListItemComponent } from './user-list-item/user-list-item.component
       <!-- Loading -->
       @if (loading()) {
         <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-12">
-          <div class="flex flex-col items-center justify-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--gcore-primary)] mb-4"></div>
-            <p class="text-[var(--gcore-text-muted)]">Loading users...</p>
-          </div>
+          <app-loading-spinner message="Loading users..." />
         </div>
       }
 
@@ -83,10 +103,31 @@ import { UserListItemComponent } from './user-list-item/user-list-item.component
         (close)="closeAssignModal()"
         (assign)="assignNode($event)"
       />
+
+      <!-- Confirm Dialog -->
+      @if (confirmDialog()) {
+        <hlm-dialog [state]="'open'">
+          <hlm-dialog-content class="sm:max-w-[400px]">
+            <hlm-dialog-header>
+              <h3 hlmDialogTitle>{{ confirmDialog()!.title }}</h3>
+              <p hlmDialogDescription>{{ confirmDialog()!.message }}</p>
+            </hlm-dialog-header>
+            <hlm-dialog-footer>
+              <button hlmBtn variant="outline" (click)="cancelConfirm()">Cancel</button>
+              <button hlmBtn [variant]="confirmDialog()!.variant || 'default'" (click)="executeConfirm()">
+                {{ confirmDialog()!.confirmText || 'Confirm' }}
+              </button>
+            </hlm-dialog-footer>
+          </hlm-dialog-content>
+        </hlm-dialog>
+      }
     </app-layout>
   `,
 })
 export class AdminUsersComponent implements OnInit {
+  private adminService = inject(AdminService);
+  private notification = inject(NotificationService);
+
   users = signal<AdminUser[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
@@ -94,8 +135,7 @@ export class AdminUsersComponent implements OnInit {
   assigningUser = signal<AdminUser | null>(null);
   assignError = signal<string | null>(null);
   assigning = signal(false);
-
-  constructor(private adminService: AdminService) {}
+  confirmDialog = signal<ConfirmDialogData | null>(null);
 
   ngOnInit(): void {
     this.loadUsers();
@@ -124,21 +164,41 @@ export class AdminUsersComponent implements OnInit {
   toggleRole(user: AdminUser): void {
     const newRole: UserRole = user.role === 'admin' ? 'user' : 'admin';
     const action = newRole === 'admin' ? 'make admin' : 'remove admin privileges from';
-    if (!confirm(`Are you sure you want to ${action} ${user.email}?`)) return;
 
-    this.adminService.updateUser(user.id, { role: newRole }).subscribe({
-      next: () => this.loadUsers(),
-      error: (err) => alert(err.error?.message || 'Failed to update user'),
+    this.confirmDialog.set({
+      title: 'Change User Role',
+      message: `Are you sure you want to ${action} ${user.email}?`,
+      confirmText: newRole === 'admin' ? 'Make Admin' : 'Remove Admin',
+      variant: newRole === 'admin' ? 'default' : 'destructive',
+      onConfirm: () => {
+        this.adminService.updateUser(user.id, { role: newRole }).subscribe({
+          next: () => {
+            this.notification.success('User role updated');
+            this.loadUsers();
+          },
+          error: (err) => this.notification.error(err.error?.message || 'Failed to update user'),
+        });
+      },
     });
   }
 
   toggleActive(user: AdminUser): void {
     const action = user.isActive ? 'deactivate' : 'activate';
-    if (!confirm(`Are you sure you want to ${action} ${user.email}?`)) return;
 
-    this.adminService.updateUser(user.id, { isActive: !user.isActive }).subscribe({
-      next: () => this.loadUsers(),
-      error: (err) => alert(err.error?.message || 'Failed to update user'),
+    this.confirmDialog.set({
+      title: user.isActive ? 'Deactivate User' : 'Activate User',
+      message: `Are you sure you want to ${action} ${user.email}?`,
+      confirmText: user.isActive ? 'Deactivate' : 'Activate',
+      variant: user.isActive ? 'destructive' : 'default',
+      onConfirm: () => {
+        this.adminService.updateUser(user.id, { isActive: !user.isActive }).subscribe({
+          next: () => {
+            this.notification.success(`User ${action}d successfully`);
+            this.loadUsers();
+          },
+          error: (err) => this.notification.error(err.error?.message || 'Failed to update user'),
+        });
+      },
     });
   }
 
@@ -177,11 +237,32 @@ export class AdminUsersComponent implements OnInit {
       ? node.nodeAddress
       : `${node.nodeAddress.slice(0, 12)}...${node.nodeAddress.slice(-8)}`;
 
-    if (!confirm(`Remove node ${truncated}?`)) return;
-
-    this.adminService.removeNode(userId, node.id).subscribe({
-      next: () => this.loadUsers(),
-      error: (err) => alert(err.error?.message || 'Failed to remove node'),
+    this.confirmDialog.set({
+      title: 'Remove Node',
+      message: `Are you sure you want to remove node ${truncated}?`,
+      confirmText: 'Remove',
+      variant: 'destructive',
+      onConfirm: () => {
+        this.adminService.removeNode(userId, node.id).subscribe({
+          next: () => {
+            this.notification.success('Node removed successfully');
+            this.loadUsers();
+          },
+          error: (err) => this.notification.error(err.error?.message || 'Failed to remove node'),
+        });
+      },
     });
+  }
+
+  cancelConfirm(): void {
+    this.confirmDialog.set(null);
+  }
+
+  executeConfirm(): void {
+    const dialog = this.confirmDialog();
+    if (dialog) {
+      dialog.onConfirm();
+      this.confirmDialog.set(null);
+    }
   }
 }

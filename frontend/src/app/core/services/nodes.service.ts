@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError, of } from 'rxjs';
 import { Node, NodeDetail, NodeStats, DashboardData } from '../models/node.model';
@@ -8,6 +8,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class NodesService {
+  private http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/nodes`;
 
   private nodesSignal = signal<Node[]>([]);
@@ -19,8 +20,6 @@ export class NodesService {
   readonly stats = this.statsSignal.asReadonly();
   readonly loading = this.loadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
-
-  constructor(private http: HttpClient) {}
 
   getDashboardData(): Observable<DashboardData> {
     this.loadingSignal.set(true);

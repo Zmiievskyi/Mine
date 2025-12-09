@@ -9,6 +9,7 @@ import {
   jwtConfig,
   gonkaConfig,
   googleConfig,
+  githubConfig,
   retryConfig,
   throttlerConfig,
 } from './config';
@@ -35,6 +36,7 @@ import { EarningsHistory } from './modules/nodes/entities/earnings-history.entit
         jwtConfig,
         gonkaConfig,
         googleConfig,
+        githubConfig,
         retryConfig,
         throttlerConfig,
       ],

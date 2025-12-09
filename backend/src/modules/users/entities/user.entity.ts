@@ -18,6 +18,7 @@ export enum UserRole {
 export enum AuthProvider {
   LOCAL = 'local',
   GOOGLE = 'google',
+  GITHUB = 'github',
 }
 
 @Entity('users')
@@ -47,6 +48,9 @@ export class User {
 
   @Column({ type: 'varchar', nullable: true, unique: true })
   googleId: string | null;
+
+  @Column({ type: 'varchar', nullable: true, unique: true })
+  githubId: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   avatarUrl: string | null;

@@ -1,21 +1,21 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { NodesService } from '../../core/services/nodes.service';
 import { DashboardData, Node } from '../../core/models/node.model';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
+import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { getNodeStatusClass } from '../../shared/utils/status-styles.util';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, LayoutComponent],
+  imports: [CommonModule, RouterLink, LayoutComponent, LoadingSpinnerComponent],
   template: `
     <app-layout>
       @if (loading()) {
         <div class="text-center py-12">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--gcore-primary)] mx-auto mb-4"></div>
-          <p class="text-[var(--gcore-text-muted)]">Loading dashboard...</p>
+          <app-loading-spinner message="Loading dashboard..." />
         </div>
       } @else {
         <!-- Stats Cards -->
@@ -118,11 +118,11 @@ import { getNodeStatusClass } from '../../shared/utils/status-styles.util';
   `,
 })
 export class DashboardComponent implements OnInit {
+  private nodesService = inject(NodesService);
+
   loading = signal(true);
   nodes = signal<Node[]>([]);
   stats = signal<DashboardData['stats'] | null>(null);
-
-  constructor(private nodesService: NodesService) {}
 
   ngOnInit(): void {
     this.loadDashboard();

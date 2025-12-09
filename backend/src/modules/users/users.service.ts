@@ -74,4 +74,38 @@ export class UsersService {
     await this.usersRepository.update(userId, updateData);
     return this.findById(userId);
   }
+
+  async findByGithubId(githubId: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { githubId } });
+  }
+
+  async createFromGithub(data: {
+    email: string;
+    name?: string;
+    githubId: string;
+    avatarUrl?: string;
+  }): Promise<User> {
+    const user = this.usersRepository.create({
+      email: data.email,
+      name: data.name || null,
+      githubId: data.githubId,
+      avatarUrl: data.avatarUrl || null,
+      provider: AuthProvider.GITHUB,
+      password: null,
+    });
+    return this.usersRepository.save(user);
+  }
+
+  async linkGithubAccount(
+    userId: string,
+    githubId: string,
+    avatarUrl?: string,
+  ): Promise<User | null> {
+    const updateData: Partial<User> = { githubId };
+    if (avatarUrl) {
+      updateData.avatarUrl = avatarUrl;
+    }
+    await this.usersRepository.update(userId, updateData);
+    return this.findById(userId);
+  }
 }

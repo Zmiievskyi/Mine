@@ -1,6 +1,6 @@
 # MineGNK Progress Tracker
 
-**Last Updated**: 2025-12-09 (Session 17)
+**Last Updated**: 2025-12-09 (Session 20)
 
 ---
 
@@ -15,7 +15,7 @@
 | Phase 4: Node Details | **Complete** | 100% (4.1 done, 4.2-4.3 optional) |
 | Phase 5: Request System | **Complete** | 100% |
 | Phase 6: Admin Panel | **Complete** | 100% |
-| Phase 7: Polish & Launch | In Progress | 95% (7.1, 7.3, 7.4, 7.6, 7.7, 7.8, 7.9 done) |
+| Phase 7: Polish & Launch | In Progress | 98% (7.1, 7.3, 7.4, 7.6, 7.7, 7.8, 7.9, 7.10 done) |
 
 ---
 
@@ -82,6 +82,15 @@
 | 2025-12-09 | Bcrypt rounds 12 (was 10) | Better security, ~300ms hash time still acceptable |
 | 2025-12-09 | Pagination default 20 items, max 100 | Reasonable defaults, prevents memory issues |
 | 2025-12-09 | Pessimistic locking for node assignment | Prevents race conditions in concurrent requests |
+| 2025-12-09 | GitHub OAuth with auto-linking | Same pattern as Google; accounts linked by email |
+| 2025-12-09 | Spartan UI for dashboard components | Modern Angular UI lib similar to shadcn/ui; signals-compatible, accessible |
+| 2025-12-09 | Keep landing page with custom Tailwind | Different styling (dark theme) from dashboard; no need for component library |
+| 2025-12-09 | .dark-theme class for landing page | Spartan adds `bg-background` to body; scoped override restores dark theme |
+| 2025-12-09 | StorageService for localStorage | SSR-compatible abstraction; checks `isPlatformBrowser` before access |
+| 2025-12-09 | Spartan Dialog for confirmations | Replace native alert()/confirm() with accessible, styled dialogs |
+| 2025-12-09 | Unify DI to inject() pattern | Modern Angular pattern; consistent across all services and components |
+| 2025-12-09 | Shared LoadingSpinnerComponent | Single source of truth for loading states; DRY principle |
+| 2025-12-09 | CSS variables as aliases | --gcore-* variables reference Spartan --primary/--foreground; single source of truth |
 
 ---
 
@@ -194,18 +203,20 @@ When Gcore UI Kit access is granted, apply styles on top.
 
 | Metric | Value |
 |--------|-------|
-| Frontend files | 56 TypeScript files |
+| Frontend files | 59 TypeScript files |
 | Frontend pages | 11 (login, register, dashboard, nodes list, node detail, admin, requests, oauth-callback, landing) |
 | Services | 5 (AuthService, NodesService, RequestsService, AdminService, NotificationService) |
-| Guards | 4 (auth, guest, admin, oauth) |
+| Guards | 3 (auth, guest, admin) |
+| Interceptors | 3 (auth, error, retry) |
 | Backend modules | 6 (auth, users, nodes, requests, admin, health) |
-| Backend files | 41 TypeScript files (excl. tests) |
-| API endpoints | 25 (auth: 5, nodes: 3, requests: 7, admin: 7, health: 3) |
+| Backend files | 47 TypeScript files (excl. tests) |
+| API endpoints | 26 (auth: 7, nodes: 3, requests: 7, admin: 7, health: 3) |
 | Database tables | 6 (users, user_nodes, node_requests, nodes, node_stats_cache, earnings_history) |
 | Migration files | 5 |
-| Config files | 7 (app, database, jwt, gonka, google, retry, throttler) |
+| Config files | 9 (app, database, jwt, gonka, google, github, retry, throttler, index) |
 | Tests passing | 38 (auth: 10, nodes: 12, admin: 16) |
-| Auth strategies | 2 (JWT, Google OAuth) |
+| Auth strategies | 3 (JWT, Google OAuth, GitHub OAuth) |
+| Spartan UI components | 15 helm libraries (badge, button, card, dialog, form-field, icon, input, label, radio-group, select, sonner, table, tabs, textarea, utils) |
 
 ---
 
@@ -1204,3 +1215,345 @@ this.logger.log(`New user registered: ${userId} (${email})`);
 | Tests passing | 38 | 38 (all updated) |
 | Security features | Rate limiting | + Logging, payload limits |
 | Cache type | Simple Map | LRU with eviction |
+
+---
+
+## Session 18: GitHub OAuth Integration (2025-12-09)
+
+### Completed Tasks
+- [x] Installed passport-github2 and @types/passport-github2 packages (2025-12-09)
+- [x] Created GitHub OAuth configuration (`backend/src/config/github.config.ts`) (2025-12-09)
+- [x] Created GitHub Passport strategy (`backend/src/modules/auth/strategies/github.strategy.ts`) (2025-12-09)
+- [x] Updated User entity with githubId field and GITHUB provider enum (2025-12-09)
+- [x] Added GitHub-related methods to UsersService (findByGithubId, createFromGithub, linkGithubAccount) (2025-12-09)
+- [x] Added githubLogin method to AuthService with auto-linking (2025-12-09)
+- [x] Added /auth/github and /auth/github/callback endpoints (2025-12-09)
+- [x] Registered GitHubStrategy in AuthModule (2025-12-09)
+- [x] Updated CLAUDE.md with GitHub OAuth documentation (2025-12-09)
+- [x] Verified build and all 38 tests pass (2025-12-09)
+
+### New Files Created
+**Backend:**
+- `backend/src/config/github.config.ts` - GitHub OAuth configuration
+- `backend/src/modules/auth/strategies/github.strategy.ts` - Passport GitHub OAuth strategy
+
+### Modified Files
+**Backend:**
+- `backend/src/config/index.ts` - Export github config
+- `backend/src/app.module.ts` - Load githubConfig
+- `backend/src/modules/users/entities/user.entity.ts` - Added githubId, GITHUB to AuthProvider enum
+- `backend/src/modules/users/users.service.ts` - Added GitHub-related methods
+- `backend/src/modules/auth/auth.service.ts` - Added githubLogin() method
+- `backend/src/modules/auth/auth.controller.ts` - Added GitHub OAuth endpoints
+- `backend/src/modules/auth/auth.module.ts` - Registered GitHubStrategy
+
+**Documentation:**
+- `CLAUDE.md` - Updated auth description, added GitHub env variables
+
+### Packages Added
+**Backend:**
+- `passport-github2` - GitHub OAuth 2.0 strategy
+- `@types/passport-github2` - TypeScript definitions
+
+### API Endpoints Added
+```
+GET    /api/auth/github          → Initiates GitHub OAuth (redirects to GitHub)
+GET    /api/auth/github/callback → Handles OAuth callback, redirects to frontend
+```
+
+### GitHub OAuth Flow
+```
+User clicks "Sign in with GitHub"
+  → Redirects to /api/auth/github
+  → GitHub consent screen
+  → Callback with profile
+  → Backend checks:
+    1. User exists by githubId? → Login
+    2. User exists by email? → Auto-link GitHub account → Login
+    3. New user? → Create account → Login
+  → Generate JWT
+  → Redirect to frontend /auth/oauth-callback#token=...
+  → Frontend stores token → Dashboard
+```
+
+### Environment Variables Required
+```bash
+# backend/.env
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+GITHUB_CALLBACK_URL=http://localhost:3000/api/auth/github/callback
+```
+
+### GitHub OAuth App Setup
+1. Go to https://github.com/settings/developers
+2. Click "New OAuth App"
+3. Set Authorization callback URL to `http://localhost:3000/api/auth/github/callback`
+4. Copy Client ID and Secret to .env
+
+### Metrics Update
+| Metric | Before | After |
+|--------|--------|-------|
+| Auth strategies | 2 (JWT, Google) | 3 (+GitHub OAuth) |
+| API endpoints | 22 | 24 (+2 GitHub OAuth) |
+| Config files | 7 | 8 (+github.config.ts) |
+| OAuth providers | 1 (Google) | 2 (+GitHub) |
+
+---
+
+## Session 19: Spartan UI Migration (2025-12-09)
+
+### Completed Tasks
+- [x] Researched Spartan UI library (https://spartan.ng) (2025-12-09)
+- [x] Created migration plan for dashboard components (2025-12-09)
+- [x] Installed Spartan dependencies (@spartan-ng/cli, @spartan-ng/brain, @angular/cdk) (2025-12-09)
+- [x] Ran `ng g @spartan-ng/cli:init` to initialize Spartan (2025-12-09)
+- [x] Added 15 helm components (button, table, dialog, tabs, badge, select, input, label, sonner, radio-group, card, textarea, form-field, icon, utils) (2025-12-09)
+- [x] Customized theme with GCore orange as primary (#FF4C00 → oklch(0.637 0.222 37.69)) (2025-12-09)
+- [x] Migrated Toast → Sonner (ngx-sonner) (2025-12-09)
+- [x] Migrated Tabs → hlm-tabs in node-detail.component.ts (2025-12-09)
+- [x] Migrated Dialog → hlm-dialog in assign-node-modal.component.ts (2025-12-09)
+- [x] Migrated Table → hlm-table with badges in nodes-list.component.ts (2025-12-09)
+- [x] Verified build passes successfully (2025-12-09)
+
+### What is Spartan?
+Spartan UI is an Angular component library similar to shadcn/ui for React:
+- **Brain** (@spartan-ng/brain): Unstyled accessible primitives (installed via npm)
+- **Helm** (libs/ui/): Styled components copied into project (customizable)
+- **TanStack Table**: Powers data tables with sorting/filtering/pagination
+- **Signals-based**: Compatible with Angular's signals
+- **Tailwind CSS**: Uses Tailwind for styling
+
+### New Files Created
+**Frontend:**
+- `frontend/libs/ui/` - 15 Spartan helm components:
+  - `badge/`, `button/`, `card/`, `dialog/`, `form-field/`
+  - `icon/`, `input/`, `label/`, `radio-group/`, `select/`
+  - `sonner/`, `table/`, `tabs/`, `textarea/`, `utils/`
+- `frontend/components.json` - Spartan configuration file
+
+### Modified Files
+**Frontend:**
+- `frontend/src/styles.scss` - Added Spartan theme with GCore orange primary color
+  ```scss
+  :root {
+    --primary: oklch(0.637 0.222 37.69);  // #FF4C00
+    --primary-foreground: oklch(1 0 0);    // white
+    --accent: oklch(0.637 0.222 37.69);
+    --ring: oklch(0.637 0.222 37.69);
+  }
+  ```
+- `frontend/src/app/app.ts` - Replaced ToastComponent with HlmToaster
+- `frontend/src/app/app.html` - Added `<hlm-toaster position="top-right" [richColors]="true" [closeButton]="true" />`
+- `frontend/src/app/core/services/notification.service.ts` - Migrated to ngx-sonner API
+- `frontend/src/app/features/nodes/node-detail/node-detail.component.ts` - Uses HlmTabsImports, BrnTabsImports
+- `frontend/src/app/features/nodes/nodes-list/nodes-list.component.ts` - Uses HlmTableImports, HlmBadge
+- `frontend/src/app/features/admin/admin-users/assign-node-modal/assign-node-modal.component.ts` - Uses BrnDialogImports, HlmDialogImports
+- `frontend/tsconfig.json` - Added path mappings for @spartan-ng/helm/*
+
+### Deleted Files
+- `frontend/src/app/shared/components/toast/toast.component.ts` - Replaced by Sonner
+
+### Component Migrations
+
+| Component | Before | After |
+|-----------|--------|-------|
+| Toast | Custom signal-based ToastComponent | ngx-sonner with HlmToaster |
+| Tabs | Custom tab implementation with activeTab signal | hlm-tabs with hlmTabsTrigger/hlmTabsContent |
+| Dialog | Custom modal with isOpen/onClose | hlm-dialog with state binding |
+| Table | Native HTML table | hlmTable directives (hlmTr, hlmTh, hlmTd) |
+| Badge | Custom status styling | hlmBadge with variants (default, secondary, destructive) |
+| Button | Custom CSS | hlmBtn directive with variants |
+| Input | Custom styling | hlmInput directive |
+| Label | Native label | hlmLabel directive |
+
+### Spartan Component Usage Examples
+
+**Tabs (node-detail.component.ts):**
+```html
+<hlm-tabs tab="overview" class="w-full">
+  <hlm-tabs-list class="...">
+    <button hlmTabsTrigger="overview">Overview</button>
+    <button hlmTabsTrigger="metrics">Metrics</button>
+  </hlm-tabs-list>
+  <div hlmTabsContent="overview">...</div>
+  <div hlmTabsContent="metrics">...</div>
+</hlm-tabs>
+```
+
+**Dialog (assign-node-modal.component.ts):**
+```html
+<hlm-dialog [state]="isOpen ? 'open' : 'closed'" (closed)="onClose()">
+  <hlm-dialog-content class="sm:max-w-lg">
+    <hlm-dialog-header>
+      <h3 hlmDialogTitle>Title</h3>
+    </hlm-dialog-header>
+    <div class="py-4"><!-- Content --></div>
+    <hlm-dialog-footer>
+      <button hlmBtn variant="outline">Cancel</button>
+      <button hlmBtn>Confirm</button>
+    </hlm-dialog-footer>
+  </hlm-dialog-content>
+</hlm-dialog>
+```
+
+**Table with Badge (nodes-list.component.ts):**
+```html
+<div hlmTableContainer>
+  <table hlmTable>
+    <thead hlmThead>
+      <tr hlmTr>
+        <th hlmTh>Column</th>
+      </tr>
+    </thead>
+    <tbody hlmTbody>
+      <tr hlmTr>
+        <td hlmTd>
+          <span hlmBadge [variant]="getStatusVariant(status)">{{ status }}</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+```
+
+### Badge Variant Mapping
+```typescript
+getStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+  switch (status?.toLowerCase()) {
+    case 'healthy': case 'active': return 'default';      // green
+    case 'unhealthy': case 'warning': return 'secondary'; // yellow
+    case 'jailed': case 'offline': case 'error': return 'destructive'; // red
+    default: return 'outline';
+  }
+}
+```
+
+### Packages Added
+**Frontend:**
+- `@spartan-ng/cli` - CLI for adding Spartan components
+- `@spartan-ng/brain` - Unstyled accessible primitives
+- `@angular/cdk` - Angular Component Dev Kit (dependency)
+- `ngx-sonner` - Toast notifications (used by Spartan Sonner)
+
+### Issues Encountered & Fixed
+1. **Spartan CLI interactive**: CLI requires user input, couldn't automate fully
+2. **Wrong import names**: Used `HlmButtonDirective` instead of `HlmButton` - fixed by checking exports
+3. **Unused import warnings**: Removed unused HlmButton from nodes-list after table migration
+
+### Metrics Update
+| Metric | Before | After |
+|--------|--------|-------|
+| UI library | Custom components | Spartan UI (15 helm components) |
+| Toast implementation | Custom ToastComponent | ngx-sonner (HlmToaster) |
+| Shared components | toast/ folder | Deleted (using Spartan) |
+| Path mappings | 0 | 15 (@spartan-ng/helm/*) |
+
+### Scope
+- **Migrated**: Dashboard components (tables, modals, tabs, toasts, badges, inputs, buttons)
+- **Not migrated**: Landing page (uses custom Tailwind styling, not Spartan)
+
+---
+
+## Session 20: Frontend Code Cleanup (2025-12-09)
+
+### Completed Tasks
+- [x] Fixed Spartan dark theme override on landing page (2025-12-09)
+- [x] Created StorageService for SSR-compatible localStorage (2025-12-09)
+- [x] Replaced window.location with Router.url in layout (2025-12-09)
+- [x] Replaced alert()/confirm() with Spartan Dialog in admin components (2025-12-09)
+- [x] Removed unused section components from landing/sections/ (2025-12-09)
+- [x] Unified DI pattern to inject() in all services and components (2025-12-09)
+- [x] Unified LoadingSpinnerComponent usage across all pages (2025-12-09)
+- [x] Cleaned up CSS variables (removed unused --dark-*, --accent-*) (2025-12-09)
+- [x] Unified --gcore-* to reference Spartan variables (2025-12-09)
+
+### Code Review Fixes
+
+**Dark Theme Fix:**
+Spartan UI adds `@layer base { body { @apply bg-background text-foreground; }}` which overrode landing page dark theme. Fixed by adding `.dark-theme` class with scoped CSS variable overrides:
+```scss
+.dark-theme {
+  --background: oklch(0.06 0 0);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.10 0 0);
+  --muted-foreground: oklch(0.55 0 0);
+  --border: oklch(1 0 0 / 10%);
+}
+```
+
+**StorageService (SSR-compatible):**
+```typescript
+@Injectable({ providedIn: 'root' })
+export class StorageService {
+  private platformId = inject(PLATFORM_ID);
+  private get isBrowser(): boolean { return isPlatformBrowser(this.platformId); }
+  get(key: string): string | null { if (!this.isBrowser) return null; return localStorage.getItem(key); }
+  // ...
+}
+```
+
+**CSS Variables Cleanup:**
+```scss
+// BEFORE (redundant definitions):
+--gcore-primary: #FF4C00;
+--dark-bg: #0a0a0a;      // unused
+--accent-orange: #FF4C00; // unused
+
+// AFTER (aliases to Spartan):
+--gcore-primary: var(--primary);
+--gcore-text: var(--foreground);
+--gcore-border: var(--border);
+```
+
+### Files Modified
+
+**New Files:**
+- `src/app/core/services/storage.service.ts` - SSR-compatible localStorage
+
+**Modified Files:**
+- `src/styles.scss` - Added .dark-theme, cleaned CSS variables
+- `src/app/features/landing/landing.component.html` - Added dark-theme class
+- `src/app/shared/components/layout/layout.component.ts` - Router.url instead of window.location
+- `src/app/features/admin/admin-users/admin-users.component.ts` - Spartan Dialog, LoadingSpinner
+- `src/app/features/admin/admin-requests/admin-requests.component.ts` - Spartan Dialog, LoadingSpinner
+- `src/app/features/requests/requests-list.component.ts` - LoadingSpinner
+- `src/app/features/nodes/node-detail/node-detail.component.ts` - inject() pattern
+
+**Deleted Files:**
+- `src/app/features/landing/sections/*` - 7 unused section components
+- `src/app/shared/components/header/` - unused
+- `src/app/shared/components/footer/` - unused
+
+### DI Pattern Unification
+
+Converted constructor DI to inject() in:
+| File | Fields |
+|------|--------|
+| node-detail.component.ts | route, nodesService |
+
+All other services/components were already using inject() pattern.
+
+### LoadingSpinnerComponent Unification
+
+Replaced inline spinners with `<app-loading-spinner>` in:
+- requests-list.component.ts
+- admin-requests.component.ts
+- admin-users.component.ts
+
+LoadingSpinnerComponent updated to be more flexible:
+```typescript
+@Input() message: string | null = 'Loading...';
+@Input() containerClass = '';
+```
+
+### Phase 7 Progress Update
+- [x] 7.1 Error Handling & Fallbacks - **COMPLETE**
+- [ ] 7.2 Monitoring (Sentry) - Deferred
+- [x] 7.3 Security Review - **COMPLETE**
+- [x] 7.4 Documentation (Swagger) - **COMPLETE**
+- [ ] 7.5 Deployment (Docker) - Remaining
+- [x] 7.6 UI Framework - **COMPLETE**
+- [x] 7.7 Code Quality & Testing - **COMPLETE**
+- [x] 7.8 Google OAuth - **COMPLETE**
+- [x] 7.9 Landing Page Polish - **COMPLETE**
+- [x] 7.10 Frontend Code Cleanup - **COMPLETE**

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -8,9 +8,8 @@ import { NodeRequest, CreateRequestDto } from '../models/request.model';
   providedIn: 'root',
 })
 export class RequestsService {
+  private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/requests`;
-
-  constructor(private http: HttpClient) {}
 
   create(request: CreateRequestDto): Observable<NodeRequest> {
     return this.http.post<NodeRequest>(this.apiUrl, request);

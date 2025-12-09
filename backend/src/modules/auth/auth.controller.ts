@@ -22,6 +22,7 @@ import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleProfile } from './strategies/google.strategy';
+import { GitHubProfile } from './strategies/github.strategy';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -91,6 +92,44 @@ export class AuthController {
       // - Fragments are NOT sent to server in HTTP requests
       // - Fragments are NOT included in Referrer header
       // - Fragments are NOT logged in server access logs
+      const params = new URLSearchParams({
+        token: result.accessToken,
+        user: JSON.stringify(result.user),
+      });
+
+      res.redirect(`${frontendUrl}/auth/oauth-callback#${params.toString()}`);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Authentication failed';
+      res.redirect(
+        `${frontendUrl}/auth/login?error=${encodeURIComponent(errorMessage)}`,
+      );
+    }
+  }
+
+  @Get('github')
+  @UseGuards(AuthGuard('github'))
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @ApiOperation({ summary: 'Initiate GitHub OAuth login' })
+  @ApiResponse({ status: 302, description: 'Redirects to GitHub OAuth' })
+  githubAuth() {
+    // Guard redirects to GitHub OAuth
+  }
+
+  @Get('github/callback')
+  @UseGuards(AuthGuard('github'))
+  @ApiExcludeEndpoint()
+  async githubCallback(
+    @Request() req: Request & { user: GitHubProfile },
+    @Res() res: Response,
+  ) {
+    const frontendUrl =
+      this.configService.get<string>('github.frontendUrl') ||
+      'http://localhost:4200';
+
+    try {
+      const result = await this.authService.githubLogin(req.user);
+
       const params = new URLSearchParams({
         token: result.accessToken,
         user: JSON.stringify(result.user),

@@ -11,6 +11,7 @@ import { UsersService } from '../users/users.service';
 import { LoginDto, RegisterDto } from './dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { GoogleProfile } from './strategies/google.strategy';
+import { GitHubProfile } from './strategies/github.strategy';
 
 @Injectable()
 export class AuthService {
@@ -159,6 +160,58 @@ export class AuthService {
     });
 
     this.logger.log(`New user created via Google: ${user.id} (${user.email})`);
+    return this.createAuthResponse(user);
+  }
+
+  async githubLogin(githubProfile: GitHubProfile) {
+    if (!githubProfile.email) {
+      this.logger.warn('GitHub login attempt without email');
+      throw new UnauthorizedException('Email is required for GitHub sign-in. Please make your email public on GitHub or use another login method.');
+    }
+
+    // Check if user exists by GitHub ID
+    let user = await this.usersService.findByGithubId(githubProfile.githubId);
+
+    if (user) {
+      if (!user.isActive) {
+        this.logger.warn(`GitHub login blocked for inactive user: ${user.id}`);
+        throw new UnauthorizedException('Account is disabled');
+      }
+      this.logger.log(`GitHub login for existing user: ${user.id} (${user.email})`);
+      return this.createAuthResponse(user);
+    }
+
+    // Check if user exists by email (auto-link scenario)
+    user = await this.usersService.findByEmail(githubProfile.email);
+
+    if (user) {
+      if (!user.isActive) {
+        this.logger.warn(`GitHub login blocked for inactive user: ${user.id}`);
+        throw new UnauthorizedException('Account is disabled');
+      }
+      // Link GitHub account to existing user
+      await this.usersService.linkGithubAccount(
+        user.id,
+        githubProfile.githubId,
+        githubProfile.avatarUrl,
+      );
+      const updatedUser = await this.usersService.findById(user.id);
+      if (!updatedUser) {
+        throw new UnauthorizedException('Failed to update user');
+      }
+      this.logger.log(`GitHub account linked to user: ${updatedUser.id} (${updatedUser.email})`);
+      return this.createAuthResponse(updatedUser);
+    }
+
+    // Create new user from GitHub profile
+    user = await this.usersService.createFromGithub({
+      email: githubProfile.email,
+      name: githubProfile.name,
+      githubId: githubProfile.githubId,
+      avatarUrl: githubProfile.avatarUrl,
+    });
+
+    this.logger.log(`New user created via GitHub: ${user.id} (${user.email})`);
     return this.createAuthResponse(user);
   }
 

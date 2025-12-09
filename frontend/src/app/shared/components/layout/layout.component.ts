@@ -1,6 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -97,13 +97,14 @@ import { AuthService } from '../../../core/services/auth.service';
 export class LayoutComponent {
   @Input() pageTitle = '';
 
-  constructor(public authService: AuthService) {}
+  authService = inject(AuthService);
+  private router = inject(Router);
 
   logout(): void {
     this.authService.logout();
   }
 
   isActive(route: string): boolean {
-    return window.location.pathname === route;
+    return this.router.url === route;
   }
 }

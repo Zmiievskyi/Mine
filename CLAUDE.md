@@ -58,7 +58,7 @@ User Login -> Backend checks user_id
 - **Frontend**: Angular 18+ with Tailwind CSS v4
 - **Backend**: NestJS with Swagger docs at /api/docs
 - **Database**: PostgreSQL 16
-- **Auth**: Email/password + Google OAuth with JWT tokens (7-day expiry)
+- **Auth**: Email/password + Google/GitHub OAuth with JWT tokens (7-day expiry)
 - **Security**: Helmet headers, rate limiting, strong password validation
 - **External APIs**: Gonka (trackers), Gcore (instance specs)
 
@@ -103,7 +103,7 @@ User Login -> Backend checks user_id
   backend/                  # NestJS API
     src/
       common/               # Filters, utils (retry logic), DTOs (pagination), services (LRU cache)
-      config/               # App, database, JWT, Gonka, Google, retry, throttler configs
+      config/               # App, database, JWT, Gonka, Google, GitHub, retry, throttler configs
       modules/
         auth/               # Authentication (JWT) + tests
         users/              # User management
@@ -197,6 +197,11 @@ GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback
 FRONTEND_URL=http://localhost:4200
+
+# GitHub OAuth
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+GITHUB_CALLBACK_URL=http://localhost:3000/api/auth/github/callback
 
 # Gonka API
 GONKA_API_NODES=http://node1.gonka.ai:8000,http://node2.gonka.ai:8000
@@ -312,6 +317,34 @@ The landing page uses a custom `appScrollReveal` directive for scroll-triggered 
 <!-- Avoid: Custom CSS for simple styling -->
 <div class="custom-card">  <!-- Don't create .custom-card in SCSS -->
 ```
+
+### Spartan UI Library
+
+The dashboard uses **Spartan UI** (https://spartan.ng) - an Angular component library similar to shadcn/ui:
+
+| Component | Location | Usage |
+|-----------|----------|-------|
+| Tabs | libs/ui/tabs | node-detail.component.ts |
+| Dialog | libs/ui/dialog | assign-node-modal.component.ts |
+| Table | libs/ui/table | nodes-list.component.ts |
+| Badge | libs/ui/badge | Status indicators |
+| Sonner | libs/ui/sonner | Toast notifications (NotificationService) |
+| Button | libs/ui/button | hlmBtn directive |
+| Input/Label | libs/ui/input, label | Form fields |
+
+**Architecture:**
+- **Brain** (`@spartan-ng/brain`): Unstyled accessible primitives (npm package)
+- **Helm** (`libs/ui/`): Styled components copied into project (customizable)
+
+**Theme**: GCore orange (#FF4C00) configured as `--primary` in `styles.scss`:
+```scss
+:root {
+  --primary: oklch(0.637 0.222 37.69);  // #FF4C00
+  --primary-foreground: oklch(1 0 0);    // white
+}
+```
+
+**Note**: Landing page uses custom Tailwind styling (not Spartan) for its dark theme.
 
 ## Testing
 

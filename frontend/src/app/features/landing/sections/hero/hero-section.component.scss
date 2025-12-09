@@ -1,8 +1,0 @@
-// Accessibility: Disable animations for users who prefer reduced motion
-@media (prefers-reduced-motion: reduce) {
-  button,
-  svg {
-    transition: none !important;
-    transform: none !important;
-  }
-}

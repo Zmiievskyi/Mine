@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
@@ -108,7 +108,7 @@ export class AdminDashboardComponent implements OnInit {
     approvedRequests: 0,
   });
 
-  constructor(private adminService: AdminService) {}
+  private adminService = inject(AdminService);
 
   ngOnInit(): void {
     this.adminService.getDashboardStats().subscribe({

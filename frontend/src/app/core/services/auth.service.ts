@@ -1,7 +1,7 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import {
   User,
   LoginRequest,
@@ -9,6 +9,7 @@ import {
   AuthResponse,
 } from '../models/user.model';
 import { environment } from '../../../environments/environment';
+import { StorageService } from './storage.service';
 
 const TOKEN_KEY = 'access_token';
 const USER_KEY = 'user';
@@ -18,6 +19,9 @@ const USER_KEY = 'user';
 })
 export class AuthService {
   private readonly apiUrl = `${environment.apiUrl}/auth`;
+  private http = inject(HttpClient);
+  private router = inject(Router);
+  private storage = inject(StorageService);
 
   private currentUserSignal = signal<User | null>(this.loadUserFromStorage());
 
@@ -27,74 +31,56 @@ export class AuthService {
     () => this.currentUserSignal()?.role === 'admin'
   );
 
-  constructor(
-    private http: HttpClient,
-    private router: Router
-  ) {}
-
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
-      tap((response) => this.handleAuthResponse(response)),
-      catchError((error) => {
-        console.error('Login error:', error);
-        return throwError(() => error);
-      })
+      tap((response) => this.handleAuthResponse(response))
     );
   }
 
   register(data: RegisterRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data).pipe(
-      tap((response) => this.handleAuthResponse(response)),
-      catchError((error) => {
-        console.error('Register error:', error);
-        return throwError(() => error);
-      })
+      tap((response) => this.handleAuthResponse(response))
     );
   }
 
   logout(): void {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    this.storage.remove(TOKEN_KEY);
+    this.storage.remove(USER_KEY);
     this.currentUserSignal.set(null);
     this.router.navigate(['/auth/login']);
   }
 
   getToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
+    return this.storage.get(TOKEN_KEY);
   }
 
   loginWithGoogle(): void {
     window.location.href = `${environment.apiUrl}/auth/google`;
   }
 
+  loginWithGithub(): void {
+    window.location.href = `${environment.apiUrl}/auth/github`;
+  }
+
   handleOAuthCallback(token: string, userJson: string): boolean {
     try {
       const user: User = JSON.parse(userJson);
-      localStorage.setItem(TOKEN_KEY, token);
-      localStorage.setItem(USER_KEY, userJson);
+      this.storage.set(TOKEN_KEY, token);
+      this.storage.set(USER_KEY, userJson);
       this.currentUserSignal.set(user);
       return true;
-    } catch (error) {
-      console.error('Failed to parse OAuth callback data:', error);
+    } catch {
       return false;
     }
   }
 
   private handleAuthResponse(response: AuthResponse): void {
-    localStorage.setItem(TOKEN_KEY, response.accessToken);
-    localStorage.setItem(USER_KEY, JSON.stringify(response.user));
+    this.storage.set(TOKEN_KEY, response.accessToken);
+    this.storage.setJson(USER_KEY, response.user);
     this.currentUserSignal.set(response.user);
   }
 
   private loadUserFromStorage(): User | null {
-    const userJson = localStorage.getItem(USER_KEY);
-    if (userJson) {
-      try {
-        return JSON.parse(userJson);
-      } catch {
-        return null;
-      }
-    }
-    return null;
+    return this.storage.getJson<User>(USER_KEY);
   }
 }

@@ -1,19 +1,32 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { AdminRequest } from '../../../core/models/admin.model';
 import { GPU_OPTIONS } from '../../../core/models/request.model';
 import { getRequestStatusClass } from '../../../shared/utils/status-styles.util';
+import { BrnDialogImports } from '@spartan-ng/brain/dialog';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmButton } from '@spartan-ng/helm/button';
 
 type RequestStatus = 'pending' | 'approved' | 'rejected' | 'completed';
+
+interface ConfirmDialogData {
+  title: string;
+  message: string;
+  confirmText?: string;
+  variant?: 'default' | 'destructive';
+  onConfirm: () => void;
+}
 
 @Component({
   selector: 'app-admin-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LayoutComponent, DatePipe],
+  imports: [CommonModule, FormsModule, RouterLink, LayoutComponent, LoadingSpinnerComponent, DatePipe, BrnDialogImports, HlmDialogImports, HlmButton],
   template: `
     <app-layout>
       <div class="flex items-center justify-between mb-6">
@@ -65,10 +78,7 @@ type RequestStatus = 'pending' | 'approved' | 'rejected' | 'completed';
       <!-- Loading -->
       @if (loading()) {
         <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-12">
-          <div class="flex flex-col items-center justify-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--gcore-primary)] mb-4"></div>
-            <p class="text-[var(--gcore-text-muted)]">Loading requests...</p>
-          </div>
+          <app-loading-spinner message="Loading requests..." />
         </div>
       }
 
@@ -201,10 +211,31 @@ type RequestStatus = 'pending' | 'approved' | 'rejected' | 'completed';
           </div>
         </div>
       }
+
+      <!-- Confirm Dialog -->
+      @if (confirmDialog()) {
+        <hlm-dialog [state]="'open'">
+          <hlm-dialog-content class="sm:max-w-[400px]">
+            <hlm-dialog-header>
+              <h3 hlmDialogTitle>{{ confirmDialog()!.title }}</h3>
+              <p hlmDialogDescription>{{ confirmDialog()!.message }}</p>
+            </hlm-dialog-header>
+            <hlm-dialog-footer>
+              <button hlmBtn variant="outline" (click)="cancelConfirm()">Cancel</button>
+              <button hlmBtn [variant]="confirmDialog()!.variant || 'default'" (click)="executeConfirm()">
+                {{ confirmDialog()!.confirmText || 'Confirm' }}
+              </button>
+            </hlm-dialog-footer>
+          </hlm-dialog-content>
+        </hlm-dialog>
+      }
     </app-layout>
   `,
 })
 export class AdminRequestsComponent implements OnInit {
+  private adminService = inject(AdminService);
+  private notification = inject(NotificationService);
+
   requests = signal<AdminRequest[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
@@ -212,11 +243,10 @@ export class AdminRequestsComponent implements OnInit {
   editingRequest = signal<AdminRequest | null>(null);
   notesText = '';
   stats = signal({ pending: 0, approved: 0, completed: 0 });
+  confirmDialog = signal<ConfirmDialogData | null>(null);
 
   statusFilters = ['all', 'pending', 'approved', 'rejected', 'completed'];
   gpuOptions = GPU_OPTIONS;
-
-  constructor(private adminService: AdminService) {}
 
   ngOnInit(): void {
     this.loadRequests();
@@ -263,8 +293,13 @@ export class AdminRequestsComponent implements OnInit {
   }
 
   rejectRequest(request: AdminRequest): void {
-    if (!confirm('Reject this request?')) return;
-    this.updateStatus(request.id, 'rejected');
+    this.confirmDialog.set({
+      title: 'Reject Request',
+      message: 'Are you sure you want to reject this request?',
+      confirmText: 'Reject',
+      variant: 'destructive',
+      onConfirm: () => this.updateStatus(request.id, 'rejected'),
+    });
   }
 
   completeRequest(request: AdminRequest): void {
@@ -274,10 +309,11 @@ export class AdminRequestsComponent implements OnInit {
   private updateStatus(id: string, status: RequestStatus): void {
     this.adminService.updateRequest(id, { status }).subscribe({
       next: () => {
+        this.notification.success(`Request ${status} successfully`);
         this.loadRequests();
         this.loadStats();
       },
-      error: (err) => alert(err.error?.message || 'Failed to update request'),
+      error: (err) => this.notification.error(err.error?.message || 'Failed to update request'),
     });
   }
 
@@ -292,10 +328,23 @@ export class AdminRequestsComponent implements OnInit {
 
     this.adminService.updateRequest(request.id, { adminNotes: this.notesText }).subscribe({
       next: () => {
+        this.notification.success('Notes saved');
         this.editingRequest.set(null);
         this.loadRequests();
       },
-      error: (err) => alert(err.error?.message || 'Failed to save notes'),
+      error: (err) => this.notification.error(err.error?.message || 'Failed to save notes'),
     });
+  }
+
+  cancelConfirm(): void {
+    this.confirmDialog.set(null);
+  }
+
+  executeConfirm(): void {
+    const dialog = this.confirmDialog();
+    if (dialog) {
+      dialog.onConfirm();
+      this.confirmDialog.set(null);
+    }
   }
 }

@@ -1,15 +1,16 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { RequestsService } from '../../core/services/requests.service';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
+import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { NodeRequest, GPU_OPTIONS, RequestStatus } from '../../core/models/request.model';
 import { getRequestStatusClass } from '../../shared/utils/status-styles.util';
 
 @Component({
   selector: 'app-requests-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, LayoutComponent, DatePipe],
+  imports: [CommonModule, RouterLink, LayoutComponent, LoadingSpinnerComponent, DatePipe],
   template: `
     <app-layout>
       <!-- Header -->
@@ -31,10 +32,7 @@ import { getRequestStatusClass } from '../../shared/utils/status-styles.util';
       <!-- Loading State -->
       @if (loading()) {
         <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-12">
-          <div class="flex flex-col items-center justify-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--gcore-primary)] mb-4"></div>
-            <p class="text-[var(--gcore-text-muted)]">Loading requests...</p>
-          </div>
+          <app-loading-spinner message="Loading requests..." />
         </div>
       }
 
@@ -185,13 +183,13 @@ import { getRequestStatusClass } from '../../shared/utils/status-styles.util';
 })
 export class RequestsListComponent implements OnInit {
   requests = signal<NodeRequest[]>([]);
+  private requestsService = inject(RequestsService);
+
   loading = signal(true);
   error = signal<string | null>(null);
   selectedRequest = signal<NodeRequest | null>(null);
 
   gpuOptions = GPU_OPTIONS;
-
-  constructor(private requestsService: RequestsService) {}
 
   ngOnInit(): void {
     this.loadRequests();

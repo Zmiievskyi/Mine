@@ -3,5 +3,6 @@ export { default as databaseConfig } from './database.config';
 export { default as jwtConfig } from './jwt.config';
 export { default as gonkaConfig } from './gonka.config';
 export { default as googleConfig } from './google.config';
+export { default as githubConfig } from './github.config';
 export { default as retryConfig } from './retry.config';
 export { default as throttlerConfig } from './throttler.config';
