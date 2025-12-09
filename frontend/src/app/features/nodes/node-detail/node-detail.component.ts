@@ -1,6 +1,7 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NodesService } from '../../../core/services/nodes.service';
 import { NodeDetail } from '../../../core/models/node.model';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
@@ -135,6 +136,7 @@ import { BrnTabsImports } from '@spartan-ng/brain/tabs';
 export class NodeDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private nodesService = inject(NodesService);
+  private destroyRef = inject(DestroyRef);
 
   node = signal<NodeDetail | null>(null);
   loading = signal(true);
@@ -143,10 +145,12 @@ export class NodeDetailComponent implements OnInit {
   private nodeAddress: string = '';
 
   ngOnInit(): void {
-    this.route.params.subscribe((params) => {
-      this.nodeAddress = params['id'];
-      this.loadNode();
-    });
+    this.route.params
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => {
+        this.nodeAddress = params['id'];
+        this.loadNode();
+      });
   }
 
   loadNode(): void {
@@ -155,20 +159,23 @@ export class NodeDetailComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.nodesService.getNode(this.nodeAddress).subscribe({
-      next: (node) => {
-        if (node) {
-          this.node.set(node);
-        } else {
-          this.error.set('Node not found or access denied');
-        }
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.error.set(err.error?.message || 'Failed to load node details');
-        this.loading.set(false);
-      },
-    });
+    this.nodesService
+      .getNode(this.nodeAddress)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (node) => {
+          if (node) {
+            this.node.set(node);
+          } else {
+            this.error.set('Node not found or access denied');
+          }
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.error.set(err.error?.message || 'Failed to load node details');
+          this.loading.set(false);
+        },
+      });
   }
 
   getNodeStatusClass = getNodeStatusClass;

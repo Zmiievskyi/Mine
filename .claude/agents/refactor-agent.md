@@ -272,3 +272,128 @@ After refactoring:
 1. Run `code-review-agent` again to verify fixes
 2. Run tests to ensure behavior preserved
 3. Update any documentation if file structure changed
+
+## Spartan UI Consistency
+
+### Spartan-First Rule
+
+All dashboard/app components MUST use Spartan UI primitives instead of custom HTML/Tailwind styling.
+
+**Exception**: Landing page (`landing.component.ts`) uses custom dark theme styling.
+
+### Component Mapping
+
+| HTML Element | Spartan Replacement | Import |
+|--------------|---------------------|--------|
+| `<button>` | `hlmBtn` directive | `HlmButton` from `@spartan-ng/helm/button` |
+| `<input>` | `hlmInput` directive | `HlmInput` from `@spartan-ng/helm/input` |
+| `<label>` | `hlmLabel` directive | `HlmLabel` from `@spartan-ng/helm/label` |
+| `<select>` | `<hlm-select>` component | `HlmSelect*` from `@spartan-ng/helm/select` |
+| `<textarea>` | `hlmTextarea` directive | `HlmTextarea` from `@spartan-ng/helm/textarea` |
+| `<table>` | `<hlm-table>` | `HlmTableImports` from libs/ui/table |
+| Modal/Dialog | `<hlm-dialog>` | `HlmDialogImports`, `BrnDialogImports` |
+| Status badge | `<span hlmBadge>` | `HlmBadge` from `@spartan-ng/helm/badge` |
+| Radio buttons | `<hlm-radio-group>` | `HlmRadio*` from `@spartan-ng/helm/radio-group` |
+| Cards | `<section hlmCard>` | `HlmCard*` from `@spartan-ng/helm/card` |
+| Tabs | `<hlm-tabs>` | `HlmTabsImports`, `BrnTabsImports` |
+| Toast | `<hlm-toaster>` | `HlmToaster` from `@spartan-ng/helm/sonner` |
+
+### Standard Import Pattern
+
+```typescript
+// Brain (unstyled primitives) - from npm package
+import { BrnDialogImports } from '@spartan-ng/brain/dialog';
+
+// Helm (styled components) - from libs/ui or @spartan-ng/helm
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmInput } from '@spartan-ng/helm/input';
+import { HlmLabel } from '@spartan-ng/helm/label';
+```
+
+### Migration Checklist
+
+When refactoring a component to use Spartan:
+
+1. [ ] Identify all custom form elements (inputs, buttons, selects, etc.)
+2. [ ] Replace with corresponding Spartan directives/components
+3. [ ] Update imports (Brain + Helm as needed)
+4. [ ] Remove custom Tailwind classes that duplicate Spartan styling
+5. [ ] Test component renders correctly
+6. [ ] Verify theme colors match (GCore orange #FF4C00)
+
+### Anti-patterns
+
+❌ **DON'T**: Create custom button with Tailwind classes
+```html
+<button class="px-4 py-2 bg-[var(--gcore-primary)] text-white rounded hover:opacity-90">
+  Submit
+</button>
+```
+
+✅ **DO**: Use Spartan button
+```html
+<button hlmBtn>Submit</button>
+<button hlmBtn variant="outline">Cancel</button>
+```
+
+---
+
+❌ **DON'T**: Create custom input styling
+```html
+<input class="w-full px-3 py-2 border border-[var(--gcore-border)] rounded focus:outline-none focus:ring-2">
+```
+
+✅ **DO**: Use Spartan input
+```html
+<input hlmInput type="text" />
+```
+
+---
+
+❌ **DON'T**: Create custom modal overlay
+```html
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 p-6">
+```
+
+✅ **DO**: Use Spartan dialog
+```html
+<hlm-dialog [state]="isOpen ? 'open' : 'closed'" (closed)="onClose()">
+  <hlm-dialog-content class="sm:max-w-md">
+```
+
+---
+
+❌ **DON'T**: Create custom table styling
+```html
+<table class="min-w-full divide-y divide-[var(--gcore-border)]">
+  <thead class="bg-gray-50">
+```
+
+✅ **DO**: Use Spartan table
+```html
+<hlm-table>
+  <hlm-trow>
+    <hlm-th>Column</hlm-th>
+  </hlm-trow>
+</hlm-table>
+```
+
+### Files Needing Spartan Migration
+
+Priority order for refactoring:
+
+1. `login.component.ts` - Replace custom inputs/buttons with `hlmInput`, `hlmBtn`, `hlmLabel`
+2. `register.component.ts` - Same as login
+3. `requests-list.component.ts` - Replace custom table with `HlmTableImports`, custom modal with `HlmDialogImports`
+4. `node-request.component.ts` - Replace native select/radio/textarea with Spartan equivalents
+5. `layout.component.ts` - Replace custom logout button with `hlmBtn`
+
+### Already Using Spartan (Reference Examples)
+
+- `nodes-list.component.ts` - Table, Badge
+- `node-detail.component.ts` - Tabs
+- `assign-node-modal.component.ts` - Dialog, Button, Input, Label
+- `admin-users.component.ts` - Dialog, Button
+- `admin-requests.component.ts` - Dialog, Button

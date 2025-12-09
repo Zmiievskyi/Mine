@@ -20,7 +20,7 @@ import {
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
-import { AssignNodeDto, UpdateUserDto } from './dto';
+import { AssignNodeDto, UpdateUserDto, UuidParamDto, NodeParamsDto } from './dto';
 import { User } from '../users/entities/user.entity';
 import { UserNode } from '../users/entities/user-node.entity';
 import { PaginationQueryDto } from '../../common/dto';
@@ -48,7 +48,7 @@ export class AdminController {
   async findAllUsers(@Query() pagination: PaginationQueryDto) {
     const result = await this.adminService.findAllUsers(pagination);
     return {
-      data: result.data.map((user) => this.transformUser(user)),
+      data: result.data.map((user) => this.transformUserSummary(user)),
       meta: result.meta,
     };
   }
@@ -58,8 +58,9 @@ export class AdminController {
   @ApiParam({ name: 'id', description: 'User UUID' })
   @ApiResponse({ status: 200, description: 'User details with nodes' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async findUser(@Param('id') id: string) {
-    const user = await this.adminService.findUserWithNodes(id);
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
+  async findUser(@Param() params: UuidParamDto) {
+    const user = await this.adminService.findUserWithNodes(params.id);
     return this.transformUser(user);
   }
 
@@ -67,11 +68,12 @@ export class AdminController {
   @ApiOperation({ summary: 'Update user role or status' })
   @ApiParam({ name: 'id', description: 'User UUID' })
   @ApiResponse({ status: 200, description: 'User updated' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   async updateUser(
-    @Param('id') id: string,
+    @Param() params: UuidParamDto,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    const user = await this.adminService.updateUser(id, updateUserDto);
+    const user = await this.adminService.updateUser(params.id, updateUserDto);
     return this.transformUser(user);
   }
 
@@ -80,11 +82,12 @@ export class AdminController {
   @ApiParam({ name: 'id', description: 'User UUID' })
   @ApiResponse({ status: 201, description: 'Node assigned' })
   @ApiResponse({ status: 409, description: 'Node already assigned' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   async assignNode(
-    @Param('id') userId: string,
+    @Param() params: UuidParamDto,
     @Body() assignNodeDto: AssignNodeDto,
   ) {
-    const node = await this.adminService.assignNode(userId, assignNodeDto);
+    const node = await this.adminService.assignNode(params.id, assignNodeDto);
     return this.transformNode(node);
   }
 
@@ -93,11 +96,9 @@ export class AdminController {
   @ApiParam({ name: 'userId', description: 'User UUID' })
   @ApiParam({ name: 'nodeId', description: 'Node UUID' })
   @ApiResponse({ status: 200, description: 'Node removed' })
-  async removeNode(
-    @Param('userId') userId: string,
-    @Param('nodeId') nodeId: string,
-  ) {
-    await this.adminService.removeNode(userId, nodeId);
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
+  async removeNode(@Param() params: NodeParamsDto) {
+    await this.adminService.removeNode(params.userId, params.nodeId);
     return { success: true };
   }
 
@@ -106,13 +107,25 @@ export class AdminController {
   @ApiParam({ name: 'userId', description: 'User UUID' })
   @ApiParam({ name: 'nodeId', description: 'Node UUID' })
   @ApiResponse({ status: 200, description: 'Node updated' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   async updateNode(
-    @Param('userId') userId: string,
-    @Param('nodeId') nodeId: string,
+    @Param() params: NodeParamsDto,
     @Body() updateData: Partial<AssignNodeDto>,
   ) {
-    const node = await this.adminService.updateNode(userId, nodeId, updateData);
+    const node = await this.adminService.updateNode(params.userId, params.nodeId, updateData);
     return this.transformNode(node);
+  }
+
+  private transformUserSummary(user: User & { nodeCount?: number }) {
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      nodeCount: user.nodeCount || 0,
+    };
   }
 
   private transformUser(user: User) {

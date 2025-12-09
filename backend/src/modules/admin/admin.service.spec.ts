@@ -15,7 +15,7 @@ describe('AdminService', () => {
   let requestsRepository: jest.Mocked<Repository<NodeRequest>>;
   let dataSource: jest.Mocked<DataSource>;
 
-  const mockUser: User = {
+  const mockUser: User & { nodeCount?: number } = {
     id: 'user-123',
     email: 'test@example.com',
     password: 'hashedPassword',
@@ -29,6 +29,7 @@ describe('AdminService', () => {
     requests: [],
     createdAt: new Date(),
     updatedAt: new Date(),
+    nodeCount: 0,
   };
 
   const mockUserNode: UserNode = {
@@ -46,6 +47,15 @@ describe('AdminService', () => {
   };
 
   beforeEach(async () => {
+    const mockQueryBuilder = {
+      select: jest.fn().mockReturnThis(),
+      loadRelationCountAndMap: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      getManyAndCount: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminService,
@@ -56,6 +66,7 @@ describe('AdminService', () => {
             find: jest.fn(),
             findOne: jest.fn(),
             save: jest.fn(),
+            createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
           },
         },
         {
@@ -138,19 +149,23 @@ describe('AdminService', () => {
   });
 
   describe('findAllUsers', () => {
-    it('should return paginated users with their nodes', async () => {
-      const users = [mockUser, { ...mockUser, id: 'user-456', email: 'user2@example.com' }];
-      (usersRepository as any).findAndCount = jest.fn().mockResolvedValue([users, 2]);
+    it('should return paginated users with node count', async () => {
+      const users = [
+        { ...mockUser, nodeCount: 2 },
+        { ...mockUser, id: 'user-456', email: 'user2@example.com', nodeCount: 1 },
+      ];
+
+      const mockQueryBuilder = (usersRepository as any).createQueryBuilder();
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([users, 2]);
 
       const result = await service.findAllUsers({ page: 1, limit: 20 });
 
-      expect((usersRepository as any).findAndCount).toHaveBeenCalledWith({
-        select: ['id', 'email', 'name', 'role', 'isActive', 'createdAt'],
-        relations: ['nodes'],
-        order: { createdAt: 'DESC' },
-        skip: 0,
-        take: 20,
-      });
+      expect(usersRepository.createQueryBuilder).toHaveBeenCalledWith('user');
+      expect(mockQueryBuilder.select).toHaveBeenCalled();
+      expect(mockQueryBuilder.loadRelationCountAndMap).toHaveBeenCalled();
+      expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith('user.createdAt', 'DESC');
+      expect(mockQueryBuilder.skip).toHaveBeenCalledWith(0);
+      expect(mockQueryBuilder.take).toHaveBeenCalledWith(20);
       expect(result.data).toEqual(users);
       expect(result.meta).toEqual({
         page: 1,

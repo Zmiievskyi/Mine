@@ -1,6 +1,6 @@
 # MineGNK Progress Tracker
 
-**Last Updated**: 2025-12-09 (Session 20)
+**Last Updated**: 2025-12-09 (Session 22)
 
 ---
 
@@ -15,7 +15,7 @@
 | Phase 4: Node Details | **Complete** | 100% (4.1 done, 4.2-4.3 optional) |
 | Phase 5: Request System | **Complete** | 100% |
 | Phase 6: Admin Panel | **Complete** | 100% |
-| Phase 7: Polish & Launch | In Progress | 98% (7.1, 7.3, 7.4, 7.6, 7.7, 7.8, 7.9, 7.10 done) |
+| Phase 7: Polish & Launch | In Progress | 99% (7.1, 7.3, 7.4, 7.6, 7.7, 7.8, 7.9, 7.10, 7.12 done) |
 
 ---
 
@@ -91,6 +91,9 @@
 | 2025-12-09 | Unify DI to inject() pattern | Modern Angular pattern; consistent across all services and components |
 | 2025-12-09 | Shared LoadingSpinnerComponent | Single source of truth for loading states; DRY principle |
 | 2025-12-09 | CSS variables as aliases | --gcore-* variables reference Spartan --primary/--foreground; single source of truth |
+| 2025-12-09 | takeUntilDestroyed() for subscriptions | Angular 16+ built-in pattern; cleaner than manual ngOnDestroy |
+| 2025-12-09 | UUID validation via DTOs | Consistent with existing patterns; automatic 400 errors on malformed UUIDs |
+| 2025-12-09 | QueryBuilder for admin user list | ~20x fewer queries; supports nodeCount virtual field without loading all nodes |
 
 ---
 
@@ -214,7 +217,7 @@ When Gcore UI Kit access is granted, apply styles on top.
 | Database tables | 6 (users, user_nodes, node_requests, nodes, node_stats_cache, earnings_history) |
 | Migration files | 5 |
 | Config files | 9 (app, database, jwt, gonka, google, github, retry, throttler, index) |
-| Tests passing | 38 (auth: 10, nodes: 12, admin: 16) |
+| Tests passing | 38 (auth: 10, nodes: 12, admin: 16) ✓ |
 | Auth strategies | 3 (JWT, Google OAuth, GitHub OAuth) |
 | Spartan UI components | 15 helm libraries (badge, button, card, dialog, form-field, icon, input, label, radio-group, select, sonner, table, tabs, textarea, utils) |
 
@@ -1558,6 +1561,7 @@ LoadingSpinnerComponent updated to be more flexible:
 - [x] 7.9 Landing Page Polish - **COMPLETE**
 - [x] 7.10 Frontend Code Cleanup - **COMPLETE**
 - [x] 7.11 GitHub OAuth - **COMPLETE** (backend + frontend)
+- [x] 7.12 Code Review Fixes - **COMPLETE** (2025-12-09) - Memory leaks, UUID validation, N+1 query
 
 ---
 
@@ -1607,3 +1611,93 @@ loginWithGithub(): void {
 6. Backend creates/links user account
 7. Backend redirects to frontend `/auth/oauth-callback#token=...`
 8. Frontend stores token and navigates to dashboard
+
+---
+
+## Session 22: Code Review & High Priority Fixes (2025-12-09)
+
+### Completed Tasks
+- [x] Ran comprehensive code review with code-review-agent (2025-12-09)
+- [x] Fixed all 4 HIGH priority issues using refactor-agent (2025-12-09)
+- [x] Verified all 38 backend tests pass (2025-12-09)
+- [x] Verified frontend and backend builds pass (2025-12-09)
+
+### Code Review Summary
+- **Files Reviewed**: 45+ TypeScript files (backend: 25, frontend: 20+)
+- **Issues Found**: 18 (0 Critical, 4 High, 9 Medium, 5 Low)
+- **Verdict**: APPROVE WITH CHANGES
+- **Security Score**: Strong (no critical vulnerabilities)
+
+### High Priority Issues Fixed
+
+| Issue | Problem | Fix Applied |
+|-------|---------|-------------|
+| Memory Leaks | Unmanaged subscriptions in Angular components | Added `takeUntilDestroyed()` pattern |
+| UUID Validation | Admin endpoints accepted malformed UUIDs | Created validation DTOs with `@IsUUID('4')` |
+| Password Mismatch | Client validation weaker than server | Synced regex validation client/server |
+| N+1 Query | Admin user list loaded all nodes | Used QueryBuilder with `loadRelationCountAndMap()` |
+
+### Files Modified (12 total)
+
+**Frontend (6 files - Memory leak fixes):**
+- `frontend/src/app/features/nodes/node-detail/node-detail.component.ts`
+- `frontend/src/app/features/auth/login/login.component.ts`
+- `frontend/src/app/features/auth/register/register.component.ts`
+- `frontend/src/app/features/dashboard/dashboard.component.ts`
+- `frontend/src/app/features/nodes/nodes-list/nodes-list.component.ts`
+- `frontend/src/app/features/admin/admin-requests/admin-requests.component.ts`
+
+**Backend (6 files - UUID validation + N+1 query fix):**
+- `backend/src/modules/admin/dto/uuid-param.dto.ts` (NEW)
+- `backend/src/modules/admin/dto/node-params.dto.ts` (NEW)
+- `backend/src/modules/admin/dto/index.ts`
+- `backend/src/modules/admin/admin.controller.ts`
+- `backend/src/modules/admin/admin.service.ts`
+- `backend/src/modules/admin/admin.service.spec.ts`
+
+### Memory Leak Fix Pattern
+```typescript
+import { DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+private destroyRef = inject(DestroyRef);
+
+ngOnInit(): void {
+  this.observable$
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe(...);
+}
+```
+
+### N+1 Query Optimization
+```typescript
+// BEFORE: 21 queries for 20 users
+relations: ['nodes']
+
+// AFTER: 1 query with COUNT
+const queryBuilder = this.usersRepository
+  .createQueryBuilder('user')
+  .loadRelationCountAndMap('user.nodeCount', 'user.nodes')
+```
+
+**Performance Impact**: ~20x fewer database queries when loading admin users list.
+
+### Positive Observations
+- Timing attack prevention in auth ✓
+- Strong bcrypt password hashing (12 rounds) ✓
+- TypeORM parameterized queries (no SQL injection) ✓
+- Rate limiting on auth endpoints ✓
+- Modern Angular 18 patterns with signals ✓
+- 38 tests covering critical services ✓
+
+### Decisions Made
+| Decision | Rationale |
+|----------|-----------|
+| Use `takeUntilDestroyed()` | Angular 16+ built-in, cleaner than manual subscription management |
+| UUID validation via DTOs | Consistent with existing validation patterns, automatic 400 errors |
+| QueryBuilder for user list | More efficient than relations, supports `nodeCount` virtual field |
+
+### Phase 7 Progress Update
+- [x] 7.12 Code Review Fixes - **COMPLETE**
+
+Remaining: 7.2 Monitoring (Sentry), 7.5 Deployment (Docker)

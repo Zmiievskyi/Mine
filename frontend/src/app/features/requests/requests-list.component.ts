@@ -4,13 +4,28 @@ import { RouterLink } from '@angular/router';
 import { RequestsService } from '../../core/services/requests.service';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
-import { NodeRequest, GPU_OPTIONS, RequestStatus } from '../../core/models/request.model';
-import { getRequestStatusClass } from '../../shared/utils/status-styles.util';
+import { NodeRequest, GPU_OPTIONS } from '../../core/models/request.model';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmBadge } from '@spartan-ng/helm/badge';
+import { HlmButton } from '@spartan-ng/helm/button';
+import { BrnDialogImports } from '@spartan-ng/brain/dialog';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 
 @Component({
   selector: 'app-requests-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, LayoutComponent, LoadingSpinnerComponent, DatePipe],
+  imports: [
+    CommonModule,
+    RouterLink,
+    LayoutComponent,
+    LoadingSpinnerComponent,
+    DatePipe,
+    HlmTableImports,
+    HlmBadge,
+    HlmButton,
+    BrnDialogImports,
+    HlmDialogImports,
+  ],
   template: `
     <app-layout>
       <!-- Header -->
@@ -21,10 +36,7 @@ import { getRequestStatusClass } from '../../shared/utils/status-styles.util';
             Track the status of your node provisioning requests
           </p>
         </div>
-        <a
-          routerLink="/nodes/request"
-          class="px-4 py-2 bg-[var(--gcore-primary)] text-white rounded-lg hover:opacity-90"
-        >
+        <a routerLink="/nodes/request" hlmBtn>
           + New Request
         </a>
       </div>
@@ -46,10 +58,7 @@ import { getRequestStatusClass } from '../../shared/utils/status-styles.util';
               <p class="text-red-600 text-sm">{{ error() }}</p>
             </div>
           </div>
-          <button
-            (click)="loadRequests()"
-            class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
+          <button hlmBtn variant="destructive" (click)="loadRequests()" class="mt-4">
             Retry
           </button>
         </div>
@@ -65,10 +74,7 @@ import { getRequestStatusClass } from '../../shared/utils/status-styles.util';
           <p class="text-[var(--gcore-text-muted)] mb-6 max-w-md mx-auto">
             You haven't submitted any node requests yet. Request new GPU nodes to get started.
           </p>
-          <a
-            routerLink="/nodes/request"
-            class="inline-block px-6 py-2 bg-[var(--gcore-primary)] text-white rounded-lg hover:opacity-90"
-          >
+          <a routerLink="/nodes/request" hlmBtn>
             Request Your First Node
           </a>
         </div>
@@ -76,108 +82,85 @@ import { getRequestStatusClass } from '../../shared/utils/status-styles.util';
 
       <!-- Requests Table -->
       @if (!loading() && !error() && requests().length > 0) {
-        <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] overflow-hidden">
-          <table class="min-w-full divide-y divide-[var(--gcore-border)]">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase tracking-wider">
-                  GPU Type
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase tracking-wider">
-                  Quantity
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase tracking-wider">
-                  Region
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase tracking-wider">
-                  Status
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase tracking-wider">
-                  Submitted
-                </th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-[var(--gcore-text-muted)] uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-[var(--gcore-border)]">
-              @for (request of requests(); track request.id) {
-                <tr class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="font-medium text-[var(--gcore-text)]">
-                      {{ getGpuLabel(request.gpuType) }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-[var(--gcore-text)]">
-                    {{ request.gpuCount }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-[var(--gcore-text-muted)]">
-                    {{ request.region || 'Any' }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span
-                      class="px-2 py-1 text-xs font-medium rounded-full"
-                      [class]="getRequestStatusClass(request.status)"
-                    >
-                      {{ request.status }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--gcore-text-muted)]">
-                    {{ request.createdAt | date: 'MMM d, y' }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right">
-                    @if (request.status === 'pending') {
-                      <button
-                        (click)="cancelRequest(request.id)"
-                        class="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        Cancel
-                      </button>
-                    }
-                    @if (request.adminNotes) {
-                      <button
-                        (click)="showNotes(request)"
-                        class="text-[var(--gcore-primary)] hover:underline text-sm ml-3"
-                      >
-                        View Notes
-                      </button>
-                    }
-                  </td>
+        <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)]">
+          <div hlmTableContainer>
+            <table hlmTable>
+              <thead hlmThead>
+                <tr hlmTr>
+                  <th hlmTh class="text-muted-foreground uppercase tracking-wider">GPU Type</th>
+                  <th hlmTh class="text-muted-foreground uppercase tracking-wider">Quantity</th>
+                  <th hlmTh class="text-muted-foreground uppercase tracking-wider">Region</th>
+                  <th hlmTh class="text-muted-foreground uppercase tracking-wider">Status</th>
+                  <th hlmTh class="text-muted-foreground uppercase tracking-wider">Submitted</th>
+                  <th hlmTh class="text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody hlmTbody>
+                @for (request of requests(); track request.id) {
+                  <tr hlmTr>
+                    <td hlmTd>
+                      <span class="font-medium">{{ getGpuLabel(request.gpuType) }}</span>
+                    </td>
+                    <td hlmTd>{{ request.gpuCount }}</td>
+                    <td hlmTd class="text-muted-foreground">{{ request.region || 'Any' }}</td>
+                    <td hlmTd>
+                      <span hlmBadge [variant]="getStatusVariant(request.status)">
+                        {{ request.status }}
+                      </span>
+                    </td>
+                    <td hlmTd class="text-muted-foreground">
+                      {{ request.createdAt | date: 'MMM d, y' }}
+                    </td>
+                    <td hlmTd class="text-right">
+                      @if (request.status === 'pending') {
+                        <button
+                          hlmBtn
+                          variant="ghost"
+                          size="sm"
+                          class="text-destructive hover:text-destructive"
+                          (click)="cancelRequest(request.id)"
+                        >
+                          Cancel
+                        </button>
+                      }
+                      @if (request.adminNotes) {
+                        <button
+                          hlmBtn
+                          variant="link"
+                          size="sm"
+                          (click)="showNotes(request)"
+                        >
+                          View Notes
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
 
-        <!-- Request Count -->
-        <div class="mt-4 text-sm text-[var(--gcore-text-muted)]">
-          Showing {{ requests().length }} request(s)
+          <!-- Summary Footer -->
+          <div class="px-6 py-4 bg-muted/50 border-t">
+            <span class="text-sm text-muted-foreground">
+              {{ requests().length }} request(s)
+            </span>
+          </div>
         </div>
       }
 
       <!-- Notes Modal -->
-      @if (selectedRequest()) {
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-[var(--gcore-text)]">Admin Notes</h3>
-              <button
-                (click)="selectedRequest.set(null)"
-                class="text-gray-400 hover:text-gray-600"
-              >
-                &#10005;
-              </button>
-            </div>
-            <p class="text-[var(--gcore-text)]">{{ selectedRequest()?.adminNotes }}</p>
-            <button
-              (click)="selectedRequest.set(null)"
-              class="mt-4 w-full py-2 border border-[var(--gcore-border)] rounded-lg hover:bg-gray-50"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      }
+      <hlm-dialog [state]="selectedRequest() ? 'open' : 'closed'" (closed)="selectedRequest.set(null)">
+        <hlm-dialog-content class="sm:max-w-md">
+          <hlm-dialog-header>
+            <h3 hlmDialogTitle>Admin Notes</h3>
+          </hlm-dialog-header>
+          <p class="py-4">{{ selectedRequest()?.adminNotes }}</p>
+          <hlm-dialog-footer>
+            <button hlmBtn variant="outline" (click)="selectedRequest.set(null)">Close</button>
+          </hlm-dialog-footer>
+        </hlm-dialog-content>
+      </hlm-dialog>
     </app-layout>
   `,
 })
@@ -215,7 +198,20 @@ export class RequestsListComponent implements OnInit {
     return this.gpuOptions.find((g) => g.value === type)?.label || type;
   }
 
-  getRequestStatusClass = getRequestStatusClass;
+  getStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+    switch (status?.toLowerCase()) {
+      case 'approved':
+      case 'completed':
+        return 'default';
+      case 'pending':
+        return 'secondary';
+      case 'rejected':
+      case 'cancelled':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  }
 
   cancelRequest(id: string): void {
     if (!confirm('Are you sure you want to cancel this request?')) {

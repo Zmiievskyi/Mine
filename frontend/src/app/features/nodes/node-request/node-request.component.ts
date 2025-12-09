@@ -10,11 +10,26 @@ import {
   GPU_OPTIONS,
   REGION_OPTIONS,
 } from '../../../core/models/request.model';
+import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmInput } from '@spartan-ng/helm/input';
+import { HlmLabel } from '@spartan-ng/helm/label';
+import { BrnSelectImports } from '@spartan-ng/brain/select';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
 
 @Component({
   selector: 'app-node-request',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, LayoutComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    LayoutComponent,
+    HlmButton,
+    HlmInput,
+    HlmLabel,
+    BrnSelectImports,
+    HlmSelectImports,
+  ],
   template: `
     <app-layout>
       <div class="max-w-2xl">
@@ -45,16 +60,10 @@ import {
               </div>
             </div>
             <div class="mt-4 flex gap-3">
-              <a
-                routerLink="/requests"
-                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
-              >
+              <a routerLink="/requests" hlmBtn size="sm">
                 View My Requests
               </a>
-              <button
-                (click)="resetForm()"
-                class="px-4 py-2 border border-green-600 text-green-600 rounded hover:bg-green-50 text-sm"
-              >
+              <button hlmBtn variant="outline" size="sm" (click)="resetForm()">
                 Submit Another Request
               </button>
             </div>
@@ -100,75 +109,70 @@ import {
 
             <!-- Quantity -->
             <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-6">
-              <label class="block">
-                <span class="text-sm font-medium text-[var(--gcore-text)]">
-                  Number of GPUs
-                </span>
-                <div class="mt-2 flex items-center gap-4">
-                  <button
-                    type="button"
-                    (click)="decrementCount()"
-                    class="w-10 h-10 rounded-lg border border-[var(--gcore-border)] flex items-center justify-center hover:bg-gray-50 disabled:opacity-50"
-                    [disabled]="formData.gpuCount <= 1"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    [(ngModel)]="formData.gpuCount"
-                    name="gpuCount"
-                    min="1"
-                    max="10"
-                    class="w-20 text-center text-lg font-semibold border border-[var(--gcore-border)] rounded-lg py-2"
-                  />
-                  <button
-                    type="button"
-                    (click)="incrementCount()"
-                    class="w-10 h-10 rounded-lg border border-[var(--gcore-border)] flex items-center justify-center hover:bg-gray-50 disabled:opacity-50"
-                    [disabled]="formData.gpuCount >= 10"
-                  >
-                    +
-                  </button>
-                </div>
-                <p class="text-sm text-[var(--gcore-text-muted)] mt-2">
-                  Maximum 10 GPUs per request
-                </p>
-              </label>
+              <label hlmLabel class="block">Number of GPUs</label>
+              <div class="mt-2 flex items-center gap-4">
+                <button
+                  hlmBtn
+                  variant="outline"
+                  size="icon"
+                  type="button"
+                  (click)="decrementCount()"
+                  [disabled]="formData.gpuCount <= 1"
+                >
+                  -
+                </button>
+                <input
+                  hlmInput
+                  type="number"
+                  [(ngModel)]="formData.gpuCount"
+                  name="gpuCount"
+                  min="1"
+                  max="10"
+                  class="w-20 text-center text-lg font-semibold"
+                />
+                <button
+                  hlmBtn
+                  variant="outline"
+                  size="icon"
+                  type="button"
+                  (click)="incrementCount()"
+                  [disabled]="formData.gpuCount >= 10"
+                >
+                  +
+                </button>
+              </div>
+              <p class="text-sm text-muted-foreground mt-2">
+                Maximum 10 GPUs per request
+              </p>
             </div>
 
             <!-- Region -->
             <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-6">
-              <label class="block">
-                <span class="text-sm font-medium text-[var(--gcore-text)]">
-                  Preferred Region (Optional)
-                </span>
-                <select
-                  [(ngModel)]="formData.region"
-                  name="region"
-                  class="mt-2 block w-full border border-[var(--gcore-border)] rounded-lg py-2 px-3 focus:border-[var(--gcore-primary)] focus:ring-1 focus:ring-[var(--gcore-primary)]"
-                >
-                  <option value="">No preference</option>
+              <label hlmLabel class="block mb-2">Preferred Region (Optional)</label>
+              <brn-select [(ngModel)]="formData.region" name="region" placeholder="No preference">
+                <hlm-select-trigger class="w-full">
+                  <hlm-select-value />
+                </hlm-select-trigger>
+                <hlm-select-content>
+                  <hlm-option value="">No preference</hlm-option>
                   @for (region of regionOptions; track region.value) {
-                    <option [value]="region.value">{{ region.label }}</option>
+                    <hlm-option [value]="region.value">{{ region.label }}</hlm-option>
                   }
-                </select>
-              </label>
+                </hlm-select-content>
+              </brn-select>
             </div>
 
             <!-- Message -->
             <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-6">
-              <label class="block">
-                <span class="text-sm font-medium text-[var(--gcore-text)]">
-                  Additional Notes (Optional)
-                </span>
-                <textarea
-                  [(ngModel)]="formData.message"
-                  name="message"
-                  rows="3"
-                  placeholder="Any specific requirements or questions..."
-                  class="mt-2 block w-full border border-[var(--gcore-border)] rounded-lg py-2 px-3 focus:border-[var(--gcore-primary)] focus:ring-1 focus:ring-[var(--gcore-primary)]"
-                ></textarea>
-              </label>
+              <label hlmLabel class="block mb-2">Additional Notes (Optional)</label>
+              <textarea
+                hlmInput
+                [(ngModel)]="formData.message"
+                name="message"
+                rows="3"
+                placeholder="Any specific requirements or questions..."
+                class="w-full min-h-[80px]"
+              ></textarea>
             </div>
 
             <!-- Summary -->
@@ -206,9 +210,10 @@ import {
             <!-- Actions -->
             <div class="flex gap-4">
               <button
+                hlmBtn
                 type="submit"
                 [disabled]="submitting() || !formData.gpuType"
-                class="flex-1 py-3 bg-[var(--gcore-primary)] text-white rounded-lg hover:opacity-90 disabled:opacity-50 font-medium"
+                class="flex-1"
               >
                 @if (submitting()) {
                   Submitting...
@@ -216,10 +221,7 @@ import {
                   Submit Request
                 }
               </button>
-              <a
-                routerLink="/nodes"
-                class="px-6 py-3 border border-[var(--gcore-border)] text-[var(--gcore-text)] rounded-lg hover:bg-gray-50"
-              >
+              <a routerLink="/nodes" hlmBtn variant="outline">
                 Cancel
               </a>
             </div>

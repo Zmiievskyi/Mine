@@ -2,7 +2,7 @@
 name: context7
 description: Intelligent usage of Context7 MCP for fetching current, version-specific library documentation. Automatically invoked when working with external libraries, frameworks, or APIs where up-to-date documentation improves code quality.
 ---
-
+npx -y @upstash/context7-mcp
 # Context7 Documentation Assistant
 
 This skill teaches Claude when and how to effectively use the Context7 MCP server to fetch current library documentation.

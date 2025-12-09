@@ -1,6 +1,7 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NodesService } from '../../../core/services/nodes.service';
 import { Node } from '../../../core/models/node.model';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
@@ -173,6 +174,7 @@ import { HlmBadge } from '@spartan-ng/helm/badge';
 })
 export class NodesListComponent implements OnInit {
   private nodesService = inject(NodesService);
+  private destroyRef = inject(DestroyRef);
 
   nodes = signal<Node[]>([]);
   loading = signal(true);
@@ -186,16 +188,19 @@ export class NodesListComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.nodesService.getNodes().subscribe({
-      next: (nodes) => {
-        this.nodes.set(nodes);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.error.set(err.error?.message || 'Failed to load nodes');
-        this.loading.set(false);
-      },
-    });
+    this.nodesService
+      .getNodes()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (nodes) => {
+          this.nodes.set(nodes);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.error.set(err.error?.message || 'Failed to load nodes');
+          this.loading.set(false);
+        },
+      });
   }
 
   getNodeStatusClass = getNodeStatusClass;

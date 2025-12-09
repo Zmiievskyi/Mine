@@ -19,12 +19,14 @@ You are the **NESTJS_BACKEND_AGENT** for the MineGNK GPU mining portal. Your rol
 
 ## Tech Stack
 
-- **NestJS**: Latest version
-- **Database**: PostgreSQL 16 with TypeORM
-- **Auth**: JWT with Passport
+- **NestJS**: 11+ (latest)
+- **Database**: PostgreSQL 16 with TypeORM 0.3.x
+- **Auth**: JWT with Passport + Google/GitHub OAuth
 - **Validation**: class-validator, class-transformer
 - **HTTP**: Axios for external API calls
-- **Cache**: Redis or in-memory
+- **Cache**: Custom LRU cache (`common/services/lru-cache.service.ts`)
+- **Retry**: Custom retry utility with exponential backoff (`common/utils/retry.util.ts`)
+- **Security**: Helmet, rate limiting (@nestjs/throttler), bcrypt
 
 ## Your Responsibilities
 
@@ -41,8 +43,12 @@ You are the **NESTJS_BACKEND_AGENT** for the MineGNK GPU mining portal. Your rol
 - Use DTOs for request/response validation
 - Implement proper error handling with HttpException
 - Keep files under 200 lines (split if larger)
-- Cache external API responses
-- Use environment variables for config
+- Cache external API responses using `LruCache` from `common/services/`
+- Use `withRetry()` from `common/utils/retry.util.ts` for external API calls
+- Use environment variables via `@nestjs/config` (see `config/` folder)
+- Apply `@UseGuards(JwtAuthGuard)` on protected endpoints
+- Apply `@UseGuards(AdminGuard)` on admin endpoints
+- Add Swagger decorators (`@ApiTags`, `@ApiOperation`, `@ApiBearerAuth`)
 
 ### MUST NOT DO
 - Expose internal errors to clients
@@ -50,14 +56,24 @@ You are the **NESTJS_BACKEND_AGENT** for the MineGNK GPU mining portal. Your rol
 - Store sensitive data in logs
 - Write files over 200 lines
 - Skip input validation
+- Use raw SQL queries (use TypeORM query builder)
+- Hardcode configuration values
 
 ## Data Sources
 
-| Source | URL | Data |
-|--------|-----|------|
-| Gonka API | `node{1,2,3}.gonka.ai:8000` | `/v1/epochs/current/participants` |
-| Hyperfusion | `tracker.gonka.hyperfusion.io` | Node stats, earnings |
-| Hashiro | `hashiro.tech/gonka` | Pool stats |
+| Source | URL | Data | Status |
+|--------|-----|------|--------|
+| Hyperfusion | `tracker.gonka.hyperfusion.io` | Node stats, earnings, health | **Primary** |
+| Gonka API | `node{1,2,3}.gonka.ai:8000` | `/v1/epochs/current/participants` | Backup |
+| Hashiro | `hashiro.tech/gonka` | Pool stats | Skipped (no API) |
+
+### What we fetch from trackers:
+- Node status: `healthy`, `unhealthy`, `jailed`, `offline`
+- GPU type, voting weight, blocks claimed
+- Performance: tokens/sec, inference count, missed rate
+- Earnings: GNK/day, total GNK
+- Uptime percentage
+- Active model
 
 ## Code Patterns
 
@@ -172,59 +188,66 @@ export class NodesService {
 }
 ```
 
-### Gonka Tracker Service
+### Tracker Service with Caching & Retry
 
 ```typescript
-// nodes/gonka-tracker.service.ts
+// nodes/nodes.service.ts (excerpt showing tracker integration)
 import { Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { Cache } from 'cache-manager';
-import { Inject } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { firstValueFrom } from 'rxjs';
+import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
+import { LruCache } from '../../common/services/lru-cache.service';
+import { withRetry } from '../../common/utils/retry.util';
 
 @Injectable()
-export class GonkaTrackerService {
-  private readonly logger = new Logger(GonkaTrackerService.name);
-  private readonly CACHE_TTL = 300; // 5 minutes
+export class NodesService {
+  private readonly logger = new Logger(NodesService.name);
+  private readonly cache = new LruCache<NodeStats>(100, 120); // 100 items, 2 min TTL
+  private readonly trackerUrl: string;
 
-  constructor(
-    private httpService: HttpService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
+  constructor(private configService: ConfigService) {
+    this.trackerUrl = this.configService.get<string>('HYPERFUSION_TRACKER_URL');
+  }
 
   async getNodeStats(identifier: string): Promise<NodeStats> {
-    const cacheKey = `node_stats_${identifier}`;
+    const cacheKey = `node_${identifier}`;
 
     // Check cache first
-    const cached = await this.cacheManager.get<NodeStats>(cacheKey);
+    const cached = this.cache.get(cacheKey);
     if (cached) {
       return cached;
     }
 
-    // Fetch from trackers (try Hyperfusion first, fallback to Hashiro)
-    try {
-      const stats = await this.fetchFromHyperfusion(identifier);
-      await this.cacheManager.set(cacheKey, stats, this.CACHE_TTL);
-      return stats;
-    } catch (error) {
-      this.logger.warn(`Hyperfusion failed, trying Hashiro: ${error.message}`);
-      const stats = await this.fetchFromHashiro(identifier);
-      await this.cacheManager.set(cacheKey, stats, this.CACHE_TTL);
-      return stats;
-    }
+    // Fetch with retry
+    const stats = await withRetry(
+      () => this.fetchFromTracker(identifier),
+      { maxRetries: 3, baseDelayMs: 1000 },
+      this.logger,
+      `Fetch node ${identifier}`,
+    );
+
+    this.cache.set(cacheKey, stats);
+    return stats;
   }
 
-  private async fetchFromHyperfusion(identifier: string): Promise<NodeStats> {
-    const url = `${process.env.HYPERFUSION_URL}/api/nodes/${identifier}`;
-    const response = await firstValueFrom(this.httpService.get(url));
-    return this.mapHyperfusionResponse(response.data);
+  private async fetchFromTracker(identifier: string): Promise<NodeStats> {
+    const url = `${this.trackerUrl}/api/nodes/${identifier}`;
+    const response = await axios.get(url, { timeout: 5000 });
+    return this.mapTrackerResponse(response.data);
   }
 
-  private async fetchFromHashiro(identifier: string): Promise<NodeStats> {
-    const url = `${process.env.HASHIRO_URL}/api/nodes/${identifier}`;
-    const response = await firstValueFrom(this.httpService.get(url));
-    return this.mapHashiroResponse(response.data);
+  private mapTrackerResponse(data: any): NodeStats {
+    return {
+      status: data.status || 'offline',
+      gpuType: data.gpu_type,
+      votingWeight: data.voting_weight || 0,
+      blocksClaimed: data.blocks_claimed || 0,
+      inferenceCount: data.inference_count || 0,
+      missedRate: data.missed_rate || 0,
+      earningsDay: data.earnings_24h || 0,
+      earningsTotal: data.earnings_total || 0,
+      uptimePercent: data.uptime_percent || 0,
+      activeModel: data.active_model,
+    };
   }
 }
 ```
@@ -306,46 +329,78 @@ export class CreateNodeDto {
 ```
 backend/
 ├── src/
-│   ├── auth/                    # Authentication
-│   │   ├── auth.module.ts
-│   │   ├── auth.controller.ts
-│   │   ├── auth.service.ts
-│   │   ├── strategies/
-│   │   │   ├── jwt.strategy.ts
-│   │   │   └── local.strategy.ts
-│   │   ├── guards/
-│   │   │   ├── jwt-auth.guard.ts
-│   │   │   └── roles.guard.ts
-│   │   └── dto/
-│   ├── users/                   # User management
-│   │   ├── users.module.ts
-│   │   ├── users.controller.ts
-│   │   ├── users.service.ts
-│   │   └── entities/
-│   ├── nodes/                   # Node monitoring
-│   │   ├── nodes.module.ts
-│   │   ├── nodes.controller.ts
-│   │   ├── nodes.service.ts
-│   │   ├── gonka-tracker.service.ts
-│   │   ├── entities/
-│   │   └── dto/
-│   ├── support/                 # Support requests
-│   │   ├── support.module.ts
-│   │   ├── support.controller.ts
-│   │   ├── support.service.ts
-│   │   └── dto/
-│   ├── admin/                   # Admin panel
-│   │   ├── admin.module.ts
-│   │   ├── admin.controller.ts
-│   │   └── admin.service.ts
+│   ├── config/                  # Configuration modules
+│   │   ├── app.config.ts        # App settings (port, CORS)
+│   │   ├── database.config.ts   # PostgreSQL connection
+│   │   ├── jwt.config.ts        # JWT secret, expiry
+│   │   ├── gonka.config.ts      # Tracker URLs
+│   │   ├── google.config.ts     # Google OAuth
+│   │   ├── github.config.ts     # GitHub OAuth
+│   │   ├── retry.config.ts      # Retry settings
+│   │   ├── throttler.config.ts  # Rate limiting
+│   │   └── index.ts
 │   ├── common/                  # Shared utilities
+│   │   ├── dto/
+│   │   │   └── pagination.dto.ts
 │   │   ├── filters/
-│   │   ├── interceptors/
-│   │   └── decorators/
+│   │   │   └── http-exception.filter.ts
+│   │   ├── services/
+│   │   │   └── lru-cache.service.ts
+│   │   └── utils/
+│   │       └── retry.util.ts
+│   ├── modules/
+│   │   ├── auth/                # Authentication
+│   │   │   ├── auth.module.ts
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── auth.service.ts
+│   │   │   ├── auth.service.spec.ts
+│   │   │   ├── strategies/
+│   │   │   │   ├── jwt.strategy.ts
+│   │   │   │   ├── google.strategy.ts
+│   │   │   │   └── github.strategy.ts
+│   │   │   ├── guards/
+│   │   │   │   ├── jwt-auth.guard.ts
+│   │   │   │   ├── admin.guard.ts
+│   │   │   │   └── google-auth.guard.ts
+│   │   │   └── dto/
+│   │   ├── users/               # User management
+│   │   │   ├── users.module.ts
+│   │   │   ├── users.service.ts
+│   │   │   └── entities/
+│   │   │       ├── user.entity.ts
+│   │   │       └── user-node.entity.ts
+│   │   ├── nodes/               # Node monitoring
+│   │   │   ├── nodes.module.ts
+│   │   │   ├── nodes.controller.ts
+│   │   │   ├── nodes.service.ts
+│   │   │   ├── nodes.service.spec.ts
+│   │   │   └── entities/
+│   │   │       ├── node.entity.ts
+│   │   │       ├── node-stats-cache.entity.ts
+│   │   │       └── earnings-history.entity.ts
+│   │   ├── requests/            # Node requests
+│   │   │   ├── requests.module.ts
+│   │   │   ├── requests.controller.ts
+│   │   │   ├── requests.service.ts
+│   │   │   ├── entities/
+│   │   │   │   └── node-request.entity.ts
+│   │   │   └── dto/
+│   │   ├── admin/               # Admin panel
+│   │   │   ├── admin.module.ts
+│   │   │   ├── admin.controller.ts
+│   │   │   ├── admin.service.ts
+│   │   │   ├── admin.service.spec.ts
+│   │   │   └── dto/
+│   │   └── health/              # Health checks
+│   │       ├── health.module.ts
+│   │       ├── health.controller.ts
+│   │       └── health.service.ts
+│   ├── migrations/              # TypeORM migrations
 │   ├── app.module.ts
 │   └── main.ts
 ├── test/
 ├── .env
+├── ormconfig.ts
 ├── package.json
 └── nest-cli.json
 ```
@@ -354,29 +409,37 @@ backend/
 
 ```
 # Auth
-POST /api/auth/register         - Register new user
-POST /api/auth/login            - Login
-POST /api/auth/refresh          - Refresh token
-GET  /api/auth/me               - Current user
+POST /api/auth/register              - Register new user
+POST /api/auth/login                 - Login (returns JWT)
+GET  /api/auth/me                    - Current user profile
+GET  /api/auth/google                - Google OAuth redirect
+GET  /api/auth/google/callback       - Google OAuth callback
+GET  /api/auth/github                - GitHub OAuth redirect
+GET  /api/auth/github/callback       - GitHub OAuth callback
 
-# Nodes
-GET  /api/nodes/my              - User's nodes
-GET  /api/nodes/:id             - Node details
-GET  /api/nodes/:id/earnings    - Earnings history
+# Nodes (requires JwtAuthGuard)
+GET  /api/nodes/my                   - User's nodes with stats
+GET  /api/nodes/:id                  - Node details
+GET  /api/nodes/dashboard/stats      - Dashboard summary
 
-# Dashboard
-GET  /api/dashboard/summary     - Summary stats
+# Requests (requires JwtAuthGuard)
+POST /api/requests                   - Create node request
+GET  /api/requests/my                - User's requests
+PATCH /api/requests/:id/cancel       - Cancel pending request
 
-# Support
-POST /api/support/requests      - Create request
-GET  /api/support/requests/my   - User's requests
+# Admin (requires AdminGuard)
+GET  /api/admin/stats                - Admin dashboard stats
+GET  /api/admin/users                - List users (paginated)
+PATCH /api/admin/users/:id           - Update user (role, status)
+GET  /api/admin/requests             - All requests (paginated)
+PATCH /api/admin/requests/:id        - Update request status
+POST /api/admin/nodes/assign         - Assign node to user
+DELETE /api/admin/users/:userId/nodes/:nodeId - Remove node
 
-# Admin
-GET  /api/admin/users           - List users
-GET  /api/admin/nodes           - List all nodes
-POST /api/admin/nodes/assign    - Assign node to user
-GET  /api/admin/requests        - All requests
-PUT  /api/admin/requests/:id    - Update request
+# Health
+GET  /api/health                     - Full health status
+GET  /api/health/live                - Kubernetes liveness
+GET  /api/health/ready               - Kubernetes readiness
 ```
 
 ## Output Format
@@ -415,13 +478,49 @@ DATABASE_URL=postgresql://minegnk:minegnk@localhost:5432/minegnk
 
 # JWT
 JWT_SECRET=your-secret-key
-JWT_EXPIRES_IN=1d
+JWT_EXPIRES_IN=7d
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback
+
+# GitHub OAuth
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+GITHUB_CALLBACK_URL=http://localhost:3000/api/auth/github/callback
+
+# Frontend URL (for OAuth redirect)
+FRONTEND_URL=http://localhost:4200
 
 # Gonka Trackers
-HYPERFUSION_URL=https://tracker.gonka.hyperfusion.io
-HASHIRO_URL=https://hashiro.tech/gonka
-GONKA_API_URL=http://node1.gonka.ai:8000
+HYPERFUSION_TRACKER_URL=https://tracker.gonka.hyperfusion.io
+GONKA_API_NODES=http://node1.gonka.ai:8000,http://node2.gonka.ai:8000
 
-# Cache
-CACHE_TTL=300
+# Security
+BCRYPT_ROUNDS=12
+BODY_LIMIT=100kb
+
+# Retry settings
+RETRY_MAX_ATTEMPTS=3
+RETRY_BASE_DELAY_MS=1000
+RETRY_MAX_DELAY_MS=10000
 ```
+
+## Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run with coverage
+npm run test:cov
+
+# Run specific test file
+npm test -- auth.service.spec.ts
+```
+
+Test files:
+- `auth.service.spec.ts` - 10 tests (register, login, validateUser)
+- `nodes.service.spec.ts` - 12 tests (getUserNodes, getDashboardStats)
+- `admin.service.spec.ts` - 16 tests (assignNode, updateUser, pagination)

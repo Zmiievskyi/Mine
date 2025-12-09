@@ -47,7 +47,7 @@ export class AuthService {
     this.storage.remove(TOKEN_KEY);
     this.storage.remove(USER_KEY);
     this.currentUserSignal.set(null);
-    this.router.navigate(['/auth/login']);
+    this.router.navigate(['/']);
   }
 
   getToken(): string | null {

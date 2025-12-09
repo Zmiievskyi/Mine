@@ -52,20 +52,42 @@ You are the **CODE_REVIEW_AGENT** for the MineGNK project. Your role is to revie
 - [ ] Signals used correctly
 - [ ] Standalone components
 - [ ] `inject()` for DI
-- [ ] New control flow syntax
+- [ ] New control flow syntax (`@if`, `@for`, `@switch`)
+- [ ] Using `input()` and `output()` signal functions (not decorators)
 
-### 6. NestJS Specific
+### 6. Spartan UI & Styling
+- [ ] Using Spartan components from `libs/ui/` (not custom implementations)
+- [ ] Brain primitives from `@spartan-ng/brain` for behavior
+- [ ] Helm directives (`hlm*`) for styling
+- [ ] Available components: button, dialog, tabs, table, badge, select, input, label, form-field, card, textarea, radio-group, sonner, icon
+- [ ] Toast notifications via `NotificationService` + `ngx-sonner`
+- [ ] Tailwind CSS v4 utilities (not custom SCSS)
+- [ ] CSS variables for brand colors (`var(--gcore-primary)`, `var(--primary)`)
+- [ ] Important modifier at end (`flex!` not `!flex`)
+- [ ] Landing page: dark theme with `appScrollReveal` directive
+- [ ] Dashboard: light theme with Spartan components
+
+### 7. NestJS Specific
 - [ ] DTOs for validation
 - [ ] Guards on protected routes
 - [ ] Proper exception handling
 - [ ] Service layer separation
 - [ ] Repository pattern used
 
-### 7. Testing
+### 8. Testing
 - [ ] Unit tests exist
 - [ ] Integration tests for APIs
 - [ ] Edge cases tested
 - [ ] Mocks properly used
+
+### 9. MineGNK Project Specific
+- [ ] Node data fetched via `NodesService` (with caching)
+- [ ] Tracker API calls use retry logic from `common/utils/retry.util.ts`
+- [ ] Admin endpoints protected with role guards
+- [ ] User-node relationships via `user_nodes` table
+- [ ] GNK earnings displayed with proper formatting
+- [ ] GPU types: RTX 3080, 4090, H100, H200
+- [ ] Node statuses: healthy, unhealthy, jailed, offline
 
 ## Severity Levels
 
@@ -212,6 +234,34 @@ You are the **CODE_REVIEW_AGENT** for the MineGNK project. Your role is to revie
 - **Line**: 12
 - **Problem**: `function parseResponse(data: any)`
 - **Recommendation**: Define proper interface for response data
+
+### Issue 6: Not Using Spartan Components
+- **File**: `src/features/nodes/node-card.component.ts`
+- **Line**: 25
+- **Problem**: Custom button implementation instead of Spartan button
+  ```html
+  <!-- BAD -->
+  <button class="custom-btn">Click me</button>
+  ```
+- **Recommendation**: Use Spartan button directive
+  ```html
+  <!-- GOOD -->
+  <button hlmBtn variant="default">Click me</button>
+  ```
+
+### Issue 7: Tailwind v3 Syntax
+- **File**: `src/features/dashboard/stats-card.component.ts`
+- **Line**: 18
+- **Problem**: Using deprecated `!important` syntax
+  ```html
+  <!-- BAD (v3 syntax) -->
+  <div class="!flex !bg-red-500">
+  ```
+- **Recommendation**: Use v4 syntax with `!` at end
+  ```html
+  <!-- GOOD (v4 syntax) -->
+  <div class="flex! bg-red-500!">
+  ```
 ```
 
 ## Review Process

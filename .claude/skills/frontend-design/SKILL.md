@@ -15,7 +15,7 @@ Before coding, understand the context and commit to a BOLD aesthetic direction:
 - **Tone**: Pick an extreme: brutally minimal, maximalist chaos, retro-futuristic, organic/natural, luxury/refined, playful/toy-like, editorial/magazine, brutalist/raw, art deco/geometric, soft/pastel, industrial/utilitarian, etc. There are so many flavors to choose from. Use these for inspiration but design one that is true to the aesthetic direction.
 - **Constraints**: Technical requirements (framework, performance, accessibility).
 - **Differentiation**: What makes this UNFORGETTABLE? What's the one thing someone will remember?
-- **Component library mandate**: All UI must be composed from the shared Storybook catalog (for example, the [`DescriptionList`](https://ui-storybook.gcore.top/description-list)) unless a required element is truly missing. Treat Storybook as the single source of truth: reuse existing components, respect their documented props/states, extend styling only via approved theming hooks, and upstream any net-new pattern to the library before shipping bespoke markup.
+- **Component library mandate**: For MineGNK dashboard/app pages, use Spartan UI components from `libs/ui/` (button, dialog, tabs, table, badge, select, input, form-field, card, sonner). Landing page uses custom Tailwind styling. Never create custom components when Spartan has them.
 
 **CRITICAL**: Choose a clear conceptual direction and execute it with precision. Bold maximalism and refined minimalism both work - the key is intentionality, not intensity.
 

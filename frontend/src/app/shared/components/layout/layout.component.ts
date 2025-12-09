@@ -2,11 +2,12 @@ import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { HlmButton } from '@spartan-ng/helm/button';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, RouterLinkActive, HlmButton],
   template: `
     <div class="min-h-screen bg-[var(--gcore-bg)]">
       <!-- Header -->
@@ -17,10 +18,7 @@ import { AuthService } from '../../../core/services/auth.service';
             <span class="text-sm text-[var(--gcore-text-muted)]">
               {{ authService.currentUser()?.email }}
             </span>
-            <button
-              (click)="logout()"
-              class="text-sm text-[var(--gcore-primary)] hover:underline"
-            >
+            <button hlmBtn variant="ghost" size="sm" (click)="logout()">
               Logout
             </button>
           </div>

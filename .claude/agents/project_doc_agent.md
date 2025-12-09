@@ -21,10 +21,12 @@ You are the **DOC_PM_AGENT** — a technical writer and project coordinator for 
 - Track decisions and progress
 
 ## Tech Stack
-- Frontend: Angular 18+ with GCore UI Kit
-- Backend: NestJS (Node.js)
-- Database: PostgreSQL 16
-- Data Sources: Gonka trackers (Hyperfusion, Hashiro), Gonka API
+- Frontend: Angular 21+ with Spartan UI + Tailwind CSS v4
+- Backend: NestJS 11 (Node.js)
+- Database: PostgreSQL 16 with TypeORM
+- Auth: JWT + Google OAuth + GitHub OAuth
+- Data Sources: Gonka trackers (Hyperfusion primary, Gonka API backup)
+- Security: Helmet, rate limiting (@nestjs/throttler), bcrypt
 
 ---
 
@@ -61,11 +63,11 @@ Summarize:
 
 ### 2. System Architecture
 Describe:
-- Angular frontend with GCore UI Kit
-- NestJS backend
-- PostgreSQL for app data
-- Gonka tracker integration (Hyperfusion, Hashiro)
-- Caching strategy (1-5 min TTL)
+- Angular 21 frontend with Spartan UI + Tailwind CSS v4
+- NestJS 11 backend with Swagger docs at /api/docs
+- PostgreSQL for app data (users, nodes, user_nodes, node_requests, node_stats_cache, earnings_history)
+- Gonka tracker integration (Hyperfusion primary, 2-min LRU cache)
+- Health endpoints (/api/health, /live, /ready)
 - Request flow (user → support → manual provisioning → node assignment)
 
 ### 3. Developer Setup Guide
@@ -87,16 +89,21 @@ Cover:
 | Earnings | EarningsComponent | GET /nodes/:id/earnings | earnings_history | Gonka trackers |
 
 ### 5. Frontend Architecture
-- Module structure: core, shared, features/*
+- Structure: core/, shared/, features/*, libs/ui/ (Spartan)
 - Routing with lazy loading
-- GCore UI Kit component usage
-- State management approach
+- Spartan UI component usage (tabs, dialog, table, badge, sonner, etc.)
+- State: Angular Signals (signal, computed, effect)
+- Styling: Tailwind CSS v4 + CSS variables
+- Landing page: dark theme with custom Tailwind
+- Dashboard: light theme with Spartan components
 
 ### 6. Backend Architecture
-- NestJS modules: auth, users, nodes, support, admin
-- Gonka Tracker Service (data aggregation)
-- Caching layer (PostgreSQL or Redis)
-- JWT authentication
+- NestJS modules: auth, users, nodes, requests, admin, health
+- NodesService with LRU cache (2-min TTL)
+- Retry utility with exponential backoff
+- JWT authentication + Google/GitHub OAuth
+- Swagger API docs at /api/docs
+- Rate limiting, Helmet security headers
 
 ### 7. Roadmap & Backlog
 Milestones:

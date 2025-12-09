@@ -1,6 +1,7 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NodesService } from '../../core/services/nodes.service';
 import { DashboardData, Node } from '../../core/models/node.model';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
@@ -119,6 +120,7 @@ import { getNodeStatusClass } from '../../shared/utils/status-styles.util';
 })
 export class DashboardComponent implements OnInit {
   private nodesService = inject(NodesService);
+  private destroyRef = inject(DestroyRef);
 
   loading = signal(true);
   nodes = signal<Node[]>([]);
@@ -129,16 +131,19 @@ export class DashboardComponent implements OnInit {
   }
 
   loadDashboard(): void {
-    this.nodesService.getDashboardData().subscribe({
-      next: (data) => {
-        this.nodes.set(data.nodes);
-        this.stats.set(data.stats);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      },
-    });
+    this.nodesService
+      .getDashboardData()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.nodes.set(data.nodes);
+          this.stats.set(data.stats);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+        },
+      });
   }
 
   getNodeStatusClass = getNodeStatusClass;

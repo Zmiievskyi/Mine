@@ -1,44 +1,71 @@
 ---
 name: angular
-description: Expert knowledge for Angular 18+ with Vite. Use when building Angular components, services, or integrating with Litestar backend.
+description: Expert knowledge for Angular 21+ with Spartan UI. Use when building Angular components, services, or integrating with NestJS backend.
 ---
 
 # Angular Framework Skill
 
 ## Quick Reference
 
+### MineGNK Tech Stack
+
+- **Angular**: 21+ with standalone components
+- **UI Library**: Spartan UI (`@spartan-ng/brain` + `libs/ui/` Helm components)
+- **Styling**: Tailwind CSS v4
+- **Icons**: `@ng-icons/lucide`
+- **State**: Angular Signals (`signal()`, `computed()`, `effect()`)
+- **Toasts**: `ngx-sonner` via `NotificationService`
+
 ### Standalone Components
 
 ```typescript
 // app.component.ts
-import { Component, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { Component, signal, computed, input, output, inject } from '@angular/core';
+import { HlmButtonDirective } from '@spartan-ng/helm/button';
+import { HlmBadgeDirective } from '@spartan-ng/helm/badge';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule],
+  imports: [HlmButtonDirective, HlmBadgeDirective],
   template: `
     <h1>{{ title() }}</h1>
-    <ul>
-      @for (item of items(); track item.id) {
-        <li>{{ item.name }}</li>
-      }
-    </ul>
+    @if (loading()) {
+      <p>Loading...</p>
+    } @else {
+      <ul>
+        @for (item of items(); track item.id) {
+          <li>
+            {{ item.name }}
+            <span hlmBadge [variant]="item.active ? 'default' : 'secondary'">
+              {{ item.status }}
+            </span>
+          </li>
+        }
+      </ul>
+    }
+    <button hlmBtn (click)="refresh.emit()">Refresh</button>
   `,
 })
 export class AppComponent {
   private http = inject(HttpClient);
 
+  // Signal inputs/outputs (Angular 21+)
+  userId = input.required<string>();
+  refresh = output<void>();
+
   title = signal('My App');
   items = signal<Item[]>([]);
+  loading = signal(true);
   itemCount = computed(() => this.items().length);
 
   ngOnInit() {
-    this.http.get<Item[]>('/api/items').subscribe(items => {
-      this.items.set(items);
+    this.http.get<Item[]>('/api/items').subscribe({
+      next: (items) => {
+        this.items.set(items);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false)
     });
   }
 }
@@ -66,39 +93,41 @@ export class ItemService {
 }
 ```
 
-### Vite + Angular (Analog)
+### Spartan UI Components
+
+Available in `frontend/libs/ui/`:
+
+| Component | Import From | Example |
+|-----------|-------------|---------|
+| `hlmBtn` | `@spartan-ng/helm/button` | `<button hlmBtn>Click</button>` |
+| `hlm-table` | `@spartan-ng/helm/table` | `<table hlmTable>` |
+| `hlm-dialog` | `@spartan-ng/helm/dialog` | `<hlm-dialog [state]="'open'">` |
+| `hlm-tabs` | `@spartan-ng/helm/tabs` | `<hlm-tabs tab="overview">` |
+| `hlmBadge` | `@spartan-ng/helm/badge` | `<span hlmBadge>Status</span>` |
+| `hlmInput` | `@spartan-ng/helm/input` | `<input hlmInput />` |
+| `hlmLabel` | `@spartan-ng/helm/label` | `<label hlmLabel>Name</label>` |
+| `hlm-select` | `@spartan-ng/helm/select` | `<hlm-select>` |
+| `hlm-toaster` | `@spartan-ng/helm/sonner` | `<hlm-toaster />` |
+
+### NotificationService (Toasts)
 
 ```typescript
-// vite.config.ts
-import { defineConfig } from 'vite';
-import analog from '@analogjs/platform';
-import { litestarVitePlugin } from 'litestar-vite-plugin';
+import { NotificationService } from '@app/core/services/notification.service';
 
-export default defineConfig({
-  plugins: [
-    analog(),
-    litestarVitePlugin({
-      input: ['src/main.ts'],
-    }),
-  ],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-    },
-  },
-});
+private notify = inject(NotificationService);
+
+this.notify.success('Node assigned successfully');
+this.notify.error('Failed to fetch nodes');
+this.notify.warning('Rate limit approaching');
 ```
 
-### Angular CLI (Non-Vite)
+### Proxy Configuration
 
 ```json
 // proxy.conf.json
 {
   "/api": {
-    "target": "http://localhost:8000",
+    "target": "http://localhost:3000",
     "secure": false,
     "changeOrigin": true
   }
@@ -154,17 +183,40 @@ export const appConfig: ApplicationConfig = {
 
 ## Project-Specific Patterns
 
+### MUST DO
 - Standalone components (no NgModules)
-- Signals for reactive state
-- `inject()` for dependency injection
-- Angular 18+ with new control flow syntax
-- UI library mandate: reuse components from the shared Storybook catalog (for example, [`DescriptionList`](https://ui-storybook.gcore.top/description-list)) instead of building bespoke widgets. Import the published Angular wrappers/modules, respect the documented inputs/state contracts, and extend styling only via the library’s theming hooks. Always check Storybook first and add missing pieces there before introducing new UI elements.
+- Signals for reactive state (`signal()`, `computed()`, `effect()`)
+- `inject()` for dependency injection (not constructor injection)
+- `input()` and `output()` signal functions (not `@Input`/`@Output` decorators)
+- New control flow syntax (`@if`, `@for`, `@switch`)
+- Spartan UI components from `libs/ui/` (not custom implementations)
+- Tailwind CSS v4 utilities for styling
+- CSS variables for brand colors (`var(--gcore-primary)`, `var(--primary)`)
+
+### MUST NOT DO
+- Use NgModules or constructor injection
+- Use `@Input`/`@Output` decorators (use signal-based)
+- Create custom components when Spartan UI has them
+- Use custom SCSS when Tailwind utilities exist
+- Use old Tailwind v3 syntax (`!flex` → use `flex!` instead)
+
+### Theme Guidelines
+
+**Landing Page** (dark theme):
+- Background: `bg-[#0a0a0a]`
+- Accent: `text-[#FF4C00]`
+- Use `appScrollReveal` directive
+
+**Dashboard/App** (light theme):
+- Background: `bg-[var(--gcore-bg)]`
+- Primary: `var(--gcore-primary)` (#FF4C00)
+- Use Spartan UI components
 
 ## Context7 Lookup
 
 ```python
 mcp__context7__get-library-docs(
-    context7CompatibleLibraryID="/angular/angular",
+    context7CompatibleLibraryID="/angular/angular/20.0.0",
     topic="signals components standalone",
     mode="code"
 )
@@ -172,6 +224,7 @@ mcp__context7__get-library-docs(
 
 ## Related Files
 
-- `examples/angular/` - Angular + Vite example
-- `examples/angular-cli/` - Angular CLI example
-- `src/py/litestar_vite/templates/angular/` - Angular templates
+- `frontend/libs/ui/` - Spartan UI helm components
+- `frontend/src/app/core/` - Services, guards, interceptors
+- `frontend/src/app/features/` - Feature components
+- `frontend/src/styles.scss` - Theme configuration

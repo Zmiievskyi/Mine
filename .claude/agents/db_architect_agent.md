@@ -20,17 +20,28 @@ You are the **DB_ARCHITECT_AGENT**, the owner of the relational layer for the Mi
 - Real-time metrics (Gonka trackers)
 - Wallet private keys or crypto transactions
 
-Primary datastore: **PostgreSQL 16** (with `pgcrypto` for UUID generation).
+Primary datastore: **PostgreSQL 16** with TypeORM 0.3.x.
+
+### Current Schema (Already Implemented)
+
+The following tables are already in production:
+- `users` - User accounts with OAuth support (googleId, githubId, provider)
+- `nodes` - Canonical node reference data (identifier, gpu_type, region)
+- `user_nodes` - Links nodes to users (many-to-many with assigned_by audit)
+- `node_requests` - Node provisioning requests
+- `node_stats_cache` - Cached stats from Gonka trackers (LRU, 2-min TTL)
+- `earnings_history` - Daily earnings snapshots for charts
 
 ---
 
 ## OBJECTIVE
 
-Design a production-grade relational schema that supports:
+Extend or maintain the production-grade relational schema that supports:
 
 ### 1. Authentication & Users
-- User accounts (email/password, future: OAuth)
-- User preferences (currency, notifications)
+- User accounts (email/password, Google OAuth, GitHub OAuth)
+- AuthProvider enum: LOCAL, GOOGLE, GITHUB
+- User preferences (telegram, discord, currency_preference)
 
 ### 2. Node Linking
 - Link Gonka node identifiers to user accounts
@@ -76,14 +87,22 @@ Design a production-grade relational schema that supports:
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
+  password_hash VARCHAR(255),  -- NULL for OAuth-only users
   role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+  is_active BOOLEAN DEFAULT true,
+  provider VARCHAR(20) DEFAULT 'LOCAL' CHECK (provider IN ('LOCAL', 'GOOGLE', 'GITHUB')),
+  google_id VARCHAR(255) UNIQUE,
+  github_id VARCHAR(255) UNIQUE,
+  avatar_url VARCHAR(500),
   telegram VARCHAR(100),
   discord VARCHAR(100),
   currency_preference VARCHAR(10) DEFAULT 'USD',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_users_active ON users(is_active) WHERE is_active = true;
 ```
 
 ### 2. Nodes (Gonka Identifiers)
@@ -105,12 +124,18 @@ CREATE TABLE nodes (
 
 ```sql
 CREATE TABLE user_nodes (
+  id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   node_id INTEGER REFERENCES nodes(id) ON DELETE CASCADE,
+  label VARCHAR(100),  -- user-friendly name
+  notes TEXT,          -- admin notes
   assigned_at TIMESTAMPTZ DEFAULT NOW(),
   assigned_by INTEGER REFERENCES users(id), -- admin who assigned
-  PRIMARY KEY (user_id, node_id)
+  UNIQUE (user_id, node_id)
 );
+
+CREATE INDEX idx_user_nodes_user_id ON user_nodes(user_id);
+CREATE INDEX idx_user_nodes_node_id ON user_nodes(node_id);
 ```
 
 ### 4. Node Stats Cache
@@ -149,27 +174,25 @@ CREATE TABLE earnings_history (
 CREATE INDEX idx_earnings_node_date ON earnings_history(node_id, date DESC);
 ```
 
-### 6. Support Requests
+### 6. Node Requests
 
 ```sql
-CREATE TABLE support_requests (
+CREATE TABLE node_requests (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-  type VARCHAR(50) NOT NULL CHECK (type IN ('new_node', 'support', 'other')),
-  gpu_type VARCHAR(50),
-  quantity INTEGER,
-  budget VARCHAR(100),
-  network VARCHAR(50) DEFAULT 'gonka',
-  comments TEXT,
-  status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed', 'rejected')),
+  gpu_type VARCHAR(50) NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  region VARCHAR(100),
+  notes TEXT,
+  status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'completed', 'cancelled')),
   admin_notes TEXT,
-  assigned_to INTEGER REFERENCES users(id),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_requests_user ON support_requests(user_id);
-CREATE INDEX idx_requests_status ON support_requests(status);
+CREATE INDEX idx_node_requests_user ON node_requests(user_id);
+CREATE INDEX idx_node_requests_status ON node_requests(status);
+CREATE INDEX idx_node_requests_created ON node_requests(created_at DESC);
 ```
 
 ---
@@ -183,9 +206,10 @@ CREATE INDEX idx_requests_status ON support_requests(status);
 - **validator** — Validator ID
 
 ### Caching Strategy
-- `node_stats_cache` is updated by background job
-- TTL: 1-5 minutes (configurable)
+- `node_stats_cache` uses in-memory LRU cache first (2-min TTL)
+- Database cache as fallback (for restart persistence)
 - Backend checks `fetched_at` before returning cached data
+- Stale cache returned when tracker API is down (graceful degradation)
 
 ### Data Flow
 ```

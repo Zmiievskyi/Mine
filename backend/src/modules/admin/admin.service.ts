@@ -51,13 +51,25 @@ export class AdminService {
     const { page = 1, limit = 20 } = pagination;
     const skip = (page - 1) * limit;
 
-    const [users, total] = await this.usersRepository.findAndCount({
-      select: ['id', 'email', 'name', 'role', 'isActive', 'createdAt'],
-      relations: ['nodes'],
-      order: { createdAt: 'DESC' },
-      skip,
-      take: limit,
-    });
+    // Use QueryBuilder to select users with node count instead of loading all nodes
+    const queryBuilder = this.usersRepository
+      .createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.email',
+        'user.name',
+        'user.role',
+        'user.isActive',
+        'user.createdAt',
+      ])
+      .loadRelationCountAndMap('user.nodeCount', 'user.nodes', 'nodes', (qb) =>
+        qb.where('nodes.isActive = :isActive', { isActive: true }),
+      )
+      .orderBy('user.createdAt', 'DESC')
+      .skip(skip)
+      .take(limit);
+
+    const [users, total] = await queryBuilder.getManyAndCount();
 
     return createPaginatedResponse(users, total, page, limit);
   }

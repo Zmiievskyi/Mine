@@ -1,7 +1,8 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminService } from '../../../core/services/admin.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
@@ -235,6 +236,7 @@ interface ConfirmDialogData {
 export class AdminRequestsComponent implements OnInit {
   private adminService = inject(AdminService);
   private notification = inject(NotificationService);
+  private destroyRef = inject(DestroyRef);
 
   requests = signal<AdminRequest[]>([]);
   loading = signal(true);
@@ -257,23 +259,29 @@ export class AdminRequestsComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.adminService.getAllRequests().subscribe({
-      next: (requests) => {
-        this.requests.set(requests);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.error.set(err.error?.message || 'Failed to load requests');
-        this.loading.set(false);
-      },
-    });
+    this.adminService
+      .getAllRequests()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (requests) => {
+          this.requests.set(requests);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.error.set(err.error?.message || 'Failed to load requests');
+          this.loading.set(false);
+        },
+      });
   }
 
   loadStats(): void {
-    this.adminService.getRequestStats().subscribe({
-      next: (stats) => this.stats.set(stats),
-      error: () => {},
-    });
+    this.adminService
+      .getRequestStats()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (stats) => this.stats.set(stats),
+        error: () => {},
+      });
   }
 
   filteredRequests(): AdminRequest[] {
@@ -307,14 +315,17 @@ export class AdminRequestsComponent implements OnInit {
   }
 
   private updateStatus(id: string, status: RequestStatus): void {
-    this.adminService.updateRequest(id, { status }).subscribe({
-      next: () => {
-        this.notification.success(`Request ${status} successfully`);
-        this.loadRequests();
-        this.loadStats();
-      },
-      error: (err) => this.notification.error(err.error?.message || 'Failed to update request'),
-    });
+    this.adminService
+      .updateRequest(id, { status })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.notification.success(`Request ${status} successfully`);
+          this.loadRequests();
+          this.loadStats();
+        },
+        error: (err) => this.notification.error(err.error?.message || 'Failed to update request'),
+      });
   }
 
   editNotes(request: AdminRequest): void {
@@ -326,14 +337,17 @@ export class AdminRequestsComponent implements OnInit {
     const request = this.editingRequest();
     if (!request) return;
 
-    this.adminService.updateRequest(request.id, { adminNotes: this.notesText }).subscribe({
-      next: () => {
-        this.notification.success('Notes saved');
-        this.editingRequest.set(null);
-        this.loadRequests();
-      },
-      error: (err) => this.notification.error(err.error?.message || 'Failed to save notes'),
-    });
+    this.adminService
+      .updateRequest(request.id, { adminNotes: this.notesText })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.notification.success('Notes saved');
+          this.editingRequest.set(null);
+          this.loadRequests();
+        },
+        error: (err) => this.notification.error(err.error?.message || 'Failed to save notes'),
+      });
   }
 
   cancelConfirm(): void {
