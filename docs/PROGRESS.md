@@ -1557,3 +1557,53 @@ LoadingSpinnerComponent updated to be more flexible:
 - [x] 7.8 Google OAuth - **COMPLETE**
 - [x] 7.9 Landing Page Polish - **COMPLETE**
 - [x] 7.10 Frontend Code Cleanup - **COMPLETE**
+- [x] 7.11 GitHub OAuth - **COMPLETE** (backend + frontend)
+
+---
+
+## Session 21: GitHub OAuth Frontend Buttons (2025-12-09)
+
+### Completed Tasks
+- [x] Added `loginWithGithub()` method to AuthService (2025-12-09)
+- [x] Added "Sign in with GitHub" button to LoginComponent (2025-12-09)
+- [x] Added "Sign up with GitHub" button to RegisterComponent (2025-12-09)
+- [x] Verified frontend build passes successfully (2025-12-09)
+
+### Modified Files
+**Frontend:**
+- `src/app/core/services/auth.service.ts` - Added `loginWithGithub()` method
+- `src/app/features/auth/login/login.component.ts` - Added GitHub button with SVG icon
+- `src/app/features/auth/register/register.component.ts` - Added GitHub button with SVG icon
+
+### GitHub Button Implementation
+```typescript
+// auth.service.ts
+loginWithGithub(): void {
+  window.location.href = `${environment.apiUrl}/auth/github`;
+}
+
+// login.component.ts template
+<button type="button" (click)="loginWithGithub()" [disabled]="loading()"
+  class="w-full mt-3 py-2 px-4 border border-[var(--gcore-border)] rounded flex items-center justify-center gap-2 hover:bg-gray-50">
+  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 0c-6.626 0-12 5.373-12 12..."/>
+  </svg>
+  Sign in with GitHub
+</button>
+```
+
+### OAuth Buttons Now Available
+| Page | Google | GitHub |
+|------|--------|--------|
+| Login | ✅ | ✅ |
+| Register | ✅ | ✅ |
+
+### GitHub OAuth Complete Flow
+1. User clicks "Sign in with GitHub" button on login/register page
+2. Frontend redirects to `/api/auth/github`
+3. Backend redirects to GitHub OAuth consent screen
+4. User authorizes the app
+5. GitHub redirects to `/api/auth/github/callback`
+6. Backend creates/links user account
+7. Backend redirects to frontend `/auth/oauth-callback#token=...`
+8. Frontend stores token and navigates to dashboard
