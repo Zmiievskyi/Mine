@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { NodeRequest, RequestStatus } from './entities/node-request.entity';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
+import { AdminRequestsQueryDto } from './dto/admin-requests-query.dto';
 import {
   PaginationQueryDto,
   PaginatedResponse,
@@ -34,17 +35,51 @@ export class RequestsService {
   }
 
   async findAll(
-    pagination: PaginationQueryDto,
+    query: AdminRequestsQueryDto,
   ): Promise<PaginatedResponse<NodeRequest>> {
-    const { page = 1, limit = 20 } = pagination;
+    const { page = 1, limit = 20, status, gpuType, userEmail, dateFrom, dateTo, sortBy, sortOrder = 'desc' } = query;
     const skip = (page - 1) * limit;
 
-    const [requests, total] = await this.requestsRepository.findAndCount({
-      relations: ['user'],
-      order: { createdAt: 'DESC' },
-      skip,
-      take: limit,
-    });
+    const queryBuilder = this.requestsRepository
+      .createQueryBuilder('request')
+      .leftJoinAndSelect('request.user', 'user');
+
+    // Apply status filter
+    if (status && status !== 'all') {
+      queryBuilder.andWhere('request.status = :status', { status });
+    }
+
+    // Apply GPU type filter
+    if (gpuType) {
+      queryBuilder.andWhere('request.gpuType = :gpuType', { gpuType });
+    }
+
+    // Apply user email search
+    if (userEmail) {
+      queryBuilder.andWhere('user.email ILIKE :userEmail', { userEmail: `%${userEmail}%` });
+    }
+
+    // Apply date range filters
+    if (dateFrom) {
+      queryBuilder.andWhere('request.createdAt >= :dateFrom', { dateFrom: new Date(dateFrom) });
+    }
+    if (dateTo) {
+      queryBuilder.andWhere('request.createdAt <= :dateTo', { dateTo: new Date(dateTo) });
+    }
+
+    // Apply sorting
+    const order = sortOrder.toUpperCase() as 'ASC' | 'DESC';
+    if (sortBy === 'status') {
+      queryBuilder.orderBy('request.status', order);
+    } else if (sortBy === 'gpuType') {
+      queryBuilder.orderBy('request.gpuType', order);
+    } else {
+      queryBuilder.orderBy('request.createdAt', order);
+    }
+
+    queryBuilder.skip(skip).take(limit);
+
+    const [requests, total] = await queryBuilder.getManyAndCount();
 
     return createPaginatedResponse(requests, total, page, limit);
   }

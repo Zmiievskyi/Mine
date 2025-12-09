@@ -1,16 +1,24 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../core/services/admin.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
-import { AdminUser, UserNode, AssignNodeDto, UserRole } from '../../../core/models/admin.model';
+import { AdminUser, AdminUserWithStats, UserNode, UserNodeWithStats, AssignNodeDto, UserRole, AdminUsersQuery } from '../../../core/models/admin.model';
 import { AssignNodeModalComponent } from './assign-node-modal/assign-node-modal.component';
 import { UserListItemComponent } from './user-list-item/user-list-item.component';
+import { createDebounce } from '../../../shared/utils/debounce.util';
+import { downloadBlobWithDate } from '../../../shared/utils/download.util';
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmInput } from '@spartan-ng/helm/input';
+import { HlmLabel } from '@spartan-ng/helm/label';
+import { BrnSelectImports } from '@spartan-ng/brain/select';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { HlmCardImports } from '@spartan-ng/helm/card';
 
 interface ConfirmDialogData {
   title: string;
@@ -26,6 +34,7 @@ interface ConfirmDialogData {
   imports: [
     CommonModule,
     RouterLink,
+    FormsModule,
     LayoutComponent,
     LoadingSpinnerComponent,
     AssignNodeModalComponent,
@@ -33,107 +42,40 @@ interface ConfirmDialogData {
     BrnDialogImports,
     HlmDialogImports,
     HlmButton,
+    HlmInput,
+    HlmLabel,
+    BrnSelectImports,
+    HlmSelectImports,
+    HlmCardImports,
   ],
-  template: `
-    <app-layout>
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h1 class="text-2xl font-bold text-[var(--gcore-text)]">Manage Users</h1>
-          <p class="text-[var(--gcore-text-muted)] mt-1">
-            View users and assign nodes to them
-          </p>
-        </div>
-        <a
-          routerLink="/admin"
-          class="px-4 py-2 border border-[var(--gcore-border)] rounded-lg hover:bg-gray-50"
-        >
-          Back to Admin
-        </a>
-      </div>
-
-      <!-- Loading -->
-      @if (loading()) {
-        <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-12">
-          <app-loading-spinner message="Loading users..." />
-        </div>
-      }
-
-      <!-- Error -->
-      @if (error()) {
-        <div class="bg-red-50 border border-red-200 rounded-lg p-6">
-          <p class="text-red-600">{{ error() }}</p>
-          <button
-            (click)="loadUsers()"
-            class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Retry
-          </button>
-        </div>
-      }
-
-      <!-- Users List -->
-      @if (!loading() && !error()) {
-        <div class="space-y-4">
-          @for (user of users(); track user.id) {
-            <app-user-list-item
-              [user]="user"
-              [isExpanded]="expandedUser() === user.id"
-              (expand)="toggleUser(user.id)"
-              (roleToggle)="toggleRole(user)"
-              (activeToggle)="toggleActive(user)"
-              (assignNode)="openAssignModal(user)"
-              (nodeRemove)="removeNode(user.id, $event)"
-            />
-          }
-        </div>
-
-        @if (users().length === 0) {
-          <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-12 text-center">
-            <p class="text-[var(--gcore-text-muted)]">No users found</p>
-          </div>
-        }
-      }
-
-      <!-- Assign Node Modal -->
-      <app-assign-node-modal
-        [user]="assigningUser()"
-        [isOpen]="!!assigningUser()"
-        [errorMessage]="assignError()"
-        [isSubmitting]="assigning()"
-        (close)="closeAssignModal()"
-        (assign)="assignNode($event)"
-      />
-
-      <!-- Confirm Dialog -->
-      <hlm-dialog [state]="confirmDialog() ? 'open' : 'closed'" (closed)="cancelConfirm()">
-        <hlm-dialog-content *brnDialogContent="let ctx" class="sm:max-w-[400px]">
-          <hlm-dialog-header>
-            <h3 hlmDialogTitle>{{ confirmDialog()?.title }}</h3>
-            <p hlmDialogDescription>{{ confirmDialog()?.message }}</p>
-          </hlm-dialog-header>
-          <hlm-dialog-footer>
-            <button hlmBtn variant="outline" (click)="cancelConfirm()">Cancel</button>
-            <button hlmBtn [variant]="confirmDialog()?.variant || 'default'" (click)="executeConfirm()">
-              {{ confirmDialog()?.confirmText || 'Confirm' }}
-            </button>
-          </hlm-dialog-footer>
-        </hlm-dialog-content>
-      </hlm-dialog>
-    </app-layout>
-  `,
+  templateUrl: './admin-users.component.html',
 })
 export class AdminUsersComponent implements OnInit {
   private adminService = inject(AdminService);
   private notification = inject(NotificationService);
+  protected Math = Math;
 
   users = signal<AdminUser[]>([]);
+  meta = signal<{ page: number; limit: number; total: number; totalPages: number } | null>(null);
   loading = signal(true);
   error = signal<string | null>(null);
   expandedUser = signal<string | null>(null);
+  expandedUserData = signal<AdminUserWithStats | null>(null);
+  expandedUserLoading = signal(false);
   assigningUser = signal<AdminUser | null>(null);
   assignError = signal<string | null>(null);
   assigning = signal(false);
+  exporting = signal(false);
   confirmDialog = signal<ConfirmDialogData | null>(null);
+
+  // Filter state
+  searchQuery = '';
+  roleFilter: 'user' | 'admin' | 'all' = 'all';
+  activeFilter: 'true' | 'false' | 'all' = 'all';
+  sortBy: 'nodeCount' | 'createdAt' | 'email' = 'createdAt';
+  currentPage = 1;
+
+  private searchDebounce = createDebounce();
 
   ngOnInit(): void {
     this.loadUsers();
@@ -143,9 +85,20 @@ export class AdminUsersComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.adminService.getUsers().subscribe({
-      next: (users) => {
-        this.users.set(users);
+    const query: AdminUsersQuery = {
+      page: this.currentPage,
+      limit: 20,
+      search: this.searchQuery || undefined,
+      role: this.roleFilter,
+      isActive: this.activeFilter === 'all' ? undefined : this.activeFilter === 'true',
+      sortBy: this.sortBy,
+      sortOrder: 'desc',
+    };
+
+    this.adminService.getUsers(query).subscribe({
+      next: (response) => {
+        this.users.set(response.data);
+        this.meta.set(response.meta);
         this.loading.set(false);
       },
       error: (err) => {
@@ -155,8 +108,39 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
+  onFilterChange(): void {
+    this.searchDebounce(() => {
+      this.currentPage = 1;
+      this.loadUsers();
+    }, 300);
+  }
+
+  goToPage(page: number): void {
+    this.currentPage = page;
+    this.loadUsers();
+  }
+
   toggleUser(id: string): void {
-    this.expandedUser.set(this.expandedUser() === id ? null : id);
+    if (this.expandedUser() === id) {
+      this.expandedUser.set(null);
+      this.expandedUserData.set(null);
+    } else {
+      this.expandedUser.set(id);
+      this.loadUserWithStats(id);
+    }
+  }
+
+  private loadUserWithStats(id: string): void {
+    this.expandedUserLoading.set(true);
+    this.adminService.getUser(id).subscribe({
+      next: (user) => {
+        this.expandedUserData.set(user);
+        this.expandedUserLoading.set(false);
+      },
+      error: () => {
+        this.expandedUserLoading.set(false);
+      },
+    });
   }
 
   toggleRole(user: AdminUser): void {
@@ -230,7 +214,7 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
-  removeNode(userId: string, node: UserNode): void {
+  removeNode(userId: string, node: UserNode | UserNodeWithStats): void {
     const truncated = node.nodeAddress.length <= 20
       ? node.nodeAddress
       : `${node.nodeAddress.slice(0, 12)}...${node.nodeAddress.slice(-8)}`;
@@ -245,6 +229,10 @@ export class AdminUsersComponent implements OnInit {
           next: () => {
             this.notification.success('Node removed successfully');
             this.loadUsers();
+            // Refresh expanded user data if still expanded
+            if (this.expandedUser() === userId) {
+              this.loadUserWithStats(userId);
+            }
           },
           error: (err) => this.notification.error(err.error?.message || 'Failed to remove node'),
         });
@@ -262,5 +250,19 @@ export class AdminUsersComponent implements OnInit {
       dialog.onConfirm();
       this.confirmDialog.set(null);
     }
+  }
+
+  exportToCsv(): void {
+    this.exporting.set(true);
+    this.adminService.exportUsers().subscribe({
+      next: (blob) => {
+        downloadBlobWithDate(blob, 'users');
+        this.exporting.set(false);
+      },
+      error: () => {
+        this.notification.error('Failed to export users');
+        this.exporting.set(false);
+      },
+    });
   }
 }

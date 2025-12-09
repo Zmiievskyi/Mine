@@ -7,12 +7,16 @@ import { NodesService } from '../../core/services/nodes.service';
 import { DashboardData, Node } from '../../core/models/node.model';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
-import { getNodeStatusClass } from '../../shared/utils/status-styles.util';
+import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmBadge } from '@spartan-ng/helm/badge';
+import { getNodeStatusVariant } from '../../shared/utils/node-status.util';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, LayoutComponent, LoadingSpinnerComponent],
+  imports: [CommonModule, RouterLink, LayoutComponent, LoadingSpinnerComponent, HlmButton, HlmCardImports, HlmTableImports, HlmBadge],
   template: `
     <app-layout>
       <!-- Header with Refresh -->
@@ -25,9 +29,12 @@ import { getNodeStatusClass } from '../../shared/utils/status-styles.util';
             </span>
           }
           <button
+            hlmBtn
+            variant="outline"
+            size="sm"
             (click)="manualRefresh()"
             [disabled]="refreshing()"
-            class="px-3 py-1.5 text-sm border border-[var(--gcore-border)] rounded-md hover:bg-gray-50 disabled:opacity-50 flex items-center gap-2"
+            class="flex items-center gap-2"
           >
             @if (refreshing()) {
               <span class="inline-block w-4 h-4 border-2 border-[var(--gcore-primary)] border-t-transparent rounded-full animate-spin"></span>
@@ -112,30 +119,38 @@ import { getNodeStatusClass } from '../../shared/utils/status-styles.util';
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div class="bg-white p-6 rounded-lg shadow-sm border border-[var(--gcore-border)]">
-            <p class="text-sm text-[var(--gcore-text-muted)]">Active Nodes</p>
-            <p class="text-2xl font-bold text-[var(--gcore-text)]">
-              {{ stats()?.totalNodes || 0 }}
-            </p>
-          </div>
-          <div class="bg-white p-6 rounded-lg shadow-sm border border-[var(--gcore-border)]">
-            <p class="text-sm text-[var(--gcore-text-muted)]">Healthy Nodes</p>
-            <p class="text-2xl font-bold text-green-600">
-              {{ stats()?.healthyNodes || 0 }}
-            </p>
-          </div>
-          <div class="bg-white p-6 rounded-lg shadow-sm border border-[var(--gcore-border)]">
-            <p class="text-sm text-[var(--gcore-text-muted)]">Total Earnings</p>
-            <p class="text-2xl font-bold text-[var(--gcore-primary)]">
-              {{ stats()?.totalEarnings?.toFixed(2) || '0.00' }} GNK
-            </p>
-          </div>
-          <div class="bg-white p-6 rounded-lg shadow-sm border border-[var(--gcore-border)]">
-            <p class="text-sm text-[var(--gcore-text-muted)]">Avg Uptime</p>
-            <p class="text-2xl font-bold text-[var(--gcore-text)]">
-              {{ stats()?.averageUptime?.toFixed(1) || '0' }}%
-            </p>
-          </div>
+          <section hlmCard>
+            <div hlmCardContent class="p-6">
+              <p class="text-sm text-[var(--gcore-text-muted)]">Active Nodes</p>
+              <p class="text-2xl font-bold text-[var(--gcore-text)]">
+                {{ stats()?.totalNodes || 0 }}
+              </p>
+            </div>
+          </section>
+          <section hlmCard>
+            <div hlmCardContent class="p-6">
+              <p class="text-sm text-[var(--gcore-text-muted)]">Healthy Nodes</p>
+              <p class="text-2xl font-bold text-green-600">
+                {{ stats()?.healthyNodes || 0 }}
+              </p>
+            </div>
+          </section>
+          <section hlmCard>
+            <div hlmCardContent class="p-6">
+              <p class="text-sm text-[var(--gcore-text-muted)]">Total Earnings</p>
+              <p class="text-2xl font-bold text-[var(--gcore-primary)]">
+                {{ stats()?.totalEarnings?.toFixed(2) || '0.00' }} GNK
+              </p>
+            </div>
+          </section>
+          <section hlmCard>
+            <div hlmCardContent class="p-6">
+              <p class="text-sm text-[var(--gcore-text-muted)]">Avg Uptime</p>
+              <p class="text-2xl font-bold text-[var(--gcore-text)]">
+                {{ stats()?.averageUptime?.toFixed(1) || '0' }}%
+              </p>
+            </div>
+          </section>
         </div>
 
         <!-- Nodes Table -->
@@ -154,55 +169,57 @@ import { getNodeStatusClass } from '../../shared/utils/status-styles.util';
               </a>
             </div>
           } @else {
-            <table class="w-full">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase">
-                    Node
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase">
-                    Status
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase">
-                    GPU
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase">
-                    Earnings
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase">
-                    Uptime
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-[var(--gcore-border)]">
-                @for (node of nodes(); track node.id) {
-                  <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4">
-                      <a
-                        [routerLink]="['/nodes', node.address]"
-                        class="text-[var(--gcore-primary)] hover:underline font-medium"
-                      >
-                        {{ node.alias || node.address.slice(0, 12) + '...' }}
-                      </a>
-                    </td>
-                    <td class="px-6 py-4">
-                      <span class="px-2 py-1 text-xs rounded-full" [class]="getNodeStatusClass(node.status)">
-                        {{ node.status }}
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 text-[var(--gcore-text)]">
-                      {{ node.gpuType }}
-                    </td>
-                    <td class="px-6 py-4 text-[var(--gcore-text)]">
-                      {{ node.earnedCoins.toFixed(2) }} GNK
-                    </td>
-                    <td class="px-6 py-4 text-[var(--gcore-text)]">
-                      {{ node.uptimePercent.toFixed(1) }}%
-                    </td>
+            <div hlmTableContainer>
+              <table hlmTable>
+                <thead hlmThead>
+                  <tr hlmTr>
+                    <th hlmTh class="text-muted-foreground uppercase tracking-wider">
+                      Node
+                    </th>
+                    <th hlmTh class="text-muted-foreground uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th hlmTh class="text-muted-foreground uppercase tracking-wider">
+                      GPU
+                    </th>
+                    <th hlmTh class="text-muted-foreground uppercase tracking-wider">
+                      Earnings
+                    </th>
+                    <th hlmTh class="text-muted-foreground uppercase tracking-wider">
+                      Uptime
+                    </th>
                   </tr>
-                }
-              </tbody>
-            </table>
+                </thead>
+                <tbody hlmTbody>
+                  @for (node of nodes(); track node.id) {
+                    <tr hlmTr>
+                      <td hlmTd>
+                        <a
+                          [routerLink]="['/nodes', node.address]"
+                          class="text-primary hover:underline font-medium"
+                        >
+                          {{ node.alias || node.address.slice(0, 12) + '...' }}
+                        </a>
+                      </td>
+                      <td hlmTd>
+                        <span hlmBadge [variant]="getNodeStatusVariant(node.status)">
+                          {{ node.status }}
+                        </span>
+                      </td>
+                      <td hlmTd>
+                        {{ node.gpuType }}
+                      </td>
+                      <td hlmTd>
+                        <span class="text-primary font-medium">{{ node.earnedCoins.toFixed(2) }} GNK</span>
+                      </td>
+                      <td hlmTd>
+                        {{ node.uptimePercent.toFixed(1) }}%
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           }
         </div>
       }
@@ -301,5 +318,5 @@ export class DashboardComponent implements OnInit {
     return Math.round((completedSteps / 5) * 100);
   }
 
-  getNodeStatusClass = getNodeStatusClass;
+  getNodeStatusVariant = getNodeStatusVariant;
 }

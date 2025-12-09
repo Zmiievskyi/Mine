@@ -12,6 +12,7 @@ import { NodeDetailHistoryComponent } from './node-detail-history/node-detail-hi
 import { getNodeStatusClass } from '../../../shared/utils/status-styles.util';
 import { HlmTabsImports } from '@spartan-ng/helm/tabs';
 import { BrnTabsImports } from '@spartan-ng/brain/tabs';
+import { HlmButton } from '@spartan-ng/helm/button';
 
 @Component({
   selector: 'app-node-detail',
@@ -26,6 +27,7 @@ import { BrnTabsImports } from '@spartan-ng/brain/tabs';
     NodeDetailHistoryComponent,
     BrnTabsImports,
     HlmTabsImports,
+    HlmButton,
   ],
   template: `
     <app-layout>
@@ -69,7 +71,7 @@ import { BrnTabsImports } from '@spartan-ng/brain/tabs';
               <p class="text-red-600 text-sm">{{ error() }}</p>
             </div>
           </div>
-          <button (click)="loadNode()" class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+          <button hlmBtn variant="destructive" (click)="loadNode()" class="mt-4">
             Retry
           </button>
         </div>
@@ -121,11 +123,11 @@ import { BrnTabsImports } from '@spartan-ng/brain/tabs';
         <!-- Quick Actions -->
         <div class="mt-6 flex gap-4">
           @if (node()?.inferenceUrl) {
-            <a [href]="node()?.inferenceUrl" target="_blank" rel="noopener noreferrer" class="px-4 py-2 border border-[var(--gcore-border)] text-[var(--gcore-text)] rounded hover:bg-gray-50 text-sm">
+            <a [href]="node()?.inferenceUrl" target="_blank" rel="noopener noreferrer" hlmBtn variant="outline" size="sm">
               View Inference API
             </a>
           }
-          <button (click)="loadNode()" class="px-4 py-2 border border-[var(--gcore-border)] text-[var(--gcore-text)] rounded hover:bg-gray-50 text-sm">
+          <button hlmBtn variant="outline" size="sm" (click)="loadNode()">
             Refresh Data
           </button>
         </div>

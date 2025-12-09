@@ -18,8 +18,7 @@ export enum RequestStatus {
 }
 
 export enum GpuType {
-  RTX_3080 = '3080',
-  RTX_4090 = '4090',
+  A100 = 'A100',
   H100 = 'H100',
   H200 = 'H200',
 }

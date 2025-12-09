@@ -14,7 +14,7 @@ import { GpuType } from '../entities/node-request.entity';
 export class CreateRequestDto {
   @ApiProperty({
     enum: GpuType,
-    example: GpuType.RTX_4090,
+    example: GpuType.A100,
     description: 'GPU type for the node',
   })
   @IsEnum(GpuType)

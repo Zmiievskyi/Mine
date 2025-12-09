@@ -8,7 +8,10 @@ import {
   Param,
   Query,
   UseGuards,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -18,9 +21,11 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
+import { AdminAnalyticsService } from './admin-analytics.service';
+import { AdminExportService } from './admin-export.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
-import { AssignNodeDto, UpdateUserDto, UuidParamDto, NodeParamsDto } from './dto';
+import { AssignNodeDto, UpdateUserDto, UuidParamDto, NodeParamsDto, AdminNodesQueryDto, AdminUsersQueryDto } from './dto';
 import { User } from '../users/entities/user.entity';
 import { UserNode } from '../users/entities/user-node.entity';
 import { PaginationQueryDto } from '../../common/dto';
@@ -30,7 +35,11 @@ import { PaginationQueryDto } from '../../common/dto';
 @Controller('admin')
 @UseGuards(JwtAuthGuard, AdminGuard)
 export class AdminController {
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private analyticsService: AdminAnalyticsService,
+    private exportService: AdminExportService,
+  ) {}
 
   @Get('dashboard')
   @ApiOperation({ summary: 'Get admin dashboard statistics' })
@@ -40,13 +49,83 @@ export class AdminController {
     return this.adminService.getDashboardStats();
   }
 
+  @Get('nodes')
+  @ApiOperation({ summary: 'Get all nodes across all users with live stats' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'status', required: false, enum: ['healthy', 'jailed', 'offline', 'all'] })
+  @ApiQuery({ name: 'gpuType', required: false, type: String })
+  @ApiQuery({ name: 'userId', required: false, type: String })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'sortBy', required: false, enum: ['earnings', 'uptime', 'user', 'createdAt'] })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'] })
+  @ApiResponse({ status: 200, description: 'Paginated list of all nodes with stats' })
+  async getAllNodes(@Query() query: AdminNodesQueryDto) {
+    return this.adminService.getAllNodesWithStats(query);
+  }
+
+  @Get('nodes/health')
+  @ApiOperation({ summary: 'Get network health overview' })
+  @ApiResponse({ status: 200, description: 'Network health statistics' })
+  async getNetworkHealth() {
+    return this.analyticsService.getNetworkHealthOverview();
+  }
+
+  @Get('analytics')
+  @ApiOperation({ summary: 'Get analytics data for admin dashboard' })
+  @ApiResponse({ status: 200, description: 'Analytics data' })
+  async getAnalytics() {
+    return this.analyticsService.getAnalytics();
+  }
+
+  @Get('users/export')
+  @ApiOperation({ summary: 'Export users to CSV' })
+  @ApiResponse({ status: 200, description: 'CSV file' })
+  async exportUsers(@Res({ passthrough: true }) res: Response) {
+    const csv = await this.exportService.exportUsersCsv();
+    res.set({
+      'Content-Type': 'text/csv',
+      'Content-Disposition': `attachment; filename="users-${new Date().toISOString().split('T')[0]}.csv"`,
+    });
+    return csv;
+  }
+
+  @Get('nodes/export')
+  @ApiOperation({ summary: 'Export nodes to CSV' })
+  @ApiResponse({ status: 200, description: 'CSV file' })
+  async exportNodes(@Res({ passthrough: true }) res: Response) {
+    const csv = await this.exportService.exportNodesCsv();
+    res.set({
+      'Content-Type': 'text/csv',
+      'Content-Disposition': `attachment; filename="nodes-${new Date().toISOString().split('T')[0]}.csv"`,
+    });
+    return csv;
+  }
+
+  @Get('requests/export')
+  @ApiOperation({ summary: 'Export requests to CSV' })
+  @ApiResponse({ status: 200, description: 'CSV file' })
+  async exportRequests(@Res({ passthrough: true }) res: Response) {
+    const csv = await this.exportService.exportRequestsCsv();
+    res.set({
+      'Content-Type': 'text/csv',
+      'Content-Disposition': `attachment; filename="requests-${new Date().toISOString().split('T')[0]}.csv"`,
+    });
+    return csv;
+  }
+
   @Get('users')
-  @ApiOperation({ summary: 'Get all users (paginated)' })
+  @ApiOperation({ summary: 'Get all users (paginated with search/filter)' })
   @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
+  @ApiQuery({ name: 'search', required: false, type: String, description: 'Search by email or name' })
+  @ApiQuery({ name: 'role', required: false, enum: ['user', 'admin', 'all'], description: 'Filter by role' })
+  @ApiQuery({ name: 'isActive', required: false, type: Boolean, description: 'Filter by active status' })
+  @ApiQuery({ name: 'sortBy', required: false, enum: ['nodeCount', 'createdAt', 'email'], description: 'Sort field' })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'], description: 'Sort order' })
   @ApiResponse({ status: 200, description: 'Paginated list of users' })
-  async findAllUsers(@Query() pagination: PaginationQueryDto) {
-    const result = await this.adminService.findAllUsers(pagination);
+  async findAllUsers(@Query() query: AdminUsersQueryDto) {
+    const result = await this.adminService.findAllUsers(query);
     return {
       data: result.data.map((user) => this.transformUserSummary(user)),
       meta: result.meta,
@@ -54,14 +133,13 @@ export class AdminController {
   }
 
   @Get('users/:id')
-  @ApiOperation({ summary: 'Get user by ID with nodes' })
+  @ApiOperation({ summary: 'Get user by ID with nodes and live stats' })
   @ApiParam({ name: 'id', description: 'User UUID' })
-  @ApiResponse({ status: 200, description: 'User details with nodes' })
+  @ApiResponse({ status: 200, description: 'User details with nodes and live stats' })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   async findUser(@Param() params: UuidParamDto) {
-    const user = await this.adminService.findUserWithNodes(params.id);
-    return this.transformUser(user);
+    return this.adminService.findUserWithLiveStats(params.id);
   }
 
   @Put('users/:id')

@@ -236,7 +236,7 @@ export class NodeRequestComponent {
   regionOptions = REGION_OPTIONS;
 
   formData: CreateRequestDto = {
-    gpuType: 'L40S',
+    gpuType: 'H100',
     gpuCount: 1,
     region: '',
     message: '',
@@ -301,7 +301,7 @@ export class NodeRequestComponent {
 
   resetForm(): void {
     this.formData = {
-      gpuType: 'L40S',
+      gpuType: 'H100',
       gpuCount: 1,
       region: '',
       message: '',

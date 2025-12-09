@@ -7,6 +7,7 @@ import { User, UserRole } from '../users/entities/user.entity';
 import { UserNode } from '../users/entities/user-node.entity';
 import { NodeRequest, RequestStatus } from '../requests/entities/node-request.entity';
 import { AssignNodeDto, UpdateUserDto } from './dto';
+import { NodesService } from '../nodes/nodes.service';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -14,6 +15,7 @@ describe('AdminService', () => {
   let userNodesRepository: jest.Mocked<Repository<UserNode>>;
   let requestsRepository: jest.Mocked<Repository<NodeRequest>>;
   let dataSource: jest.Mocked<DataSource>;
+  let nodesService: jest.Mocked<NodesService>;
 
   const mockUser: User & { nodeCount?: number } = {
     id: 'user-123',
@@ -92,12 +94,19 @@ describe('AdminService', () => {
             transaction: jest.fn(),
           },
         },
+        {
+          provide: NodesService,
+          useValue: {
+            getAllHyperfusionNodes: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<AdminService>(AdminService);
     usersRepository = module.get(getRepositoryToken(User));
     userNodesRepository = module.get(getRepositoryToken(UserNode));
+    nodesService = module.get(NodesService);
     requestsRepository = module.get(getRepositoryToken(NodeRequest));
     dataSource = module.get(getDataSourceToken());
   });

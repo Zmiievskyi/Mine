@@ -5,6 +5,7 @@ import { RequestsService } from '../../core/services/requests.service';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { NodeRequest, GPU_OPTIONS } from '../../core/models/request.model';
+import { getRequestStatusVariant } from '../../shared/utils/request-status.util';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -198,20 +199,7 @@ export class RequestsListComponent implements OnInit {
     return this.gpuOptions.find((g) => g.value === type)?.label || type;
   }
 
-  getStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-    switch (status?.toLowerCase()) {
-      case 'approved':
-      case 'completed':
-        return 'default';
-      case 'pending':
-        return 'secondary';
-      case 'rejected':
-      case 'cancelled':
-        return 'destructive';
-      default:
-        return 'outline';
-    }
-  }
+  getStatusVariant = getRequestStatusVariant;
 
   cancelRequest(id: string): void {
     if (!confirm('Are you sure you want to cancel this request?')) {

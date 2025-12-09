@@ -19,11 +19,10 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { RequestsService } from './requests.service';
-import { CreateRequestDto, UpdateRequestDto } from './dto';
+import { CreateRequestDto, UpdateRequestDto, AdminRequestsQueryDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { NodeRequest } from './entities/node-request.entity';
-import { PaginationQueryDto } from '../../common/dto';
 
 @ApiTags('requests')
 @ApiBearerAuth('JWT-auth')
@@ -60,13 +59,20 @@ export class RequestsController {
 
   @Get()
   @UseGuards(AdminGuard)
-  @ApiOperation({ summary: 'Get all requests (admin only, paginated)' })
+  @ApiOperation({ summary: 'Get all requests (admin only, paginated with filters)' })
   @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
+  @ApiQuery({ name: 'status', required: false, enum: ['pending', 'approved', 'rejected', 'completed', 'all'] })
+  @ApiQuery({ name: 'gpuType', required: false, type: String })
+  @ApiQuery({ name: 'userEmail', required: false, type: String })
+  @ApiQuery({ name: 'dateFrom', required: false, type: String, description: 'ISO date string' })
+  @ApiQuery({ name: 'dateTo', required: false, type: String, description: 'ISO date string' })
+  @ApiQuery({ name: 'sortBy', required: false, enum: ['createdAt', 'status', 'gpuType'] })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'] })
   @ApiResponse({ status: 200, description: 'Paginated requests with user info' })
   @ApiResponse({ status: 403, description: 'Admin access required' })
-  async findAll(@Query() pagination: PaginationQueryDto) {
-    const result = await this.requestsService.findAll(pagination);
+  async findAll(@Query() query: AdminRequestsQueryDto) {
+    const result = await this.requestsService.findAll(query);
     return {
       data: result.data.map((r) => this.transformRequestWithUser(r)),
       meta: result.meta,

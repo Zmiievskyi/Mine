@@ -1,13 +1,18 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
-import { AdminUser, UserNode } from '../../../../core/models/admin.model';
+import { CommonModule } from '@angular/common';
+import { AdminUser, AdminUserWithStats, UserNode, UserNodeWithStats, NodeStatus } from '../../../../core/models/admin.model';
+import { getNodeStatusVariant } from '../../../../shared/utils/node-status.util';
+import { HlmCardImports } from '@spartan-ng/helm/card';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { HlmBadge } from '@spartan-ng/helm/badge';
+import { HlmButton } from '@spartan-ng/helm/button';
 
 @Component({
   selector: 'app-user-list-item',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule, HlmCardImports, HlmTableImports, HlmBadge, HlmButton],
   template: `
-    <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] overflow-hidden">
+    <section hlmCard class="overflow-hidden">
       <!-- User Header -->
       <div
         class="px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
@@ -24,10 +29,10 @@ import { AdminUser, UserNode } from '../../../../core/models/admin.model';
             <div class="font-medium text-[var(--gcore-text)]">
               {{ user.name || 'No Name' }}
               @if (user.role === 'admin') {
-                <span class="ml-2 px-2 py-0.5 text-xs bg-purple-100 text-purple-800 rounded-full">Admin</span>
+                <span hlmBadge class="ml-2 bg-purple-100 text-purple-800">Admin</span>
               }
               @if (!user.isActive) {
-                <span class="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full">Inactive</span>
+                <span hlmBadge variant="secondary" class="ml-2">Inactive</span>
               }
             </div>
             <div class="text-sm text-[var(--gcore-text-muted)]">{{ user.email }}</div>
@@ -48,78 +53,92 @@ import { AdminUser, UserNode } from '../../../../core/models/admin.model';
         <div class="border-t border-[var(--gcore-border)] px-6 py-4 bg-gray-50">
           <!-- User Actions -->
           <div class="flex gap-2 mb-4">
-            <button
-              (click)="roleToggle.emit()"
-              class="px-3 py-1 text-sm border border-[var(--gcore-border)] rounded hover:bg-white"
-            >
+            <button hlmBtn variant="outline" size="sm" (click)="roleToggle.emit()">
               {{ user.role === 'admin' ? 'Remove Admin' : 'Make Admin' }}
             </button>
-            <button
-              (click)="activeToggle.emit()"
-              class="px-3 py-1 text-sm border border-[var(--gcore-border)] rounded hover:bg-white"
-            >
+            <button hlmBtn variant="outline" size="sm" (click)="activeToggle.emit()">
               {{ user.isActive ? 'Deactivate' : 'Activate' }}
             </button>
-            <button
-              (click)="assignNode.emit()"
-              class="px-3 py-1 text-sm bg-[var(--gcore-primary)] text-white rounded hover:opacity-90"
-            >
+            <button hlmBtn size="sm" (click)="assignNode.emit()">
               + Assign Node
             </button>
           </div>
 
-          <!-- Nodes Table -->
-          @if (user.nodes.length > 0) {
-            <table class="min-w-full divide-y divide-[var(--gcore-border)]">
-              <thead>
-                <tr>
-                  <th class="py-2 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase">Node Address</th>
-                  <th class="py-2 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase">Label</th>
-                  <th class="py-2 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase">GPU</th>
-                  <th class="py-2 text-left text-xs font-medium text-[var(--gcore-text-muted)] uppercase">Assigned</th>
-                  <th class="py-2 text-right text-xs font-medium text-[var(--gcore-text-muted)] uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-[var(--gcore-border)] bg-white">
-                @for (node of user.nodes; track node.id) {
-                  <tr>
-                    <td class="py-3 font-mono text-sm text-[var(--gcore-text)]">
-                      {{ truncateAddress(node.nodeAddress) }}
-                    </td>
-                    <td class="py-3 text-[var(--gcore-text)]">{{ node.label || '-' }}</td>
-                    <td class="py-3 text-[var(--gcore-text)]">{{ node.gpuType || '-' }}</td>
-                    <td class="py-3 text-sm text-[var(--gcore-text-muted)]">
-                      {{ node.createdAt | date: 'MMM d, y' }}
-                    </td>
-                    <td class="py-3 text-right">
-                      <button
-                        (click)="nodeRemove.emit(node)"
-                        class="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        Remove
-                      </button>
-                    </td>
+          <!-- Loading state -->
+          @if (expandedLoading) {
+            <div class="py-4 text-center text-[var(--gcore-text-muted)]">
+              Loading nodes...
+            </div>
+          }
+
+          <!-- Nodes Table with Live Stats -->
+          @if (!expandedLoading && expandedData && expandedData.nodes.length > 0) {
+            <div hlmTableContainer>
+              <table hlmTable>
+                <thead hlmThead>
+                  <tr hlmTr>
+                    <th hlmTh>Node Address</th>
+                    <th hlmTh>GPU</th>
+                    <th hlmTh class="text-center">Status</th>
+                    <th hlmTh class="text-right">Earnings</th>
+                    <th hlmTh class="text-right">Uptime</th>
+                    <th hlmTh class="text-right">Actions</th>
                   </tr>
-                }
-              </tbody>
-            </table>
-          } @else {
+                </thead>
+                <tbody hlmTbody>
+                  @for (node of expandedData.nodes; track node.id) {
+                    <tr hlmTr>
+                      <td hlmTd>
+                        <div class="font-mono text-sm text-[var(--gcore-text)]">
+                          {{ truncateAddress(node.nodeAddress) }}
+                        </div>
+                        @if (node.label) {
+                          <div class="text-xs text-[var(--gcore-text-muted)]">{{ node.label }}</div>
+                        }
+                      </td>
+                      <td hlmTd>
+                        <span hlmBadge variant="secondary">{{ node.gpuType || '-' }}</span>
+                      </td>
+                      <td hlmTd class="text-center">
+                        <span hlmBadge [variant]="getStatusVariant(node.status)">{{ node.status }}</span>
+                      </td>
+                      <td hlmTd class="text-right font-medium text-[var(--gcore-text)]">
+                        {{ node.earnings.toFixed(2) }} GNK
+                      </td>
+                      <td hlmTd class="text-right">
+                        <span [class]="node.uptime >= 95 ? 'text-green-600' : node.uptime >= 80 ? 'text-yellow-600' : 'text-red-600'">
+                          {{ node.uptime.toFixed(1) }}%
+                        </span>
+                      </td>
+                      <td hlmTd class="text-right">
+                        <button hlmBtn variant="destructive" size="sm" (click)="nodeRemove.emit(node)">
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else if (!expandedLoading && (!expandedData || expandedData.nodes.length === 0)) {
             <p class="text-[var(--gcore-text-muted)] text-sm py-4">No nodes assigned yet</p>
           }
         </div>
       }
-    </div>
+    </section>
   `,
 })
 export class UserListItemComponent {
   @Input() user!: AdminUser;
   @Input() isExpanded = false;
+  @Input() expandedData: AdminUserWithStats | null = null;
+  @Input() expandedLoading = false;
 
   @Output() expand = new EventEmitter<void>();
   @Output() roleToggle = new EventEmitter<void>();
   @Output() activeToggle = new EventEmitter<void>();
   @Output() assignNode = new EventEmitter<void>();
-  @Output() nodeRemove = new EventEmitter<UserNode>();
+  @Output() nodeRemove = new EventEmitter<UserNodeWithStats>();
 
   toggleExpanded(): void {
     this.expand.emit();
@@ -129,4 +148,6 @@ export class UserListItemComponent {
     if (address.length <= 20) return address;
     return `${address.slice(0, 12)}...${address.slice(-8)}`;
   }
+
+  getStatusVariant = getNodeStatusVariant;
 }

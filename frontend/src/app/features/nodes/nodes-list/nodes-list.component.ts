@@ -7,13 +7,15 @@ import { Node } from '../../../core/models/node.model';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { getNodeStatusClass } from '../../../shared/utils/status-styles.util';
+import { getNodeStatusVariant } from '../../../shared/utils/node-status.util';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmBadge } from '@spartan-ng/helm/badge';
+import { HlmButton } from '@spartan-ng/helm/button';
 
 @Component({
   selector: 'app-nodes-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, LayoutComponent, LoadingSpinnerComponent, HlmTableImports, HlmBadge],
+  imports: [CommonModule, RouterLink, LayoutComponent, LoadingSpinnerComponent, HlmTableImports, HlmBadge, HlmButton],
   template: `
     <app-layout>
       <!-- Page Header -->
@@ -24,10 +26,7 @@ import { HlmBadge } from '@spartan-ng/helm/badge';
             Monitor your GPU nodes and track earnings
           </p>
         </div>
-        <a
-          routerLink="/nodes/request"
-          class="px-4 py-2 bg-[var(--gcore-primary)] text-white rounded hover:opacity-90"
-        >
+        <a routerLink="/nodes/request" hlmBtn>
           Request New Node
         </a>
       </div>
@@ -49,10 +48,7 @@ import { HlmBadge } from '@spartan-ng/helm/badge';
               <p class="text-red-600 text-sm">{{ error() }}</p>
             </div>
           </div>
-          <button
-            (click)="loadNodes()"
-            class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
+          <button hlmBtn variant="destructive" (click)="loadNodes()" class="mt-4">
             Retry
           </button>
         </div>
@@ -70,10 +66,7 @@ import { HlmBadge } from '@spartan-ng/helm/badge';
               <p class="text-[var(--gcore-text-muted)] mb-4">
                 Request your first GPU node to start mining GNK tokens.
               </p>
-              <a
-                routerLink="/nodes/request"
-                class="inline-block px-6 py-2 bg-[var(--gcore-primary)] text-white rounded hover:opacity-90"
-              >
+              <a routerLink="/nodes/request" hlmBtn>
                 Request Node
               </a>
             </div>
@@ -216,23 +209,7 @@ export class NodesListComponent implements OnInit {
   }
 
   getNodeStatusClass = getNodeStatusClass;
-
-  getStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-    switch (status?.toLowerCase()) {
-      case 'healthy':
-      case 'active':
-        return 'default';
-      case 'unhealthy':
-      case 'warning':
-        return 'secondary';
-      case 'jailed':
-      case 'offline':
-      case 'error':
-        return 'destructive';
-      default:
-        return 'outline';
-    }
-  }
+  getStatusVariant = getNodeStatusVariant;
 
   getUptimeBarClass(uptime: number): string {
     if (uptime >= 90) return 'bg-green-500';

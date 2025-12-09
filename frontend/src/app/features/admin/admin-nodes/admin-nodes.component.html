@@ -1,0 +1,242 @@
+<app-layout>
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-[var(--gcore-text)]">All Nodes</h1>
+      <p class="text-[var(--gcore-text-muted)] mt-1">
+        View and manage all nodes across all users
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <button
+        hlmBtn
+        variant="default"
+        (click)="exportToCsv()"
+        [disabled]="exporting()"
+        class="bg-green-600 hover:bg-green-700"
+      >
+        {{ exporting() ? 'Exporting...' : 'Export CSV' }}
+      </button>
+      <a routerLink="/admin" hlmBtn variant="outline">
+        Back to Admin
+      </a>
+    </div>
+  </div>
+
+  <!-- Health Overview Cards -->
+  @if (health()) {
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+      <section hlmCard>
+        <div hlmCardContent class="p-4">
+          <p class="text-sm text-[var(--gcore-text-muted)]">Total</p>
+          <p class="text-2xl font-bold">{{ health()?.totalNodes }}</p>
+        </div>
+      </section>
+      <section hlmCard class="border-green-200">
+        <div hlmCardContent class="p-4">
+          <p class="text-sm text-green-600">Healthy</p>
+          <p class="text-2xl font-bold text-green-600">{{ health()?.healthyNodes }}</p>
+        </div>
+      </section>
+      <section hlmCard class="border-yellow-200">
+        <div hlmCardContent class="p-4">
+          <p class="text-sm text-yellow-600">Jailed</p>
+          <p class="text-2xl font-bold text-yellow-600">{{ health()?.jailedNodes }}</p>
+        </div>
+      </section>
+      <section hlmCard class="border-red-200">
+        <div hlmCardContent class="p-4">
+          <p class="text-sm text-red-600">Offline</p>
+          <p class="text-2xl font-bold text-red-600">{{ health()?.offlineNodes }}</p>
+        </div>
+      </section>
+      <section hlmCard class="border-gray-200">
+        <div hlmCardContent class="p-4">
+          <p class="text-sm text-gray-600">Unknown</p>
+          <p class="text-2xl font-bold text-gray-600">{{ health()?.unknownNodes }}</p>
+        </div>
+      </section>
+      <section hlmCard class="border-[var(--gcore-primary)]">
+        <div hlmCardContent class="p-4">
+          <p class="text-sm text-[var(--gcore-primary)]">Total Earnings</p>
+          <p class="text-2xl font-bold text-[var(--gcore-primary)]">{{ health()?.totalEarnings }} GNK</p>
+        </div>
+      </section>
+    </div>
+  }
+
+  <!-- Filters -->
+  <section hlmCard class="mb-6">
+    <div hlmCardContent class="p-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label hlmLabel>Search</label>
+          <input
+            hlmInput
+            type="text"
+            [(ngModel)]="searchQuery"
+            (input)="onFilterChange()"
+            placeholder="Search by node address..."
+            class="mt-1"
+          />
+        </div>
+        <div>
+          <label hlmLabel>Status</label>
+          <brn-select [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()" class="w-full mt-1">
+            <hlm-select-trigger>
+              <hlm-select-value />
+            </hlm-select-trigger>
+            <hlm-select-content>
+              <hlm-option value="all">All Statuses</hlm-option>
+              <hlm-option value="healthy">Healthy</hlm-option>
+              <hlm-option value="jailed">Jailed</hlm-option>
+              <hlm-option value="offline">Offline</hlm-option>
+            </hlm-select-content>
+          </brn-select>
+        </div>
+        <div>
+          <label hlmLabel>GPU Type</label>
+          <brn-select [(ngModel)]="gpuFilter" (ngModelChange)="onFilterChange()" class="w-full mt-1">
+            <hlm-select-trigger>
+              <hlm-select-value />
+            </hlm-select-trigger>
+            <hlm-select-content>
+              <hlm-option value="">All GPUs</hlm-option>
+              <hlm-option value="3080">RTX 3080</hlm-option>
+              <hlm-option value="4090">RTX 4090</hlm-option>
+              <hlm-option value="H100">H100</hlm-option>
+              <hlm-option value="H200">H200</hlm-option>
+            </hlm-select-content>
+          </brn-select>
+        </div>
+        <div>
+          <label hlmLabel>Sort By</label>
+          <brn-select [(ngModel)]="sortBy" (ngModelChange)="onFilterChange()" class="w-full mt-1">
+            <hlm-select-trigger>
+              <hlm-select-value />
+            </hlm-select-trigger>
+            <hlm-select-content>
+              <hlm-option value="createdAt">Date Added</hlm-option>
+              <hlm-option value="earnings">Earnings</hlm-option>
+              <hlm-option value="user">User</hlm-option>
+            </hlm-select-content>
+          </brn-select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <section hlmCard class="p-12">
+      <app-loading-spinner message="Loading nodes..." />
+    </section>
+  }
+
+  <!-- Error -->
+  @if (error()) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+      <p class="text-red-600">{{ error() }}</p>
+      <button hlmBtn variant="destructive" (click)="loadNodes()" class="mt-4">
+        Retry
+      </button>
+    </div>
+  }
+
+  <!-- Nodes Table -->
+  @if (!loading() && !error()) {
+    <section hlmCard>
+      <div hlmTableContainer>
+        <table hlmTable>
+          <thead hlmThead>
+            <tr hlmTr>
+              <th hlmTh>Node Address</th>
+              <th hlmTh>User</th>
+              <th hlmTh>GPU</th>
+              <th hlmTh>Status</th>
+              <th hlmTh class="text-right">Earnings</th>
+              <th hlmTh class="text-right">Inferences</th>
+              <th hlmTh>Actions</th>
+            </tr>
+          </thead>
+          <tbody hlmTbody>
+            @for (node of nodes(); track node.id) {
+              <tr hlmTr>
+                <td hlmTd>
+                  <div class="font-mono text-sm">{{ truncateAddress(node.nodeAddress) }}</div>
+                  @if (node.label) {
+                    <div class="text-xs text-[var(--gcore-text-muted)]">{{ node.label }}</div>
+                  }
+                </td>
+                <td hlmTd>
+                  @if (node.user) {
+                    <a [routerLink]="['/admin/users']" class="text-[var(--gcore-primary)] hover:underline">
+                      {{ node.user.email }}
+                    </a>
+                  } @else {
+                    <span class="text-[var(--gcore-text-muted)]">-</span>
+                  }
+                </td>
+                <td hlmTd>
+                  <span hlmBadge variant="secondary">{{ node.gpuType || '-' }}</span>
+                </td>
+                <td hlmTd>
+                  <span hlmBadge [variant]="getStatusVariant(node.status)">{{ node.status }}</span>
+                </td>
+                <td hlmTd class="text-right font-medium">{{ node.earnings.toFixed(2) }} GNK</td>
+                <td hlmTd class="text-right">{{ node.inferenceCount.toLocaleString() }}</td>
+                <td hlmTd>
+                  <button
+                    (click)="copyAddress(node.nodeAddress)"
+                    class="text-[var(--gcore-text-muted)] hover:text-[var(--gcore-primary)]"
+                    title="Copy address"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                      <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr hlmTr>
+                <td hlmTd colspan="7" class="text-center text-[var(--gcore-text-muted)]">
+                  No nodes found
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      @if (meta()) {
+        <div class="px-4 py-3 border-t border-[var(--gcore-border)] flex items-center justify-between">
+          <p class="text-sm text-[var(--gcore-text-muted)]">
+            Showing {{ (meta()!.page - 1) * meta()!.limit + 1 }} to
+            {{ Math.min(meta()!.page * meta()!.limit, meta()!.total) }} of {{ meta()!.total }} nodes
+          </p>
+          <div class="flex gap-2">
+            <button
+              hlmBtn
+              variant="outline"
+              size="sm"
+              (click)="goToPage(meta()!.page - 1)"
+              [disabled]="meta()!.page <= 1"
+            >
+              Previous
+            </button>
+            <button
+              hlmBtn
+              variant="outline"
+              size="sm"
+              (click)="goToPage(meta()!.page + 1)"
+              [disabled]="meta()!.page >= meta()!.totalPages"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      }
+    </section>
+  }
+</app-layout>

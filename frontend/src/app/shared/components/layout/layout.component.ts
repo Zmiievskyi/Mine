@@ -8,6 +8,26 @@ import { HlmButton } from '@spartan-ng/helm/button';
   selector: 'app-layout',
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, HlmButton],
+  styles: `
+    .nav-link {
+      display: block;
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      color: var(--gcore-text);
+      transition: background-color 0.15s ease;
+    }
+    .nav-link:hover:not(.active-link) {
+      background-color: #f3f4f6;
+    }
+    .nav-link.active-link {
+      background-color: var(--gcore-primary);
+      color: white;
+    }
+    .nav-link.active-link:hover {
+      background-color: var(--gcore-primary);
+      opacity: 0.9;
+    }
+  `,
   template: `
     <div class="min-h-screen bg-[var(--gcore-bg)]">
       <!-- Header -->
@@ -33,10 +53,9 @@ import { HlmButton } from '@spartan-ng/helm/button';
               <li>
                 <a
                   routerLink="/dashboard"
-                  routerLinkActive="bg-[var(--gcore-primary)] text-white"
+                  routerLinkActive="active-link"
                   [routerLinkActiveOptions]="{ exact: true }"
-                  class="block px-4 py-2 rounded text-[var(--gcore-text)] hover:bg-gray-100"
-                  [class.hover:bg-gray-100]="!isActive('/dashboard')"
+                  class="nav-link"
                 >
                   Dashboard
                 </a>
@@ -44,9 +63,9 @@ import { HlmButton } from '@spartan-ng/helm/button';
               <li>
                 <a
                   routerLink="/nodes"
-                  routerLinkActive="bg-[var(--gcore-primary)] text-white"
+                  routerLinkActive="active-link"
                   [routerLinkActiveOptions]="{ exact: true }"
-                  class="block px-4 py-2 rounded text-[var(--gcore-text)] hover:bg-gray-100"
+                  class="nav-link"
                 >
                   My Nodes
                 </a>
@@ -54,8 +73,8 @@ import { HlmButton } from '@spartan-ng/helm/button';
               <li>
                 <a
                   routerLink="/nodes/request"
-                  routerLinkActive="bg-[var(--gcore-primary)] text-white"
-                  class="block px-4 py-2 rounded text-[var(--gcore-text)] hover:bg-gray-100"
+                  routerLinkActive="active-link"
+                  class="nav-link"
                 >
                   Request Node
                 </a>
@@ -63,8 +82,8 @@ import { HlmButton } from '@spartan-ng/helm/button';
               <li>
                 <a
                   routerLink="/requests"
-                  routerLinkActive="bg-[var(--gcore-primary)] text-white"
-                  class="block px-4 py-2 rounded text-[var(--gcore-text)] hover:bg-gray-100"
+                  routerLinkActive="active-link"
+                  class="nav-link"
                 >
                   My Requests
                 </a>
@@ -73,8 +92,8 @@ import { HlmButton } from '@spartan-ng/helm/button';
                 <li class="pt-4 border-t border-[var(--gcore-border)] mt-4">
                   <a
                     routerLink="/admin"
-                    routerLinkActive="bg-[var(--gcore-primary)] text-white"
-                    class="block px-4 py-2 rounded text-[var(--gcore-text)] hover:bg-gray-100"
+                    routerLinkActive="active-link"
+                    class="nav-link"
                   >
                     Admin Panel
                   </a>

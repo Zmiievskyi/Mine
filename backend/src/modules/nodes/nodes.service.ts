@@ -200,6 +200,11 @@ export class NodesService {
     );
   }
 
+  // Get all Hyperfusion nodes (for admin panel)
+  async getAllHyperfusionNodes(): Promise<HyperfusionNode[]> {
+    return this.fetchHyperfusionData();
+  }
+
   // Public network stats for landing page (no auth required)
   async getPublicNetworkStats(): Promise<NetworkStats> {
     const data = await this.fetchHyperfusionFullData();

@@ -4,12 +4,20 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   AdminUser,
+  AdminUserWithStats,
   AdminDashboardStats,
   AssignNodeDto,
   UpdateUserDto,
   UserNode,
   AdminRequest,
   UpdateRequestDto,
+  AdminNodeWithUser,
+  AdminNodesQuery,
+  NetworkHealthOverview,
+  PaginatedResponse,
+  AdminUsersQuery,
+  AdminRequestsQuery,
+  AdminAnalytics,
 } from '../models/admin.model';
 
 @Injectable({
@@ -24,12 +32,20 @@ export class AdminService {
     return this.http.get<AdminDashboardStats>(`${this.apiUrl}/dashboard`);
   }
 
-  getUsers(): Observable<AdminUser[]> {
-    return this.http.get<AdminUser[]>(`${this.apiUrl}/users`);
+  getUsers(query: AdminUsersQuery = {}): Observable<PaginatedResponse<AdminUser>> {
+    const params = new URLSearchParams();
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.set(key, String(value));
+      }
+    });
+    const queryString = params.toString();
+    const url = queryString ? `${this.apiUrl}/users?${queryString}` : `${this.apiUrl}/users`;
+    return this.http.get<PaginatedResponse<AdminUser>>(url);
   }
 
-  getUser(id: string): Observable<AdminUser> {
-    return this.http.get<AdminUser>(`${this.apiUrl}/users/${id}`);
+  getUser(id: string): Observable<AdminUserWithStats> {
+    return this.http.get<AdminUserWithStats>(`${this.apiUrl}/users/${id}`);
   }
 
   updateUser(id: string, data: UpdateUserDto): Observable<AdminUser> {
@@ -57,8 +73,16 @@ export class AdminService {
     );
   }
 
-  getAllRequests(): Observable<AdminRequest[]> {
-    return this.http.get<AdminRequest[]>(this.requestsUrl);
+  getAllRequests(query: AdminRequestsQuery = {}): Observable<PaginatedResponse<AdminRequest>> {
+    const params = new URLSearchParams();
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.set(key, String(value));
+      }
+    });
+    const queryString = params.toString();
+    const url = queryString ? `${this.requestsUrl}?${queryString}` : this.requestsUrl;
+    return this.http.get<PaginatedResponse<AdminRequest>>(url);
   }
 
   getRequestStats(): Observable<{ pending: number; approved: number; completed: number }> {
@@ -69,5 +93,43 @@ export class AdminService {
 
   updateRequest(id: string, data: UpdateRequestDto): Observable<AdminRequest> {
     return this.http.put<AdminRequest>(`${this.requestsUrl}/${id}`, data);
+  }
+
+  getAllNodes(query: AdminNodesQuery = {}): Observable<PaginatedResponse<AdminNodeWithUser>> {
+    const params = new URLSearchParams();
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.set(key, String(value));
+      }
+    });
+    const queryString = params.toString();
+    const url = queryString ? `${this.apiUrl}/nodes?${queryString}` : `${this.apiUrl}/nodes`;
+    return this.http.get<PaginatedResponse<AdminNodeWithUser>>(url);
+  }
+
+  getNetworkHealth(): Observable<NetworkHealthOverview> {
+    return this.http.get<NetworkHealthOverview>(`${this.apiUrl}/nodes/health`);
+  }
+
+  getAnalytics(): Observable<AdminAnalytics> {
+    return this.http.get<AdminAnalytics>(`${this.apiUrl}/analytics`);
+  }
+
+  exportUsers(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/users/export`, {
+      responseType: 'blob',
+    });
+  }
+
+  exportNodes(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/nodes/export`, {
+      responseType: 'blob',
+    });
+  }
+
+  exportRequests(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/requests/export`, {
+      responseType: 'blob',
+    });
   }
 }
