@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -15,12 +16,14 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiParam,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { RequestsService } from './requests.service';
 import { CreateRequestDto, UpdateRequestDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { NodeRequest } from './entities/node-request.entity';
+import { PaginationQueryDto } from '../../common/dto';
 
 @ApiTags('requests')
 @ApiBearerAuth('JWT-auth')
@@ -57,12 +60,17 @@ export class RequestsController {
 
   @Get()
   @UseGuards(AdminGuard)
-  @ApiOperation({ summary: 'Get all requests (admin only)' })
-  @ApiResponse({ status: 200, description: 'All requests with user info' })
+  @ApiOperation({ summary: 'Get all requests (admin only, paginated)' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
+  @ApiResponse({ status: 200, description: 'Paginated requests with user info' })
   @ApiResponse({ status: 403, description: 'Admin access required' })
-  async findAll() {
-    const requests = await this.requestsService.findAll();
-    return requests.map((r) => this.transformRequestWithUser(r));
+  async findAll(@Query() pagination: PaginationQueryDto) {
+    const result = await this.requestsService.findAll(pagination);
+    return {
+      data: result.data.map((r) => this.transformRequestWithUser(r)),
+      meta: result.meta,
+    };
   }
 
   @Get(':id')

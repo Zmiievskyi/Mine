@@ -6,10 +6,12 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { User } from './user.entity';
 
 @Entity('user_nodes')
+@Index('idx_user_nodes_user_id', ['userId'])
 export class UserNode {
   @PrimaryGeneratedColumn('uuid')
   id: string;

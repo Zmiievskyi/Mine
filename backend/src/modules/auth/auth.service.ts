@@ -1,8 +1,10 @@
 import {
   Injectable,
+  Logger,
   UnauthorizedException,
   ConflictException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
@@ -12,22 +14,29 @@ import { GoogleProfile } from './strategies/google.strategy';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async register(registerDto: RegisterDto) {
     const existingUser = await this.usersService.findByEmail(registerDto.email);
     if (existingUser) {
+      this.logger.warn(`Registration attempt with existing email: ${registerDto.email}`);
       throw new ConflictException('Email already registered');
     }
 
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+    const bcryptRounds = this.configService.get<number>('app.bcryptRounds') ?? 12;
+    const hashedPassword = await bcrypt.hash(registerDto.password, bcryptRounds);
     const user = await this.usersService.create({
       ...registerDto,
       password: hashedPassword,
     });
+
+    this.logger.log(`New user registered: ${user.id} (${user.email})`);
 
     const tokens = this.generateTokens(user);
     return {
@@ -59,8 +68,18 @@ export class AuthService {
 
     // Generic error for all auth failures to prevent enumeration
     if (!user || !user.password || !isPasswordValid || !user.isActive) {
+      const reason = !user
+        ? 'user_not_found'
+        : !user.password
+          ? 'no_password'
+          : !isPasswordValid
+            ? 'invalid_password'
+            : 'inactive_account';
+      this.logger.warn(`Failed login attempt for email: ${loginDto.email} (${reason})`);
       throw new UnauthorizedException('Invalid credentials');
     }
+
+    this.logger.log(`Successful login for user: ${user.id} (${user.email})`);
 
     const tokens = this.generateTokens(user);
     return {
@@ -93,6 +112,7 @@ export class AuthService {
 
   async googleLogin(googleProfile: GoogleProfile) {
     if (!googleProfile.email) {
+      this.logger.warn('Google login attempt without email');
       throw new UnauthorizedException('Email is required for Google sign-in');
     }
 
@@ -101,8 +121,10 @@ export class AuthService {
 
     if (user) {
       if (!user.isActive) {
+        this.logger.warn(`Google login blocked for inactive user: ${user.id}`);
         throw new UnauthorizedException('Account is disabled');
       }
+      this.logger.log(`Google login for existing user: ${user.id} (${user.email})`);
       return this.createAuthResponse(user);
     }
 
@@ -111,6 +133,7 @@ export class AuthService {
 
     if (user) {
       if (!user.isActive) {
+        this.logger.warn(`Google login blocked for inactive user: ${user.id}`);
         throw new UnauthorizedException('Account is disabled');
       }
       // Link Google account to existing user
@@ -123,6 +146,7 @@ export class AuthService {
       if (!updatedUser) {
         throw new UnauthorizedException('Failed to update user');
       }
+      this.logger.log(`Google account linked to user: ${updatedUser.id} (${updatedUser.email})`);
       return this.createAuthResponse(updatedUser);
     }
 
@@ -134,6 +158,7 @@ export class AuthService {
       avatarUrl: googleProfile.avatarUrl,
     });
 
+    this.logger.log(`New user created via Google: ${user.id} (${user.email})`);
     return this.createAuthResponse(user);
   }
 

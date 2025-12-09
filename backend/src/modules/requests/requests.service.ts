@@ -4,6 +4,11 @@ import { Repository } from 'typeorm';
 import { NodeRequest, RequestStatus } from './entities/node-request.entity';
 import { CreateRequestDto } from './dto/create-request.dto';
 import { UpdateRequestDto } from './dto/update-request.dto';
+import {
+  PaginationQueryDto,
+  PaginatedResponse,
+  createPaginatedResponse,
+} from '../../common/dto';
 
 @Injectable()
 export class RequestsService {
@@ -28,11 +33,20 @@ export class RequestsService {
     });
   }
 
-  async findAll(): Promise<NodeRequest[]> {
-    return this.requestsRepository.find({
+  async findAll(
+    pagination: PaginationQueryDto,
+  ): Promise<PaginatedResponse<NodeRequest>> {
+    const { page = 1, limit = 20 } = pagination;
+    const skip = (page - 1) * limit;
+
+    const [requests, total] = await this.requestsRepository.findAndCount({
       relations: ['user'],
       order: { createdAt: 'DESC' },
+      skip,
+      take: limit,
     });
+
+    return createPaginatedResponse(requests, total, page, limit);
   }
 
   async findOne(id: string, userId?: string): Promise<NodeRequest> {

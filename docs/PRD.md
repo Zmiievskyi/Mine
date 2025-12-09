@@ -232,14 +232,22 @@ User Login → Backend проверяет user_id
 ## 8. Non-Functional Requirements
 
 ### Security
-- JWT/Session-based auth
+- JWT/Session-based auth (7-day expiry)
 - HTTPS everywhere
-- XSS/CSRF protection
+- XSS/CSRF protection (Helmet middleware)
 - API keys только на backend
+- Rate limiting (ThrottlerGuard)
+- Strong password validation (8+ chars, upper+lower+number)
+- Security event logging (login attempts)
+- Payload size limits (100kb)
+- Bcrypt password hashing (12 rounds)
 
 ### Performance
 - Dashboard load < 3 seconds
-- Cached node data (no tracker spam)
+- Cached node data (LRU cache with TTL, size limits)
+- Pagination for list endpoints (default 20, max 100)
+- Database indexes on foreign keys
+- Database transactions for critical operations
 
 ### Scalability
 - Поддержка других сетей (не только Gonka)

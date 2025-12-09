@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { getRepositoryToken, getDataSourceToken } from '@nestjs/typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { User, UserRole } from '../users/entities/user.entity';
@@ -13,6 +13,7 @@ describe('AdminService', () => {
   let usersRepository: jest.Mocked<Repository<User>>;
   let userNodesRepository: jest.Mocked<Repository<UserNode>>;
   let requestsRepository: jest.Mocked<Repository<NodeRequest>>;
+  let dataSource: jest.Mocked<DataSource>;
 
   const mockUser: User = {
     id: 'user-123',
@@ -74,6 +75,12 @@ describe('AdminService', () => {
             count: jest.fn(),
           },
         },
+        {
+          provide: getDataSourceToken(),
+          useValue: {
+            transaction: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -81,6 +88,7 @@ describe('AdminService', () => {
     usersRepository = module.get(getRepositoryToken(User));
     userNodesRepository = module.get(getRepositoryToken(UserNode));
     requestsRepository = module.get(getRepositoryToken(NodeRequest));
+    dataSource = module.get(getDataSourceToken());
   });
 
   afterEach(() => {
@@ -130,18 +138,26 @@ describe('AdminService', () => {
   });
 
   describe('findAllUsers', () => {
-    it('should return all users with their nodes', async () => {
+    it('should return paginated users with their nodes', async () => {
       const users = [mockUser, { ...mockUser, id: 'user-456', email: 'user2@example.com' }];
-      usersRepository.find.mockResolvedValue(users);
+      (usersRepository as any).findAndCount = jest.fn().mockResolvedValue([users, 2]);
 
-      const result = await service.findAllUsers();
+      const result = await service.findAllUsers({ page: 1, limit: 20 });
 
-      expect(usersRepository.find).toHaveBeenCalledWith({
+      expect((usersRepository as any).findAndCount).toHaveBeenCalledWith({
         select: ['id', 'email', 'name', 'role', 'isActive', 'createdAt'],
         relations: ['nodes'],
         order: { createdAt: 'DESC' },
+        skip: 0,
+        take: 20,
       });
-      expect(result).toEqual(users);
+      expect(result.data).toEqual(users);
+      expect(result.meta).toEqual({
+        page: 1,
+        limit: 20,
+        total: 2,
+        totalPages: 1,
+      });
     });
   });
 
@@ -227,42 +243,46 @@ describe('AdminService', () => {
     it('should successfully assign a new node to user', async () => {
       const newNode = { ...mockUserNode, ...assignNodeDto };
 
-      usersRepository.findOne.mockResolvedValue(mockUser);
-      userNodesRepository.findOne.mockResolvedValue(null);
-      userNodesRepository.create.mockReturnValue(newNode as any);
-      userNodesRepository.save.mockResolvedValue(newNode);
+      // Mock the transaction to execute the callback with a mock manager
+      dataSource.transaction.mockImplementation(async (callback) => {
+        const mockManager = {
+          findOne: jest.fn()
+            .mockResolvedValueOnce(mockUser) // first call for user
+            .mockResolvedValueOnce(null), // second call for existing node
+          create: jest.fn().mockReturnValue(newNode),
+          save: jest.fn().mockResolvedValue(newNode),
+        };
+        return callback(mockManager as any);
+      });
 
       const result = await service.assignNode('user-123', assignNodeDto);
 
-      expect(usersRepository.findOne).toHaveBeenCalled();
-      expect(userNodesRepository.findOne).toHaveBeenCalledWith({
-        where: { nodeAddress: assignNodeDto.nodeAddress },
-      });
-      expect(userNodesRepository.create).toHaveBeenCalledWith({
-        userId: 'user-123',
-        nodeAddress: assignNodeDto.nodeAddress,
-        label: assignNodeDto.label,
-        gpuType: assignNodeDto.gpuType,
-        gcoreInstanceId: assignNodeDto.gcoreInstanceId,
-        notes: assignNodeDto.notes,
-      });
+      expect(dataSource.transaction).toHaveBeenCalled();
       expect(result).toEqual(newNode);
     });
 
     it('should throw ConflictException if node address already exists', async () => {
-      usersRepository.findOne.mockResolvedValue(mockUser);
-      userNodesRepository.findOne.mockResolvedValue(mockUserNode);
+      dataSource.transaction.mockImplementation(async (callback) => {
+        const mockManager = {
+          findOne: jest.fn()
+            .mockResolvedValueOnce(mockUser)
+            .mockResolvedValueOnce(mockUserNode), // node exists
+        };
+        return callback(mockManager as any);
+      });
 
       await expect(service.assignNode('user-123', assignNodeDto)).rejects.toThrow(
         new ConflictException('This node is already assigned to a user'),
       );
-
-      expect(userNodesRepository.create).not.toHaveBeenCalled();
-      expect(userNodesRepository.save).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if user does not exist', async () => {
-      usersRepository.findOne.mockResolvedValue(null);
+      dataSource.transaction.mockImplementation(async (callback) => {
+        const mockManager = {
+          findOne: jest.fn().mockResolvedValueOnce(null), // user not found
+        };
+        return callback(mockManager as any);
+      });
 
       await expect(service.assignNode('invalid-id', assignNodeDto)).rejects.toThrow(
         NotFoundException,

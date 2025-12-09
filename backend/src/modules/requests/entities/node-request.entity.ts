@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
@@ -24,6 +25,8 @@ export enum GpuType {
 }
 
 @Entity('node_requests')
+@Index('idx_node_requests_user_id', ['userId'])
+@Index('idx_node_requests_status', ['status'])
 export class NodeRequest {
   @PrimaryGeneratedColumn('uuid')
   id: string;

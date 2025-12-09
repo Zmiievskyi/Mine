@@ -102,8 +102,8 @@ User Login -> Backend checks user_id
       shared/               # Layout, toast, reusable components
   backend/                  # NestJS API
     src/
-      common/               # Filters, utils (retry logic)
-      config/               # App, database, JWT, Gonka configs
+      common/               # Filters, utils (retry logic), DTOs (pagination), services (LRU cache)
+      config/               # App, database, JWT, Gonka, Google, retry, throttler configs
       modules/
         auth/               # Authentication (JWT) + tests
         users/              # User management
@@ -208,6 +208,15 @@ HASHIRO_API_URL=https://hashiro.tech/gonka
 # Gcore API (read-only, low priority)
 GCORE_API_KEY=your-gcore-api-key
 GCORE_BASE_URL=https://api.gcore.com
+
+# Security (optional - defaults shown)
+BCRYPT_ROUNDS=12
+BODY_LIMIT=100kb
+
+# Retry settings (optional)
+RETRY_MAX_ATTEMPTS=3
+RETRY_BASE_DELAY_MS=1000
+RETRY_MAX_DELAY_MS=10000
 ```
 
 ## UI/UX References
@@ -314,10 +323,10 @@ cd backend && npm test
 cd backend && npm run test:cov
 ```
 
-**Test Files:**
+**Test Files (38 total):**
 - `auth.service.spec.ts` - 10 tests (register, login, validateUser)
 - `nodes.service.spec.ts` - 12 tests (getUserNodes, getDashboardStats)
-- `admin.service.spec.ts` - 16 tests (assignNode, updateUser, removeNode)
+- `admin.service.spec.ts` - 16 tests (assignNode, updateUser, removeNode, pagination)
 
 ## Health Endpoints
 

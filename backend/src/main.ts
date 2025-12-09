@@ -1,12 +1,14 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
   const configService = app.get(ConfigService);
@@ -14,8 +16,12 @@ async function bootstrap() {
   const corsOrigins = configService.get<string[]>('app.corsOrigins') ?? [
     'http://localhost:4200',
   ];
+  const bodyLimit = configService.get<string>('app.bodyLimit') ?? '100kb';
 
+  // Security middleware
   app.use(helmet());
+  app.use(json({ limit: bodyLimit }));
+  app.use(urlencoded({ extended: true, limit: bodyLimit }));
 
   app.enableCors({
     origin: corsOrigins,
@@ -58,7 +64,7 @@ async function bootstrap() {
   });
 
   await app.listen(port);
-  console.log(`🚀 Backend running on http://localhost:${port}/api`);
-  console.log(`📚 Swagger docs at http://localhost:${port}/api/docs`);
+  logger.log(`Backend running on http://localhost:${port}/api`);
+  logger.log(`Swagger docs at http://localhost:${port}/api/docs`);
 }
 void bootstrap();

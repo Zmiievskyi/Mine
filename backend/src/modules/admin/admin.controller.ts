@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -14,6 +15,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiParam,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -21,6 +23,7 @@ import { AdminGuard } from '../auth/guards/admin.guard';
 import { AssignNodeDto, UpdateUserDto } from './dto';
 import { User } from '../users/entities/user.entity';
 import { UserNode } from '../users/entities/user-node.entity';
+import { PaginationQueryDto } from '../../common/dto';
 
 @ApiTags('admin')
 @ApiBearerAuth('JWT-auth')
@@ -38,11 +41,16 @@ export class AdminController {
   }
 
   @Get('users')
-  @ApiOperation({ summary: 'Get all users' })
-  @ApiResponse({ status: 200, description: 'List of all users' })
-  async findAllUsers() {
-    const users = await this.adminService.findAllUsers();
-    return users.map((user) => this.transformUser(user));
+  @ApiOperation({ summary: 'Get all users (paginated)' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
+  @ApiResponse({ status: 200, description: 'Paginated list of users' })
+  async findAllUsers(@Query() pagination: PaginationQueryDto) {
+    const result = await this.adminService.findAllUsers(pagination);
+    return {
+      data: result.data.map((user) => this.transformUser(user)),
+      meta: result.meta,
+    };
   }
 
   @Get('users/:id')

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { UnauthorizedException, ConflictException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
@@ -24,6 +25,8 @@ describe('AuthService', () => {
     telegram: null,
     discord: null,
     currencyPreference: 'USD',
+    avatarUrl: null,
+    provider: 'local',
     nodes: [],
     requests: [],
     createdAt: new Date(),
@@ -46,6 +49,15 @@ describe('AuthService', () => {
           provide: JwtService,
           useValue: {
             sign: jest.fn(),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((key: string) => {
+              if (key === 'app.bcryptRounds') return 12;
+              return null;
+            }),
           },
         },
       ],
@@ -79,7 +91,7 @@ describe('AuthService', () => {
       const result = await service.register(registerDto);
 
       expect(usersService.findByEmail).toHaveBeenCalledWith(registerDto.email);
-      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
+      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 12);
       expect(usersService.create).toHaveBeenCalledWith({
         ...registerDto,
         password: hashedPassword,
@@ -95,6 +107,8 @@ describe('AuthService', () => {
           email: registerDto.email,
           name: registerDto.name,
           role: mockUser.role,
+          avatarUrl: mockUser.avatarUrl,
+          provider: mockUser.provider,
         },
         accessToken,
       });
@@ -112,7 +126,7 @@ describe('AuthService', () => {
       expect(usersService.create).not.toHaveBeenCalled();
     });
 
-    it('should hash password with salt rounds of 10', async () => {
+    it('should hash password with configured salt rounds', async () => {
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashed');
       usersService.findByEmail.mockResolvedValue(null);
       usersService.create.mockResolvedValue(mockUser);
@@ -120,7 +134,7 @@ describe('AuthService', () => {
 
       await service.register(registerDto);
 
-      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
+      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 12);
     });
   });
 
@@ -152,6 +166,8 @@ describe('AuthService', () => {
           email: mockUser.email,
           name: mockUser.name,
           role: mockUser.role,
+          avatarUrl: mockUser.avatarUrl,
+          provider: mockUser.provider,
         },
         accessToken,
       });
@@ -159,13 +175,15 @@ describe('AuthService', () => {
 
     it('should throw UnauthorizedException if user not found', async () => {
       usersService.findByEmail.mockResolvedValue(null);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(service.login(loginDto)).rejects.toThrow(
         new UnauthorizedException('Invalid credentials'),
       );
 
       expect(usersService.findByEmail).toHaveBeenCalledWith(loginDto.email);
-      expect(bcrypt.compare).not.toHaveBeenCalled();
+      // bcrypt.compare is still called with dummy hash for constant-time comparison
+      expect(bcrypt.compare).toHaveBeenCalled();
     });
 
     it('should throw UnauthorizedException if password is invalid', async () => {
@@ -186,7 +204,7 @@ describe('AuthService', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       await expect(service.login(loginDto)).rejects.toThrow(
-        new UnauthorizedException('Account is disabled'),
+        new UnauthorizedException('Invalid credentials'),
       );
 
       expect(bcrypt.compare).toHaveBeenCalledWith(loginDto.password, mockUser.password);
@@ -206,6 +224,8 @@ describe('AuthService', () => {
         email: mockUser.email,
         name: mockUser.name,
         role: mockUser.role,
+        avatarUrl: mockUser.avatarUrl,
+        provider: mockUser.provider,
       });
     });
 

@@ -5,6 +5,7 @@ import { Repository, In } from 'typeorm';
 import axios from 'axios';
 import { UserNode } from '../users/entities/user-node.entity';
 import { withRetry } from '../../common/utils';
+import { LruCache } from '../../common/services';
 
 export interface HyperfusionNode {
   address: string;
@@ -30,13 +31,17 @@ export interface NodeWithStats extends UserNode {
 @Injectable()
 export class NodesService {
   private readonly logger = new Logger(NodesService.name);
-  private cache: { data: HyperfusionNode[]; timestamp: number } | null = null;
+  private readonly cache: LruCache<HyperfusionNode[]>;
+  private readonly cacheKey = 'hyperfusion_nodes';
 
   constructor(
     private configService: ConfigService,
     @InjectRepository(UserNode)
     private userNodeRepository: Repository<UserNode>,
-  ) {}
+  ) {
+    const cacheTtl = this.configService.get<number>('gonka.cacheTtlSeconds') ?? 120;
+    this.cache = new LruCache<HyperfusionNode[]>(10, cacheTtl);
+  }
 
   async getUserNodes(userId: string): Promise<NodeWithStats[]> {
     const userNodes = await this.userNodeRepository.find({
@@ -104,41 +109,41 @@ export class NodesService {
   }
 
   private async fetchHyperfusionData(): Promise<HyperfusionNode[]> {
-    const cacheTtl =
-      this.configService.get<number>('gonka.cacheTtlSeconds') ?? 120;
-    const now = Date.now();
-
-    if (this.cache && now - this.cache.timestamp < cacheTtl * 1000) {
-      return this.cache.data;
+    const cached = this.cache.get(this.cacheKey);
+    if (cached) {
+      return cached;
     }
 
     try {
       const url = this.configService.get<string>('gonka.hyperfusionUrl');
+      const timeout = this.configService.get<number>('retry.maxDelayMs') ?? 10000;
 
       const response = await withRetry(
         async () => {
           const res = await axios.get(`${url}/api/v1/inference/current`, {
-            timeout: 10000,
+            timeout,
           });
           return res;
         },
-        { maxRetries: 3, baseDelayMs: 1000, maxDelayMs: 5000 },
+        {
+          maxRetries: this.configService.get<number>('retry.maxRetries') ?? 3,
+          baseDelayMs: this.configService.get<number>('retry.baseDelayMs') ?? 1000,
+          maxDelayMs: this.configService.get<number>('retry.maxDelayMs') ?? 5000,
+        },
         this.logger,
         'Hyperfusion API fetch',
       );
 
-      this.cache = {
-        data: response.data.ml_nodes || [],
-        timestamp: now,
-      };
-
-      return this.cache.data;
+      const data = response.data.ml_nodes || [];
+      this.cache.set(this.cacheKey, data);
+      return data;
     } catch (error) {
       this.logger.error('Failed to fetch Hyperfusion data after all retries', error);
       // Return stale cache if available (graceful degradation)
-      if (this.cache?.data) {
+      const stale = this.cache.getStale(this.cacheKey);
+      if (stale) {
         this.logger.warn('Returning stale cache data');
-        return this.cache.data;
+        return stale;
       }
       return [];
     }

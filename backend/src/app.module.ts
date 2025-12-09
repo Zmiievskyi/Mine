@@ -9,6 +9,8 @@ import {
   jwtConfig,
   gonkaConfig,
   googleConfig,
+  retryConfig,
+  throttlerConfig,
 } from './config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -27,25 +29,37 @@ import { EarningsHistory } from './modules/nodes/entities/earnings-history.entit
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, jwtConfig, gonkaConfig, googleConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        jwtConfig,
+        gonkaConfig,
+        googleConfig,
+        retryConfig,
+        throttlerConfig,
+      ],
     }),
-    ThrottlerModule.forRoot([
-      {
-        name: 'short',
-        ttl: 1000,
-        limit: 3,
-      },
-      {
-        name: 'medium',
-        ttl: 10000,
-        limit: 20,
-      },
-      {
-        name: 'long',
-        ttl: 60000,
-        limit: 100,
-      },
-    ]),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => [
+        {
+          name: 'short',
+          ttl: configService.get<number>('throttler.short.ttl') ?? 1000,
+          limit: configService.get<number>('throttler.short.limit') ?? 3,
+        },
+        {
+          name: 'medium',
+          ttl: configService.get<number>('throttler.medium.ttl') ?? 10000,
+          limit: configService.get<number>('throttler.medium.limit') ?? 20,
+        },
+        {
+          name: 'long',
+          ttl: configService.get<number>('throttler.long.ttl') ?? 60000,
+          limit: configService.get<number>('throttler.long.limit') ?? 100,
+        },
+      ],
+      inject: [ConfigService],
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

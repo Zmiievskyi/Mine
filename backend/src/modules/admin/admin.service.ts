@@ -3,12 +3,17 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { User, UserRole } from '../users/entities/user.entity';
 import { UserNode } from '../users/entities/user-node.entity';
 import { NodeRequest, RequestStatus } from '../requests/entities/node-request.entity';
 import { AssignNodeDto, UpdateUserDto } from './dto';
+import {
+  PaginationQueryDto,
+  PaginatedResponse,
+  createPaginatedResponse,
+} from '../../common/dto';
 
 @Injectable()
 export class AdminService {
@@ -19,6 +24,8 @@ export class AdminService {
     private userNodesRepository: Repository<UserNode>,
     @InjectRepository(NodeRequest)
     private requestsRepository: Repository<NodeRequest>,
+    @InjectDataSource()
+    private dataSource: DataSource,
   ) {}
 
   async getDashboardStats() {
@@ -38,12 +45,21 @@ export class AdminService {
     };
   }
 
-  async findAllUsers(): Promise<User[]> {
-    return this.usersRepository.find({
+  async findAllUsers(
+    pagination: PaginationQueryDto,
+  ): Promise<PaginatedResponse<User>> {
+    const { page = 1, limit = 20 } = pagination;
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await this.usersRepository.findAndCount({
       select: ['id', 'email', 'name', 'role', 'isActive', 'createdAt'],
       relations: ['nodes'],
       order: { createdAt: 'DESC' },
+      skip,
+      take: limit,
     });
+
+    return createPaginatedResponse(users, total, page, limit);
   }
 
   async findUserWithNodes(id: string): Promise<User> {
@@ -75,26 +91,34 @@ export class AdminService {
   }
 
   async assignNode(userId: string, assignNodeDto: AssignNodeDto): Promise<UserNode> {
-    await this.findUserWithNodes(userId);
+    return this.dataSource.transaction(async (manager) => {
+      // Verify user exists
+      const user = await manager.findOne(User, { where: { id: userId } });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
 
-    const existingNode = await this.userNodesRepository.findOne({
-      where: { nodeAddress: assignNodeDto.nodeAddress },
+      // Check for existing node with pessimistic lock to prevent race condition
+      const existingNode = await manager.findOne(UserNode, {
+        where: { nodeAddress: assignNodeDto.nodeAddress },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (existingNode) {
+        throw new ConflictException('This node is already assigned to a user');
+      }
+
+      const node = manager.create(UserNode, {
+        userId,
+        nodeAddress: assignNodeDto.nodeAddress,
+        label: assignNodeDto.label,
+        gpuType: assignNodeDto.gpuType,
+        gcoreInstanceId: assignNodeDto.gcoreInstanceId,
+        notes: assignNodeDto.notes,
+      });
+
+      return manager.save(node);
     });
-
-    if (existingNode) {
-      throw new ConflictException('This node is already assigned to a user');
-    }
-
-    const node = this.userNodesRepository.create({
-      userId,
-      nodeAddress: assignNodeDto.nodeAddress,
-      label: assignNodeDto.label,
-      gpuType: assignNodeDto.gpuType,
-      gcoreInstanceId: assignNodeDto.gcoreInstanceId,
-      notes: assignNodeDto.notes,
-    });
-
-    return this.userNodesRepository.save(node);
   }
 
   async removeNode(userId: string, nodeId: string): Promise<void> {
