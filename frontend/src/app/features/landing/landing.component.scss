@@ -1,11 +1,6 @@
 // Landing page minimal styles - most styling via Tailwind utility classes
-// Keep component-level styles minimal since Tailwind handles most styling
+// Smooth scrolling is defined globally in styles.scss
 
 :host {
   display: block;
-}
-
-// Smooth scrolling
-html {
-  scroll-behavior: smooth;
 }

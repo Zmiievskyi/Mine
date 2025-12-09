@@ -24,6 +24,10 @@
   --accent-gradient: linear-gradient(90deg, #FF4C00, #FF7A45);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html, body {
   height: 100%;
 }

@@ -11,8 +11,7 @@ interface NetworkStat {
   selector: 'app-live-stats-section',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './live-stats-section.component.html',
-  styleUrl: './live-stats-section.component.scss'
+  templateUrl: './live-stats-section.component.html'
 })
 export class LiveStatsSectionComponent {
   /**
