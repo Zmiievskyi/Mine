@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { NodesService } from '../../core/services/nodes.service';
 import { DashboardData, Node } from '../../core/models/node.model';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
+import { getNodeStatusClass } from '../../shared/utils/status-styles.util';
 
 @Component({
   selector: 'app-dashboard',
@@ -93,7 +94,7 @@ import { LayoutComponent } from '../../shared/components/layout/layout.component
                       </a>
                     </td>
                     <td class="px-6 py-4">
-                      <span class="px-2 py-1 text-xs rounded-full" [class]="getStatusClass(node.status)">
+                      <span class="px-2 py-1 text-xs rounded-full" [class]="getNodeStatusClass(node.status)">
                         {{ node.status }}
                       </span>
                     </td>
@@ -140,13 +141,5 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  getStatusClass(status: string): string {
-    const classes: Record<string, string> = {
-      healthy: 'bg-green-100 text-green-800',
-      unhealthy: 'bg-yellow-100 text-yellow-800',
-      jailed: 'bg-red-100 text-red-800',
-      offline: 'bg-gray-100 text-gray-800',
-    };
-    return classes[status] || classes['offline'];
-  }
+  getNodeStatusClass = getNodeStatusClass;
 }

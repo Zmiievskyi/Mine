@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { RequestsService } from '../../core/services/requests.service';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
 import { NodeRequest, GPU_OPTIONS, RequestStatus } from '../../core/models/request.model';
+import { getRequestStatusClass } from '../../shared/utils/status-styles.util';
 
 @Component({
   selector: 'app-requests-list',
@@ -118,7 +119,7 @@ import { NodeRequest, GPU_OPTIONS, RequestStatus } from '../../core/models/reque
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span
                       class="px-2 py-1 text-xs font-medium rounded-full"
-                      [class]="getStatusClass(request.status)"
+                      [class]="getRequestStatusClass(request.status)"
                     >
                       {{ request.status }}
                     </span>
@@ -216,15 +217,7 @@ export class RequestsListComponent implements OnInit {
     return this.gpuOptions.find((g) => g.value === type)?.label || type;
   }
 
-  getStatusClass(status: RequestStatus): string {
-    const classes: Record<RequestStatus, string> = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      approved: 'bg-blue-100 text-blue-800',
-      rejected: 'bg-red-100 text-red-800',
-      completed: 'bg-green-100 text-green-800',
-    };
-    return classes[status] || 'bg-gray-100 text-gray-800';
-  }
+  getRequestStatusClass = getRequestStatusClass;
 
   cancelRequest(id: string): void {
     if (!confirm('Are you sure you want to cancel this request?')) {
