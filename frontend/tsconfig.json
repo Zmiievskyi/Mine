@@ -37,9 +37,6 @@
       "@spartan-ng/helm/icon": [
         "./libs/ui/icon/src/index.ts"
       ],
-      "@spartan-ng/helm/form-field": [
-        "./libs/ui/form-field/src/index.ts"
-      ],
       "@spartan-ng/helm/input": [
         "./libs/ui/input/src/index.ts"
       ],
@@ -48,9 +45,6 @@
       ],
       "@spartan-ng/helm/sonner": [
         "./libs/ui/sonner/src/index.ts"
-      ],
-      "@spartan-ng/helm/radio-group": [
-        "./libs/ui/radio-group/src/index.ts"
       ],
       "@spartan-ng/helm/card": [
         "./libs/ui/card/src/index.ts"

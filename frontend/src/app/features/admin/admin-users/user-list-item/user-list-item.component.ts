@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminUser, AdminUserWithStats, UserNode, UserNodeWithStats, NodeStatus } from '../../../../core/models/admin.model';
-import { getNodeStatusVariant } from '../../../../shared/utils/node-status.util';
+import { getNodeStatusVariant, truncateAddress } from '../../../../shared/utils';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmBadge } from '@spartan-ng/helm/badge';
@@ -90,7 +90,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
                     <tr hlmTr>
                       <td hlmTd>
                         <div class="font-mono text-sm text-[var(--gcore-text)]">
-                          {{ truncateAddress(node.nodeAddress) }}
+                          {{ getTruncatedAddress(node.nodeAddress) }}
                         </div>
                         @if (node.label) {
                           <div class="text-xs text-[var(--gcore-text-muted)]">{{ node.label }}</div>
@@ -144,10 +144,6 @@ export class UserListItemComponent {
     this.expand.emit();
   }
 
-  truncateAddress(address: string): string {
-    if (address.length <= 20) return address;
-    return `${address.slice(0, 12)}...${address.slice(-8)}`;
-  }
-
+  getTruncatedAddress = truncateAddress;
   getStatusVariant = getNodeStatusVariant;
 }

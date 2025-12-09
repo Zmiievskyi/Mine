@@ -19,10 +19,6 @@ export class RequestsService {
     return this.http.get<NodeRequest[]>(`${this.apiUrl}/my`);
   }
 
-  getRequest(id: string): Observable<NodeRequest> {
-    return this.http.get<NodeRequest>(`${this.apiUrl}/${id}`);
-  }
-
   cancelRequest(id: string): Observable<NodeRequest> {
     return this.http.delete<NodeRequest>(`${this.apiUrl}/${id}`);
   }

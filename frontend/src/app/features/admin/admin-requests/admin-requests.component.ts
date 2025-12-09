@@ -9,9 +9,11 @@ import { LayoutComponent } from '../../../shared/components/layout/layout.compon
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { AdminRequest, AdminRequestsQuery } from '../../../core/models/admin.model';
 import { GPU_OPTIONS } from '../../../core/models/request.model';
-import { getRequestStatusClass } from '../../../shared/utils/status-styles.util';
+import { getGpuLabel } from '../../../core/constants/pricing.constants';
 import { createDebounce } from '../../../shared/utils/debounce.util';
 import { downloadBlobWithDate } from '../../../shared/utils/download.util';
+import { getRequestStatusVariant } from '../../../shared/utils';
+import { ConfirmDialogData } from '../../../shared/models/confirm-dialog.model';
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -25,14 +27,6 @@ import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 
 type RequestStatus = 'pending' | 'approved' | 'rejected' | 'completed';
-
-interface ConfirmDialogData {
-  title: string;
-  message: string;
-  confirmText?: string;
-  variant?: 'default' | 'destructive';
-  onConfirm: () => void;
-}
 
 @Component({
   selector: 'app-admin-requests',
@@ -83,6 +77,8 @@ export class AdminRequestsComponent implements OnInit {
   currentPage = 1;
 
   gpuOptions = GPU_OPTIONS;
+  getRequestStatusVariant = getRequestStatusVariant;
+  getGpuLabel = getGpuLabel;
 
   private searchDebounce = createDebounce();
 
@@ -143,27 +139,6 @@ export class AdminRequestsComponent implements OnInit {
     this.currentPage = page;
     this.loadRequests();
   }
-
-  getGpuLabel(type: string): string {
-    return this.gpuOptions.find((g) => g.value === type)?.label || type;
-  }
-
-  getStatusBadgeVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-    switch (status) {
-      case 'pending':
-        return 'secondary';
-      case 'approved':
-        return 'default';
-      case 'rejected':
-        return 'destructive';
-      case 'completed':
-        return 'outline';
-      default:
-        return 'outline';
-    }
-  }
-
-  getRequestStatusClass = getRequestStatusClass;
 
   approveRequest(request: AdminRequest): void {
     this.updateStatus(request.id, 'approved');

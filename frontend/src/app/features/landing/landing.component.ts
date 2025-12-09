@@ -1,12 +1,18 @@
-import { Component, OnInit, inject, ViewEncapsulation, signal, DestroyRef } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { interval, switchMap, startWith } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { NodesService } from '../../core/services/nodes.service';
 import { NetworkStats } from '../../core/models/node.model';
-import { ScrollRevealDirective } from '../../shared/directives/scroll-reveal.directive';
+import { createAutoRefresh } from '../../shared/utils';
+import { HeroSectionComponent } from './components/hero-section.component';
+import { NetworkStatsComponent } from './components/network-stats.component';
+import { FeaturesSectionComponent } from './components/features-section.component';
+import { HowItWorksSectionComponent } from './components/how-it-works-section.component';
+import { ManagedServicesSectionComponent } from './components/managed-services-section.component';
+import { PricingSectionComponent } from './components/pricing-section.component';
+import { FaqSectionComponent } from './components/faq-section.component';
+import { LandingFooterComponent } from './components/landing-footer.component';
 
 /**
  * Landing page component for MineGNK
@@ -26,10 +32,20 @@ import { ScrollRevealDirective } from '../../shared/directives/scroll-reveal.dir
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterModule, ScrollRevealDirective],
+  imports: [
+    CommonModule,
+    RouterModule,
+    HeroSectionComponent,
+    NetworkStatsComponent,
+    FeaturesSectionComponent,
+    HowItWorksSectionComponent,
+    ManagedServicesSectionComponent,
+    PricingSectionComponent,
+    FaqSectionComponent,
+    LandingFooterComponent
+  ],
   templateUrl: './landing.component.html',
-  styleUrl: './landing.component.scss',
-  encapsulation: ViewEncapsulation.None
+  styleUrl: './landing.component.scss'
 })
 export class LandingComponent implements OnInit {
   private authService = inject(AuthService);
@@ -65,24 +81,22 @@ export class LandingComponent implements OnInit {
   }
 
   private loadNetworkStats(): void {
-    interval(60000)
-      .pipe(
-        startWith(0),
-        switchMap(() => this.nodesService.getPublicNetworkStats()),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({
-        next: (stats) => {
-          this.networkStats.set(stats);
-          this.statsLoading.set(false);
-          this.statsError.set(null);
-        },
-        error: (err) => {
-          this.statsLoading.set(false);
-          this.statsError.set('Failed to load network stats');
-          console.error('Network stats error:', err);
-        }
-      });
+    createAutoRefresh(
+      60000,
+      () => this.nodesService.getPublicNetworkStats(),
+      this.destroyRef
+    ).subscribe({
+      next: (stats) => {
+        this.networkStats.set(stats);
+        this.statsLoading.set(false);
+        this.statsError.set(null);
+      },
+      error: (err) => {
+        this.statsLoading.set(false);
+        this.statsError.set('Failed to load network stats');
+        console.error('Network stats error:', err);
+      }
+    });
   }
 
   /**

@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { buildUrlWithQuery } from '../../shared/utils';
 import {
   AdminUser,
   AdminUserWithStats,
@@ -33,14 +34,7 @@ export class AdminService {
   }
 
   getUsers(query: AdminUsersQuery = {}): Observable<PaginatedResponse<AdminUser>> {
-    const params = new URLSearchParams();
-    Object.entries(query).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params.set(key, String(value));
-      }
-    });
-    const queryString = params.toString();
-    const url = queryString ? `${this.apiUrl}/users?${queryString}` : `${this.apiUrl}/users`;
+    const url = buildUrlWithQuery(`${this.apiUrl}/users`, query);
     return this.http.get<PaginatedResponse<AdminUser>>(url);
   }
 
@@ -62,26 +56,8 @@ export class AdminService {
     );
   }
 
-  updateNode(
-    userId: string,
-    nodeId: string,
-    data: Partial<AssignNodeDto>
-  ): Observable<UserNode> {
-    return this.http.put<UserNode>(
-      `${this.apiUrl}/users/${userId}/nodes/${nodeId}`,
-      data
-    );
-  }
-
   getAllRequests(query: AdminRequestsQuery = {}): Observable<PaginatedResponse<AdminRequest>> {
-    const params = new URLSearchParams();
-    Object.entries(query).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params.set(key, String(value));
-      }
-    });
-    const queryString = params.toString();
-    const url = queryString ? `${this.requestsUrl}?${queryString}` : this.requestsUrl;
+    const url = buildUrlWithQuery(this.requestsUrl, query);
     return this.http.get<PaginatedResponse<AdminRequest>>(url);
   }
 
@@ -96,14 +72,7 @@ export class AdminService {
   }
 
   getAllNodes(query: AdminNodesQuery = {}): Observable<PaginatedResponse<AdminNodeWithUser>> {
-    const params = new URLSearchParams();
-    Object.entries(query).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params.set(key, String(value));
-      }
-    });
-    const queryString = params.toString();
-    const url = queryString ? `${this.apiUrl}/nodes?${queryString}` : `${this.apiUrl}/nodes`;
+    const url = buildUrlWithQuery(`${this.apiUrl}/nodes`, query);
     return this.http.get<PaginatedResponse<AdminNodeWithUser>>(url);
   }
 

@@ -1,8 +1,7 @@
-import { Component, OnInit, signal, inject, DestroyRef, computed } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { interval, startWith, switchMap } from 'rxjs';
 import { NodesService } from '../../core/services/nodes.service';
 import { DashboardData, Node } from '../../core/models/node.model';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
@@ -11,7 +10,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmBadge } from '@spartan-ng/helm/badge';
-import { getNodeStatusVariant } from '../../shared/utils/node-status.util';
+import { getNodeStatusVariant, createAutoRefresh, truncateAddress } from '../../shared/utils';
 
 @Component({
   selector: 'app-dashboard',
@@ -198,7 +197,7 @@ import { getNodeStatusVariant } from '../../shared/utils/node-status.util';
                           [routerLink]="['/nodes', node.address]"
                           class="text-primary hover:underline font-medium"
                         >
-                          {{ node.alias || node.address.slice(0, 12) + '...' }}
+                          {{ node.alias || getTruncatedAddress(node.address) }}
                         </a>
                       </td>
                       <td hlmTd>
@@ -250,30 +249,28 @@ export class DashboardComponent implements OnInit {
   }
 
   private startAutoRefresh(): void {
-    interval(this.REFRESH_INTERVAL)
-      .pipe(
-        startWith(0),
-        switchMap(() => {
-          if (!this.loading()) {
-            this.refreshing.set(true);
-          }
-          return this.nodesService.getDashboardData();
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({
-        next: (data) => {
-          this.nodes.set(data.nodes);
-          this.stats.set(data.stats);
-          this.loading.set(false);
-          this.refreshing.set(false);
-          this.lastUpdated.set(new Date());
-        },
-        error: () => {
-          this.loading.set(false);
-          this.refreshing.set(false);
-        },
-      });
+    createAutoRefresh(
+      this.REFRESH_INTERVAL,
+      () => {
+        if (!this.loading()) {
+          this.refreshing.set(true);
+        }
+        return this.nodesService.getDashboardData();
+      },
+      this.destroyRef
+    ).subscribe({
+      next: (data) => {
+        this.nodes.set(data.nodes);
+        this.stats.set(data.stats);
+        this.loading.set(false);
+        this.refreshing.set(false);
+        this.lastUpdated.set(new Date());
+      },
+      error: () => {
+        this.loading.set(false);
+        this.refreshing.set(false);
+      },
+    });
   }
 
   manualRefresh(): void {
@@ -318,5 +315,6 @@ export class DashboardComponent implements OnInit {
     return Math.round((completedSteps / 5) * 100);
   }
 
+  getTruncatedAddress = truncateAddress;
   getNodeStatusVariant = getNodeStatusVariant;
 }

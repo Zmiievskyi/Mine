@@ -27,18 +27,12 @@ export function downloadBlob(blob: Blob, filename: string): void {
 }
 
 /**
- * Generates a filename with the current date appended
+ * Generates a filename with the current date appended (internal helper)
  * @param prefix The prefix for the filename (e.g., 'users', 'requests')
  * @param extension The file extension (e.g., 'csv', 'json')
  * @returns Filename in format: {prefix}-YYYY-MM-DD.{extension}
- *
- * @example
- * ```typescript
- * const filename = generateDateFilename('users', 'csv');
- * // Returns: 'users-2025-12-09.csv'
- * ```
  */
-export function generateDateFilename(prefix: string, extension: string): string {
+function generateDateFilename(prefix: string, extension: string): string {
   const date = new Date().toISOString().split('T')[0];
   return `${prefix}-${date}.${extension}`;
 }

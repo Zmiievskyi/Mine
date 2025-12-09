@@ -5,6 +5,7 @@ import { RequestsService } from '../../core/services/requests.service';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { NodeRequest, GPU_OPTIONS } from '../../core/models/request.model';
+import { getGpuLabel } from '../../core/constants/pricing.constants';
 import { getRequestStatusVariant } from '../../shared/utils/request-status.util';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmBadge } from '@spartan-ng/helm/badge';
@@ -174,6 +175,7 @@ export class RequestsListComponent implements OnInit {
   selectedRequest = signal<NodeRequest | null>(null);
 
   gpuOptions = GPU_OPTIONS;
+  getGpuLabel = getGpuLabel;
 
   ngOnInit(): void {
     this.loadRequests();
@@ -193,10 +195,6 @@ export class RequestsListComponent implements OnInit {
         this.loading.set(false);
       },
     });
-  }
-
-  getGpuLabel(type: string): string {
-    return this.gpuOptions.find((g) => g.value === type)?.label || type;
   }
 
   getStatusVariant = getRequestStatusVariant;

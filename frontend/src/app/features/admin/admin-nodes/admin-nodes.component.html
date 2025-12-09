@@ -162,7 +162,7 @@
             @for (node of nodes(); track node.id) {
               <tr hlmTr>
                 <td hlmTd>
-                  <div class="font-mono text-sm">{{ truncateAddress(node.nodeAddress) }}</div>
+                  <div class="font-mono text-sm">{{ getTruncatedAddress(node.nodeAddress) }}</div>
                   @if (node.label) {
                     <div class="text-xs text-[var(--gcore-text-muted)]">{{ node.label }}</div>
                   }

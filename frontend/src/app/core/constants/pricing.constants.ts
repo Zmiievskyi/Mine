@@ -103,7 +103,7 @@ export function formatPrice(price: number | null): string {
 }
 
 /**
- * Format hourly price
+ * Format hourly price for display
  */
 export function formatHourlyPrice(price: number | null): string {
   if (price === null) return 'Contact Sales';
@@ -116,4 +116,12 @@ export function formatHourlyPrice(price: number | null): string {
 export function formatMonthlyPrice(price: number | null): string {
   if (price === null) return 'Contact Sales';
   return `${CURRENCY}${Math.round(price)}/mo`;
+}
+
+/**
+ * Get GPU label (display name) by type
+ */
+export function getGpuLabel(type: GpuType | string): string {
+  const gpu = GPU_PRICING.find(g => g.id === type);
+  return gpu ? gpu.name : type;
 }

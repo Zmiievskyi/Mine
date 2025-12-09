@@ -4,7 +4,7 @@
  * Provides consistent styling for node request status badges.
  */
 
-type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline';
+import { BadgeVariant } from '../types/badge.types';
 
 /**
  * Get Spartan UI badge variant for request status

@@ -12,9 +12,7 @@ import {
   NetworkHealthOverview,
   NodeStatus,
 } from '../../../core/models/admin.model';
-import { createDebounce } from '../../../shared/utils/debounce.util';
-import { downloadBlobWithDate } from '../../../shared/utils/download.util';
-import { getNodeStatusVariant } from '../../../shared/utils/node-status.util';
+import { createDebounce, downloadBlobWithDate, getNodeStatusVariant, truncateAddress } from '../../../shared/utils';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -126,11 +124,7 @@ export class AdminNodesComponent implements OnInit {
     this.loadNodes();
   }
 
-  truncateAddress(address: string): string {
-    if (address.length <= 20) return address;
-    return `${address.slice(0, 10)}...${address.slice(-8)}`;
-  }
-
+  getTruncatedAddress = truncateAddress;
   getStatusVariant = getNodeStatusVariant;
 
   copyAddress(address: string): void {

@@ -5,8 +5,11 @@ import { AdminUser, AssignNodeDto } from '../../../../core/models/admin.model';
 import { GPU_OPTIONS } from '../../../../core/models/request.model';
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { BrnSelectImports } from '@spartan-ng/brain/select';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInput } from '@spartan-ng/helm/input';
+import { HlmTextarea } from '@spartan-ng/helm/textarea';
 import { HlmLabel } from '@spartan-ng/helm/label';
 
 @Component({
@@ -17,8 +20,11 @@ import { HlmLabel } from '@spartan-ng/helm/label';
     FormsModule,
     BrnDialogImports,
     HlmDialogImports,
+    BrnSelectImports,
+    HlmSelectImports,
     HlmButton,
     HlmInput,
+    HlmTextarea,
     HlmLabel,
   ],
   template: `
@@ -53,21 +59,23 @@ import { HlmLabel } from '@spartan-ng/helm/label';
 
           <div class="space-y-2">
             <label hlmLabel>GPU Type</label>
-            <select
-              [(ngModel)]="formData.gpuType"
-              class="w-full flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            >
-              <option value="">Select GPU Type</option>
-              @for (gpu of gpuOptions; track gpu.value) {
-                <option [value]="gpu.value">{{ gpu.label }}</option>
-              }
-            </select>
+            <brn-select [(ngModel)]="formData.gpuType" class="w-full">
+              <hlm-select-trigger>
+                <hlm-select-value placeholder="Select GPU Type" />
+              </hlm-select-trigger>
+              <hlm-select-content>
+                <hlm-option value="">Select GPU Type</hlm-option>
+                @for (gpu of gpuOptions; track gpu.value) {
+                  <hlm-option [value]="gpu.value">{{ gpu.label }}</hlm-option>
+                }
+              </hlm-select-content>
+            </brn-select>
           </div>
 
           <div class="space-y-2">
             <label hlmLabel>Notes</label>
             <textarea
-              hlmInput
+              hlmTextarea
               [(ngModel)]="formData.notes"
               rows="2"
               placeholder="Optional notes..."

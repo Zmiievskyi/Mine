@@ -31,19 +31,3 @@ export function createDebounce(): (callback: () => void, delay: number) => void 
   };
 }
 
-/**
- * Standalone debounce function for one-time use
- * @param callback Function to debounce
- * @param delay Delay in milliseconds
- * @param timeoutRef Reference to store timeout ID (must be passed by object)
- */
-export function debounce(
-  callback: () => void,
-  delay: number,
-  timeoutRef: { current: ReturnType<typeof setTimeout> | null }
-): void {
-  if (timeoutRef.current) {
-    clearTimeout(timeoutRef.current);
-  }
-  timeoutRef.current = setTimeout(callback, delay);
-}

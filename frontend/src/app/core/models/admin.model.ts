@@ -64,7 +64,9 @@ export interface UpdateRequestDto {
   adminNotes?: string;
 }
 
-export type NodeStatus = 'healthy' | 'jailed' | 'offline' | 'unknown';
+// Re-export NodeStatus from node.model for backwards compatibility
+import { NodeStatus } from './node.model';
+export type { NodeStatus } from './node.model';
 
 export interface UserNodeWithStats extends UserNode {
   status: NodeStatus;

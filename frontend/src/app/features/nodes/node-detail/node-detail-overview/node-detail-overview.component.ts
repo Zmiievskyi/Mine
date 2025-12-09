@@ -1,12 +1,13 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NodeDetail } from '../../../../core/models/node.model';
-import { getNodeStatusTextClass } from '../../../../shared/utils/status-styles.util';
+import { getNodeStatusVariant } from '../../../../shared/utils/node-status.util';
+import { HlmBadge } from '@spartan-ng/helm/badge';
 
 @Component({
   selector: 'app-node-detail-overview',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HlmBadge],
   template: `
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Main Info Card -->
@@ -19,15 +20,17 @@ import { getNodeStatusTextClass } from '../../../../shared/utils/status-styles.u
           </div>
           <div>
             <p class="text-sm text-[var(--gcore-text-muted)]">Status</p>
-            <p class="font-medium" [class]="getNodeStatusTextClass(node.status || 'offline')">
-              {{ node.status }}
+            <div class="flex items-center gap-2">
+              <span hlmBadge [variant]="getNodeStatusVariant(node.status || 'offline')">
+                {{ node.status }}
+              </span>
               @if (node.isJailed) {
-                <span class="text-red-600">(Jailed)</span>
+                <span hlmBadge variant="destructive">Jailed</span>
               }
               @if (node.isBlacklisted) {
-                <span class="text-red-600">(Blacklisted)</span>
+                <span hlmBadge variant="destructive">Blacklisted</span>
               }
-            </p>
+            </div>
           </div>
           <div>
             <p class="text-sm text-[var(--gcore-text-muted)]">Network Weight</p>
@@ -79,5 +82,5 @@ import { getNodeStatusTextClass } from '../../../../shared/utils/status-styles.u
 })
 export class NodeDetailOverviewComponent {
   @Input({ required: true }) node!: NodeDetail;
-  protected readonly getNodeStatusTextClass = getNodeStatusTextClass;
+  protected readonly getNodeStatusVariant = getNodeStatusVariant;
 }

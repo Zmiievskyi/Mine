@@ -9,8 +9,8 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { AdminUser, AdminUserWithStats, UserNode, UserNodeWithStats, AssignNodeDto, UserRole, AdminUsersQuery } from '../../../core/models/admin.model';
 import { AssignNodeModalComponent } from './assign-node-modal/assign-node-modal.component';
 import { UserListItemComponent } from './user-list-item/user-list-item.component';
-import { createDebounce } from '../../../shared/utils/debounce.util';
-import { downloadBlobWithDate } from '../../../shared/utils/download.util';
+import { createDebounce, truncateAddress, downloadBlobWithDate } from '../../../shared/utils';
+import { ConfirmDialogData } from '../../../shared/models/confirm-dialog.model';
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -19,14 +19,6 @@ import { HlmLabel } from '@spartan-ng/helm/label';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmCardImports } from '@spartan-ng/helm/card';
-
-interface ConfirmDialogData {
-  title: string;
-  message: string;
-  confirmText?: string;
-  variant?: 'default' | 'destructive';
-  onConfirm: () => void;
-}
 
 @Component({
   selector: 'app-admin-users',
@@ -215,9 +207,7 @@ export class AdminUsersComponent implements OnInit {
   }
 
   removeNode(userId: string, node: UserNode | UserNodeWithStats): void {
-    const truncated = node.nodeAddress.length <= 20
-      ? node.nodeAddress
-      : `${node.nodeAddress.slice(0, 12)}...${node.nodeAddress.slice(-8)}`;
+    const truncated = truncateAddress(node.nodeAddress);
 
     this.confirmDialog.set({
       title: 'Remove Node',

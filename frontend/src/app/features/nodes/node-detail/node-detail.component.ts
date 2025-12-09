@@ -9,10 +9,11 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { NodeDetailOverviewComponent } from './node-detail-overview/node-detail-overview.component';
 import { NodeDetailMetricsComponent } from './node-detail-metrics/node-detail-metrics.component';
 import { NodeDetailHistoryComponent } from './node-detail-history/node-detail-history.component';
-import { getNodeStatusClass } from '../../../shared/utils/status-styles.util';
+import { getNodeStatusVariant } from '../../../shared/utils/node-status.util';
 import { HlmTabsImports } from '@spartan-ng/helm/tabs';
 import { BrnTabsImports } from '@spartan-ng/brain/tabs';
 import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmBadge } from '@spartan-ng/helm/badge';
 
 @Component({
   selector: 'app-node-detail',
@@ -28,6 +29,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
     BrnTabsImports,
     HlmTabsImports,
     HlmButton,
+    HlmBadge,
   ],
   template: `
     <app-layout>
@@ -51,10 +53,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
                 {{ node()?.address }}
               </p>
             </div>
-            <span
-              class="px-3 py-1 rounded-full text-sm font-medium"
-              [class]="getNodeStatusClass(node()?.status || 'offline')"
-            >
+            <span hlmBadge [variant]="getNodeStatusVariant(node()?.status || 'offline')">
               {{ node()?.status }}
             </span>
           </div>
@@ -180,5 +179,5 @@ export class NodeDetailComponent implements OnInit {
       });
   }
 
-  getNodeStatusClass = getNodeStatusClass;
+  getNodeStatusVariant = getNodeStatusVariant;
 }

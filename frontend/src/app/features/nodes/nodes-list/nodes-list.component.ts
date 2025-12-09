@@ -6,7 +6,6 @@ import { NodesService } from '../../../core/services/nodes.service';
 import { Node } from '../../../core/models/node.model';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
-import { getNodeStatusClass } from '../../../shared/utils/status-styles.util';
 import { getNodeStatusVariant } from '../../../shared/utils/node-status.util';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmBadge } from '@spartan-ng/helm/badge';
@@ -208,7 +207,6 @@ export class NodesListComponent implements OnInit {
       });
   }
 
-  getNodeStatusClass = getNodeStatusClass;
   getStatusVariant = getNodeStatusVariant;
 
   getUptimeBarClass(uptime: number): string {
