@@ -105,22 +105,20 @@ interface ConfirmDialogData {
       />
 
       <!-- Confirm Dialog -->
-      @if (confirmDialog()) {
-        <hlm-dialog [state]="'open'">
-          <hlm-dialog-content class="sm:max-w-[400px]">
-            <hlm-dialog-header>
-              <h3 hlmDialogTitle>{{ confirmDialog()!.title }}</h3>
-              <p hlmDialogDescription>{{ confirmDialog()!.message }}</p>
-            </hlm-dialog-header>
-            <hlm-dialog-footer>
-              <button hlmBtn variant="outline" (click)="cancelConfirm()">Cancel</button>
-              <button hlmBtn [variant]="confirmDialog()!.variant || 'default'" (click)="executeConfirm()">
-                {{ confirmDialog()!.confirmText || 'Confirm' }}
-              </button>
-            </hlm-dialog-footer>
-          </hlm-dialog-content>
-        </hlm-dialog>
-      }
+      <hlm-dialog [state]="confirmDialog() ? 'open' : 'closed'" (closed)="cancelConfirm()">
+        <hlm-dialog-content *brnDialogContent="let ctx" class="sm:max-w-[400px]">
+          <hlm-dialog-header>
+            <h3 hlmDialogTitle>{{ confirmDialog()?.title }}</h3>
+            <p hlmDialogDescription>{{ confirmDialog()?.message }}</p>
+          </hlm-dialog-header>
+          <hlm-dialog-footer>
+            <button hlmBtn variant="outline" (click)="cancelConfirm()">Cancel</button>
+            <button hlmBtn [variant]="confirmDialog()?.variant || 'default'" (click)="executeConfirm()">
+              {{ confirmDialog()?.confirmText || 'Confirm' }}
+            </button>
+          </hlm-dialog-footer>
+        </hlm-dialog-content>
+      </hlm-dialog>
     </app-layout>
   `,
 })
