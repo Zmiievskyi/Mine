@@ -43,8 +43,9 @@ cd frontend && npm install && cd ..
 cd backend && npm install && cd ..
 ```
 
-### 2. Start the database
+### 2. Database Setup
 
+**Option A: Local Docker (development)**
 ```bash
 docker-compose up -d
 ```
@@ -54,13 +55,23 @@ This starts PostgreSQL on `localhost:5432` with:
 - User: `minegnk`
 - Password: `minegnk`
 
+**Option B: Gcore Managed PostgreSQL (staging/production)**
+
+Use connection details from Gcore Console and set `DB_SSL=true`.
+
 ### 3. Configure environment
 
 ```bash
 # Copy example env file
 cp backend/.env.example backend/.env
 
-# Edit with your settings (optional for development)
+# Edit with your settings
+```
+
+**Key variables for cloud database:**
+```bash
+DB_HOST=your-db.pg.k1.luxembourg-2.cloud.gcore.dev
+DB_SSL=true  # Required for Gcore managed PostgreSQL
 ```
 
 ### 4. Start the backend

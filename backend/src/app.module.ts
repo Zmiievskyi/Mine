@@ -75,6 +75,7 @@ import { NodeRequest } from './modules/requests/entities/node-request.entity';
         ],
         synchronize: configService.get<boolean>('database.synchronize'),
         logging: configService.get<boolean>('database.logging'),
+        ssl: configService.get('database.ssl'),
       }),
       inject: [ConfigService],
     }),
