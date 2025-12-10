@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, output } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 /**
@@ -69,7 +69,7 @@ import { RouterModule } from '@angular/router';
         <!-- Copyright -->
         <div class="pt-8 border-t border-border">
           <p class="text-sm text-muted-foreground text-center">
-            &copy; 2025 MineGNK
+            &copy; {{ currentYear }} MineGNK
           </p>
         </div>
       </div>
@@ -77,7 +77,8 @@ import { RouterModule } from '@angular/router';
   `
 })
 export class LandingFooterComponent {
-  @Output() sectionClick = new EventEmitter<string>();
+  sectionClick = output<string>();
+  currentYear = new Date().getFullYear();
 
   onSectionClick(sectionId: string): void {
     this.sectionClick.emit(sectionId);

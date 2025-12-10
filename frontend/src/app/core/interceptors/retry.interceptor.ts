@@ -27,7 +27,6 @@ export const retryInterceptor: HttpInterceptorFn = (req, next) => {
 
         // Exponential backoff: 1s, 2s
         const delay = RETRY_DELAY_MS * Math.pow(2, retryCount - 1);
-        console.log(`Retrying request (attempt ${retryCount}/${RETRY_COUNT}) in ${delay}ms`);
         return timer(delay);
       },
     })

@@ -36,7 +36,6 @@ export class NodesService {
         return of({
           stats: { totalNodes: 0, healthyNodes: 0, totalEarnings: 0, averageUptime: 0 },
           nodes: [],
-          recentActivity: [],
         } as DashboardData);
       })
     );

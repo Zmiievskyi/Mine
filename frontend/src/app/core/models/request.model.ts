@@ -1,7 +1,6 @@
 import {
   GpuType,
   GPU_PRICING,
-  CURRENCY,
   formatHourlyPrice
 } from '../constants/pricing.constants';
 

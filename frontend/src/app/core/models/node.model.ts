@@ -41,15 +41,6 @@ export interface NodeStats {
 export interface DashboardData {
   stats: NodeStats;
   nodes: Node[];
-  recentActivity: ActivityItem[];
-}
-
-export interface ActivityItem {
-  id: string;
-  type: 'earnings' | 'status_change' | 'job_completed';
-  nodeId: string;
-  message: string;
-  timestamp: Date;
 }
 
 // Public network stats for landing page (no auth required)

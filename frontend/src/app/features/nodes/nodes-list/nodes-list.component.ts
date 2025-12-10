@@ -6,7 +6,7 @@ import { NodesService } from '../../../core/services/nodes.service';
 import { Node } from '../../../core/models/node.model';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
-import { getNodeStatusVariant } from '../../../shared/utils/node-status.util';
+import { getNodeStatusVariant, truncateAddress } from '../../../shared/utils';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -94,10 +94,10 @@ import { HlmButton } from '@spartan-ng/helm/button';
                             [routerLink]="['/nodes', node.address]"
                             class="text-primary hover:underline font-medium"
                           >
-                            {{ node.alias || 'Node ' + node.address.slice(0, 8) }}
+                            {{ node.alias || 'Node ' + truncateAddress(node.address, 8) }}
                           </a>
                           <p class="text-xs text-muted-foreground mt-1 font-mono">
-                            {{ node.address.slice(0, 16) }}...
+                            {{ truncateAddress(node.address) }}
                           </p>
                         </div>
                       </td>
@@ -208,6 +208,7 @@ export class NodesListComponent implements OnInit {
   }
 
   getStatusVariant = getNodeStatusVariant;
+  truncateAddress = truncateAddress;
 
   getUptimeBarClass(uptime: number): string {
     if (uptime >= 90) return 'bg-green-500';

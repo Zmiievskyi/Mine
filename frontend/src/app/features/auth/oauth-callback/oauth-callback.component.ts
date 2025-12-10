@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -67,13 +67,11 @@ import { AuthService } from '../../../core/services/auth.service';
   `,
 })
 export class OAuthCallbackComponent implements OnInit {
-  error = signal<string | null>(null);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private authService = inject(AuthService);
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private authService: AuthService
-  ) {}
+  error = signal<string | null>(null);
 
   ngOnInit(): void {
     // Check for error in query params (errors are still sent via query params)

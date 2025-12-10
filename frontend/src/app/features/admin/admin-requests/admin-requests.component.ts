@@ -10,9 +10,11 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { AdminRequest, AdminRequestsQuery } from '../../../core/models/admin.model';
 import { GPU_OPTIONS } from '../../../core/models/request.model';
 import { getGpuLabel } from '../../../core/constants/pricing.constants';
-import { createDebounce } from '../../../shared/utils/debounce.util';
-import { downloadBlobWithDate } from '../../../shared/utils/download.util';
-import { getRequestStatusVariant } from '../../../shared/utils';
+import {
+  createDebounce,
+  downloadBlobWithDate,
+  getRequestStatusVariant,
+} from '../../../shared/utils';
 import { ConfirmDialogData } from '../../../shared/models/confirm-dialog.model';
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';

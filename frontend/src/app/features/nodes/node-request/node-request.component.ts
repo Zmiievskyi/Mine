@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -232,6 +232,9 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
   `,
 })
 export class NodeRequestComponent {
+  private requestsService = inject(RequestsService);
+  private router = inject(Router);
+
   gpuOptions = GPU_OPTIONS;
   regionOptions = REGION_OPTIONS;
 
@@ -245,11 +248,6 @@ export class NodeRequestComponent {
   submitting = signal(false);
   success = signal(false);
   error = signal<string | null>(null);
-
-  constructor(
-    private requestsService: RequestsService,
-    private router: Router
-  ) {}
 
   incrementCount(): void {
     if (this.formData.gpuCount < 10) {

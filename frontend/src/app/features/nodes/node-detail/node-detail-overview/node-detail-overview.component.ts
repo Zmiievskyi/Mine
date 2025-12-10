@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NodeDetail } from '../../../../core/models/node.model';
-import { getNodeStatusVariant } from '../../../../shared/utils/node-status.util';
+import { getNodeStatusVariant } from '../../../../shared/utils';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 
 @Component({

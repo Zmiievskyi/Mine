@@ -2,6 +2,7 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { RequestsService } from '../../core/services/requests.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { NodeRequest, GPU_OPTIONS } from '../../core/models/request.model';
@@ -12,6 +13,14 @@ import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+
+interface ConfirmDialogData {
+  title: string;
+  message: string;
+  confirmText: string;
+  variant: 'default' | 'destructive';
+  onConfirm: () => void;
+}
 
 @Component({
   selector: 'app-requests-list',
@@ -120,7 +129,7 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
                           variant="ghost"
                           size="sm"
                           class="text-destructive hover:text-destructive"
-                          (click)="cancelRequest(request.id)"
+                          (click)="confirmCancelRequest(request.id)"
                         >
                           Cancel
                         </button>
@@ -163,16 +172,34 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
           </hlm-dialog-footer>
         </hlm-dialog-content>
       </hlm-dialog>
+
+      <!-- Confirm Cancel Dialog -->
+      <hlm-dialog [state]="confirmDialog() ? 'open' : 'closed'" (closed)="cancelConfirm()">
+        <hlm-dialog-content *brnDialogContent="let ctx" class="sm:max-w-[400px]">
+          <hlm-dialog-header>
+            <h3 hlmDialogTitle>{{ confirmDialog()?.title }}</h3>
+            <p hlmDialogDescription>{{ confirmDialog()?.message }}</p>
+          </hlm-dialog-header>
+          <hlm-dialog-footer>
+            <button hlmBtn variant="outline" (click)="cancelConfirm()">Cancel</button>
+            <button hlmBtn [variant]="confirmDialog()?.variant || 'default'" (click)="executeConfirm()">
+              {{ confirmDialog()?.confirmText || 'Confirm' }}
+            </button>
+          </hlm-dialog-footer>
+        </hlm-dialog-content>
+      </hlm-dialog>
     </app-layout>
   `,
 })
 export class RequestsListComponent implements OnInit {
   requests = signal<NodeRequest[]>([]);
   private requestsService = inject(RequestsService);
+  private notification = inject(NotificationService);
 
   loading = signal(true);
   error = signal<string | null>(null);
   selectedRequest = signal<NodeRequest | null>(null);
+  confirmDialog = signal<ConfirmDialogData | null>(null);
 
   gpuOptions = GPU_OPTIONS;
   getGpuLabel = getGpuLabel;
@@ -199,19 +226,40 @@ export class RequestsListComponent implements OnInit {
 
   getStatusVariant = getRequestStatusVariant;
 
-  cancelRequest(id: string): void {
-    if (!confirm('Are you sure you want to cancel this request?')) {
-      return;
-    }
+  confirmCancelRequest(id: string): void {
+    this.confirmDialog.set({
+      title: 'Cancel Request',
+      message: 'Are you sure you want to cancel this request? This action cannot be undone.',
+      confirmText: 'Cancel Request',
+      variant: 'destructive',
+      onConfirm: () => {
+        this.cancelRequest(id);
+      },
+    });
+  }
 
+  cancelRequest(id: string): void {
     this.requestsService.cancelRequest(id).subscribe({
       next: () => {
+        this.notification.success('Request cancelled successfully');
         this.loadRequests();
       },
       error: (err) => {
-        alert(err.error?.message || 'Failed to cancel request');
+        this.notification.error(err.error?.message || 'Failed to cancel request');
       },
     });
+  }
+
+  cancelConfirm(): void {
+    this.confirmDialog.set(null);
+  }
+
+  executeConfirm(): void {
+    const dialog = this.confirmDialog();
+    if (dialog) {
+      dialog.onConfirm();
+      this.confirmDialog.set(null);
+    }
   }
 
   showNotes(request: NodeRequest): void {

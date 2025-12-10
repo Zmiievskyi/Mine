@@ -9,7 +9,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { NodeDetailOverviewComponent } from './node-detail-overview/node-detail-overview.component';
 import { NodeDetailMetricsComponent } from './node-detail-metrics/node-detail-metrics.component';
 import { NodeDetailHistoryComponent } from './node-detail-history/node-detail-history.component';
-import { getNodeStatusVariant } from '../../../shared/utils/node-status.util';
+import { getNodeStatusVariant, truncateAddress } from '../../../shared/utils';
 import { HlmTabsImports } from '@spartan-ng/helm/tabs';
 import { BrnTabsImports } from '@spartan-ng/brain/tabs';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -47,7 +47,7 @@ import { HlmBadge } from '@spartan-ng/helm/badge';
           <div class="flex items-start justify-between">
             <div>
               <h1 class="text-2xl font-bold text-[var(--gcore-text)]">
-                {{ node()?.alias || 'Node ' + node()?.address?.slice(0, 8) }}
+                {{ node()?.alias || 'Node ' + truncateAddress(node()?.address || '') }}
               </h1>
               <p class="text-[var(--gcore-text-muted)] font-mono text-sm mt-1">
                 {{ node()?.address }}
@@ -180,4 +180,5 @@ export class NodeDetailComponent implements OnInit {
   }
 
   getNodeStatusVariant = getNodeStatusVariant;
+  truncateAddress = truncateAddress;
 }
