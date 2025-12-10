@@ -61,4 +61,5 @@ seed-admins.sh
 
 # Project instructions (private)
 CLAUDE.md
+AGENTS.md
 seed-admins-cloud.sh
