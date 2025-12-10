@@ -58,16 +58,6 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
-  // Communication preferences
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  telegram: string | null;
-
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  discord: string | null;
-
-  @Column({ name: 'currency_preference', default: 'USD' })
-  currencyPreference: string;
-
   @OneToMany(() => UserNode, (userNode) => userNode.user)
   nodes: UserNode[];
 

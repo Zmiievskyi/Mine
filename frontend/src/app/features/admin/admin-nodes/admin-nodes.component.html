@@ -209,34 +209,11 @@
       </div>
 
       <!-- Pagination -->
-      @if (meta()) {
-        <div class="px-4 py-3 border-t border-[var(--gcore-border)] flex items-center justify-between">
-          <p class="text-sm text-[var(--gcore-text-muted)]">
-            Showing {{ (meta()!.page - 1) * meta()!.limit + 1 }} to
-            {{ Math.min(meta()!.page * meta()!.limit, meta()!.total) }} of {{ meta()!.total }} nodes
-          </p>
-          <div class="flex gap-2">
-            <button
-              hlmBtn
-              variant="outline"
-              size="sm"
-              (click)="goToPage(meta()!.page - 1)"
-              [disabled]="meta()!.page <= 1"
-            >
-              Previous
-            </button>
-            <button
-              hlmBtn
-              variant="outline"
-              size="sm"
-              (click)="goToPage(meta()!.page + 1)"
-              [disabled]="meta()!.page >= meta()!.totalPages"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      }
+      <app-pagination
+        [meta]="meta()"
+        entityName="nodes"
+        (pageChange)="goToPage($event)"
+      />
     </section>
   }
 </app-layout>

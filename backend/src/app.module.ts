@@ -22,9 +22,6 @@ import { HealthModule } from './modules/health/health.module';
 import { User } from './modules/users/entities/user.entity';
 import { UserNode } from './modules/users/entities/user-node.entity';
 import { NodeRequest } from './modules/requests/entities/node-request.entity';
-import { Node } from './modules/nodes/entities/node.entity';
-import { NodeStatsCache } from './modules/nodes/entities/node-stats-cache.entity';
-import { EarningsHistory } from './modules/nodes/entities/earnings-history.entity';
 
 @Module({
   imports: [
@@ -75,9 +72,6 @@ import { EarningsHistory } from './modules/nodes/entities/earnings-history.entit
           User,
           UserNode,
           NodeRequest,
-          Node,
-          NodeStatsCache,
-          EarningsHistory,
         ],
         synchronize: configService.get<boolean>('database.synchronize'),
         logging: configService.get<boolean>('database.logging'),

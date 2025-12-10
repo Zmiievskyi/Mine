@@ -9,6 +9,12 @@ import { UserNode } from '../users/entities/user-node.entity';
 jest.mock('axios');
 jest.mock('../../common/utils', () => ({
   withRetry: jest.fn((fn) => fn()),
+  getNodeStatus: jest.fn((stats) => {
+    if (!stats || stats.status === 'unknown') return 'unknown';
+    if (stats.is_jailed) return 'jailed';
+    if (stats.is_offline) return 'offline';
+    return 'healthy';
+  }),
 }));
 
 describe('NodesService', () => {

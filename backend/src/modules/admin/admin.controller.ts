@@ -9,7 +9,6 @@ import {
   Query,
   UseGuards,
   Res,
-  StreamableFile,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import {

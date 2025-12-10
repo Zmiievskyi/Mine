@@ -9,4 +9,5 @@ export * from './debounce.util';
 export * from './download.util';
 export * from './http.util';
 export * from './node-status.util';
+export * from './rate.util';
 export * from './request-status.util';

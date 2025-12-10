@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository } from 'typeorm';
 import axios from 'axios';
 import { UserNode } from '../users/entities/user-node.entity';
 import { withRetry, getNodeStatus } from '../../common/utils';

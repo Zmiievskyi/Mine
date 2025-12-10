@@ -1,1 +1,1 @@
-export * from './lru-cache.service';
+export * from './lru-cache.class';

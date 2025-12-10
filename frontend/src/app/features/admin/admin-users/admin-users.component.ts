@@ -6,13 +6,12 @@ import { AdminService } from '../../../core/services/admin.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { AdminUser, AdminUserWithStats, UserNode, UserNodeWithStats, AssignNodeDto, UserRole, AdminUsersQuery } from '../../../core/models/admin.model';
 import { AssignNodeModalComponent } from './assign-node-modal/assign-node-modal.component';
 import { UserListItemComponent } from './user-list-item/user-list-item.component';
 import { createDebounce, truncateAddress, downloadBlobWithDate } from '../../../shared/utils';
 import { ConfirmDialogData } from '../../../shared/models/confirm-dialog.model';
-import { BrnDialogImports } from '@spartan-ng/brain/dialog';
-import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
@@ -29,10 +28,9 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
     FormsModule,
     LayoutComponent,
     LoadingSpinnerComponent,
+    ConfirmDialogComponent,
     AssignNodeModalComponent,
     UserListItemComponent,
-    BrnDialogImports,
-    HlmDialogImports,
     HlmButton,
     HlmInput,
     HlmLabel,
@@ -59,6 +57,7 @@ export class AdminUsersComponent implements OnInit {
   assigning = signal(false);
   exporting = signal(false);
   confirmDialog = signal<ConfirmDialogData | null>(null);
+  pendingAction: (() => void) | null = null;
 
   // Filter state
   searchQuery = '';
@@ -144,16 +143,18 @@ export class AdminUsersComponent implements OnInit {
       message: `Are you sure you want to ${action} ${user.email}?`,
       confirmText: newRole === 'admin' ? 'Make Admin' : 'Remove Admin',
       variant: newRole === 'admin' ? 'default' : 'destructive',
-      onConfirm: () => {
-        this.adminService.updateUser(user.id, { role: newRole }).subscribe({
-          next: () => {
-            this.notification.success('User role updated');
-            this.loadUsers();
-          },
-          error: (err) => this.notification.error(err.error?.message || 'Failed to update user'),
-        });
-      },
     });
+
+    // Store the action for confirmation handler
+    this.pendingAction = () => {
+      this.adminService.updateUser(user.id, { role: newRole }).subscribe({
+        next: () => {
+          this.notification.success('User role updated');
+          this.loadUsers();
+        },
+        error: (err) => this.notification.error(err.error?.message || 'Failed to update user'),
+      });
+    };
   }
 
   toggleActive(user: AdminUser): void {
@@ -164,16 +165,18 @@ export class AdminUsersComponent implements OnInit {
       message: `Are you sure you want to ${action} ${user.email}?`,
       confirmText: user.isActive ? 'Deactivate' : 'Activate',
       variant: user.isActive ? 'destructive' : 'default',
-      onConfirm: () => {
-        this.adminService.updateUser(user.id, { isActive: !user.isActive }).subscribe({
-          next: () => {
-            this.notification.success(`User ${action}d successfully`);
-            this.loadUsers();
-          },
-          error: (err) => this.notification.error(err.error?.message || 'Failed to update user'),
-        });
-      },
     });
+
+    // Store the action for confirmation handler
+    this.pendingAction = () => {
+      this.adminService.updateUser(user.id, { isActive: !user.isActive }).subscribe({
+        next: () => {
+          this.notification.success(`User ${action}d successfully`);
+          this.loadUsers();
+        },
+        error: (err) => this.notification.error(err.error?.message || 'Failed to update user'),
+      });
+    };
   }
 
   openAssignModal(user: AdminUser): void {
@@ -214,31 +217,34 @@ export class AdminUsersComponent implements OnInit {
       message: `Are you sure you want to remove node ${truncated}?`,
       confirmText: 'Remove',
       variant: 'destructive',
-      onConfirm: () => {
-        this.adminService.removeNode(userId, node.id).subscribe({
-          next: () => {
-            this.notification.success('Node removed successfully');
-            this.loadUsers();
-            // Refresh expanded user data if still expanded
-            if (this.expandedUser() === userId) {
-              this.loadUserWithStats(userId);
-            }
-          },
-          error: (err) => this.notification.error(err.error?.message || 'Failed to remove node'),
-        });
-      },
     });
+
+    // Store the action for confirmation handler
+    this.pendingAction = () => {
+      this.adminService.removeNode(userId, node.id).subscribe({
+        next: () => {
+          this.notification.success('Node removed successfully');
+          this.loadUsers();
+          // Refresh expanded user data if still expanded
+          if (this.expandedUser() === userId) {
+            this.loadUserWithStats(userId);
+          }
+        },
+        error: (err) => this.notification.error(err.error?.message || 'Failed to remove node'),
+      });
+    };
   }
 
-  cancelConfirm(): void {
+  onConfirmDialogCancel(): void {
     this.confirmDialog.set(null);
+    this.pendingAction = null;
   }
 
-  executeConfirm(): void {
-    const dialog = this.confirmDialog();
-    if (dialog) {
-      dialog.onConfirm();
+  onConfirmDialogConfirm(): void {
+    if (this.pendingAction) {
+      this.pendingAction();
       this.confirmDialog.set(null);
+      this.pendingAction = null;
     }
   }
 

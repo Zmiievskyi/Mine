@@ -4,9 +4,8 @@ import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NodesService } from '../../../core/services/nodes.service';
 import { Node } from '../../../core/models/node.model';
-import { LayoutComponent } from '../../../shared/components/layout/layout.component';
-import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
-import { getNodeStatusVariant, truncateAddress } from '../../../shared/utils';
+import { ErrorAlertComponent, LayoutComponent, LoadingSpinnerComponent } from '../../../shared/components';
+import { getNodeStatusVariant, truncateAddress, getUptimeBarClass, getRateClass } from '../../../shared/utils';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -14,7 +13,16 @@ import { HlmButton } from '@spartan-ng/helm/button';
 @Component({
   selector: 'app-nodes-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, LayoutComponent, LoadingSpinnerComponent, HlmTableImports, HlmBadge, HlmButton],
+  imports: [
+    CommonModule,
+    RouterLink,
+    ErrorAlertComponent,
+    LayoutComponent,
+    LoadingSpinnerComponent,
+    HlmTableImports,
+    HlmBadge,
+    HlmButton
+  ],
   template: `
     <app-layout>
       <!-- Page Header -->
@@ -39,18 +47,11 @@ import { HlmButton } from '@spartan-ng/helm/button';
 
       <!-- Error State -->
       @if (error()) {
-        <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
-          <div class="flex items-center gap-3">
-            <span class="text-red-600 text-xl">!</span>
-            <div>
-              <h3 class="font-medium text-red-800">Failed to load nodes</h3>
-              <p class="text-red-600 text-sm">{{ error() }}</p>
-            </div>
-          </div>
-          <button hlmBtn variant="destructive" (click)="loadNodes()" class="mt-4">
-            Retry
-          </button>
-        </div>
+        <app-error-alert
+          [message]="error()!"
+          [title]="'Failed to load nodes'"
+          (retry)="loadNodes()"
+        />
       }
 
       <!-- Nodes Table -->
@@ -207,14 +208,11 @@ export class NodesListComponent implements OnInit {
       });
   }
 
+  // Assign utility functions for template access
   getStatusVariant = getNodeStatusVariant;
   truncateAddress = truncateAddress;
-
-  getUptimeBarClass(uptime: number): string {
-    if (uptime >= 90) return 'bg-green-500';
-    if (uptime >= 70) return 'bg-yellow-500';
-    return 'bg-red-500';
-  }
+  getUptimeBarClass = getUptimeBarClass;
+  getRateClass = getRateClass;
 
   getTotalEarnings(): number {
     return this.nodes().reduce((sum, node) => sum + node.earnedCoins, 0);
@@ -227,12 +225,5 @@ export class NodesListComponent implements OnInit {
       (node.invalidationRate || 0) > 0.1 ||
       node.isJailed
     );
-  }
-
-  // Color class for rate metrics
-  getRateClass(rate: number): string {
-    if (rate > 0.1) return 'text-destructive font-medium';
-    if (rate > 0.05) return 'text-yellow-600';
-    return 'text-muted-foreground';
   }
 }

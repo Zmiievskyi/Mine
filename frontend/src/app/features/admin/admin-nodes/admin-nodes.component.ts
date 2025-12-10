@@ -1,11 +1,10 @@
-import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../core/services/admin.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { LayoutComponent } from '../../../shared/components/layout/layout.component';
-import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { LayoutComponent, LoadingSpinnerComponent, PaginationComponent } from '../../../shared/components';
 import {
   AdminNodeWithUser,
   AdminNodesQuery,
@@ -13,6 +12,7 @@ import {
   NodeStatus,
 } from '../../../core/models/admin.model';
 import { createDebounce, downloadBlobWithDate, getNodeStatusVariant, truncateAddress } from '../../../shared/utils';
+import { PaginationMeta } from '../../../shared/types';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -31,6 +31,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
     FormsModule,
     LayoutComponent,
     LoadingSpinnerComponent,
+    PaginationComponent,
     HlmTableImports,
     HlmBadge,
     HlmButton,
@@ -46,11 +47,10 @@ export class AdminNodesComponent implements OnInit {
   private adminService = inject(AdminService);
   private notification = inject(NotificationService);
   private route = inject(ActivatedRoute);
-  protected Math = Math;
 
   nodes = signal<AdminNodeWithUser[]>([]);
   health = signal<NetworkHealthOverview | null>(null);
-  meta = signal<{ page: number; limit: number; total: number; totalPages: number } | null>(null);
+  meta = signal<PaginationMeta | null>(null);
   loading = signal(true);
   error = signal<string | null>(null);
   exporting = signal(false);
