@@ -8,10 +8,16 @@ import { User } from '../users/entities/user.entity';
 import { UserNode } from '../users/entities/user-node.entity';
 import { NodeRequest } from '../requests/entities/node-request.entity';
 import { NodesModule } from '../nodes/nodes.module';
+import { PricingModule } from '../pricing/pricing.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, UserNode, NodeRequest]), NodesModule],
+  imports: [
+    TypeOrmModule.forFeature([User, UserNode, NodeRequest]),
+    NodesModule,
+    PricingModule,
+  ],
   controllers: [AdminController],
   providers: [AdminService, AdminAnalyticsService, AdminExportService],
+  exports: [],
 })
 export class AdminModule {}

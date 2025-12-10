@@ -22,6 +22,7 @@ import { HealthModule } from './modules/health/health.module';
 import { User } from './modules/users/entities/user.entity';
 import { UserNode } from './modules/users/entities/user-node.entity';
 import { NodeRequest } from './modules/requests/entities/node-request.entity';
+import { PricingConfig } from './modules/pricing/entities/pricing-config.entity';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { NodeRequest } from './modules/requests/entities/node-request.entity';
           User,
           UserNode,
           NodeRequest,
+          PricingConfig,
         ],
         synchronize: configService.get<boolean>('database.synchronize'),
         logging: configService.get<boolean>('database.logging'),

@@ -5,6 +5,19 @@
  * Prices from gcore.com/pricing/ai (December 2024)
  */
 
+/**
+ * Minimum hourly price in EUR for validation
+ * Set to 0 to allow free-tier or promotional pricing
+ */
+export const MIN_HOURLY_PRICE_EUR = 0;
+
+/**
+ * Maximum hourly price in EUR for validation
+ * Safety limit to prevent accidental data entry errors (e.g., entering 1000 instead of 10.00)
+ * Based on current market rates for high-end datacenter GPUs (H100/H200)
+ */
+export const MAX_HOURLY_PRICE_EUR = 100;
+
 export type GpuType = 'A100' | 'H100' | 'H200';
 
 export interface GpuPricing {

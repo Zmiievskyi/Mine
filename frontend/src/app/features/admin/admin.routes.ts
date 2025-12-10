@@ -36,4 +36,11 @@ export const ADMIN_ROUTES: Routes = [
         (m) => m.AdminUsersComponent
       ),
   },
+  {
+    path: 'pricing',
+    loadComponent: () =>
+      import('./admin-pricing/admin-pricing.component').then(
+        (m) => m.AdminPricingComponent
+      ),
+  },
 ];

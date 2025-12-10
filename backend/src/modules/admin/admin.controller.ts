@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
   Res,
+  Request,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import {
@@ -22,9 +23,18 @@ import {
 import { AdminService } from './admin.service';
 import { AdminAnalyticsService } from './admin-analytics.service';
 import { AdminExportService } from './admin-export.service';
+import { PricingService } from '../pricing/pricing.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
-import { AssignNodeDto, UpdateUserDto, UuidParamDto, NodeParamsDto, AdminNodesQueryDto, AdminUsersQueryDto } from './dto';
+import {
+  AssignNodeDto,
+  UpdateUserDto,
+  UuidParamDto,
+  NodeParamsDto,
+  AdminNodesQueryDto,
+  AdminUsersQueryDto,
+} from './dto';
+import { UpdatePricingDto, PricingResponseDto } from '../pricing/dto';
 import { User } from '../users/entities/user.entity';
 import { UserNode } from '../users/entities/user-node.entity';
 import { PaginationQueryDto } from '../../common/dto';
@@ -38,6 +48,7 @@ export class AdminController {
     private adminService: AdminService,
     private analyticsService: AdminAnalyticsService,
     private exportService: AdminExportService,
+    private pricingService: PricingService,
   ) {}
 
   @Get('dashboard')
@@ -191,6 +202,27 @@ export class AdminController {
   ) {
     const node = await this.adminService.updateNode(params.userId, params.nodeId, updateData);
     return this.transformNode(node);
+  }
+
+  // Pricing Management
+  @Get('pricing')
+  @ApiOperation({ summary: 'Get all GPU pricing configs' })
+  @ApiResponse({ status: 200, description: 'List of pricing configs', type: [PricingResponseDto] })
+  async getAllPricing(): Promise<PricingResponseDto[]> {
+    return this.pricingService.getAllPricing();
+  }
+
+  @Put('pricing/:gpuType')
+  @ApiOperation({ summary: 'Update GPU pricing' })
+  @ApiParam({ name: 'gpuType', description: 'GPU type (A100, H100, H200)' })
+  @ApiResponse({ status: 200, description: 'Pricing updated', type: PricingResponseDto })
+  @ApiResponse({ status: 404, description: 'GPU type not found' })
+  async updatePricing(
+    @Param('gpuType') gpuType: string,
+    @Body() dto: UpdatePricingDto,
+    @Request() req,
+  ): Promise<PricingResponseDto> {
+    return this.pricingService.updatePricing(gpuType, dto, req.user.id);
   }
 
   private transformUserSummary(user: User & { nodeCount?: number }) {

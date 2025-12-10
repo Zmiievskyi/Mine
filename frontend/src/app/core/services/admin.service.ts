@@ -19,6 +19,8 @@ import {
   AdminUsersQuery,
   AdminRequestsQuery,
   AdminAnalytics,
+  PricingConfig,
+  UpdatePricingDto,
 } from '../models/admin.model';
 
 @Injectable({
@@ -100,5 +102,14 @@ export class AdminService {
     return this.http.get(`${this.apiUrl}/requests/export`, {
       responseType: 'blob',
     });
+  }
+
+  // Pricing Management
+  getPricing(): Observable<PricingConfig[]> {
+    return this.http.get<PricingConfig[]>(`${this.apiUrl}/pricing`);
+  }
+
+  updatePricing(gpuType: string, data: UpdatePricingDto): Observable<PricingConfig> {
+    return this.http.put<PricingConfig>(`${this.apiUrl}/pricing/${gpuType}`, data);
   }
 }
