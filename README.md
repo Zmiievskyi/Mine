@@ -1,6 +1,6 @@
 # MineGNK
 
-GPU Mining Customer Portal for Gcore clients participating in the Gonka network.
+GPU Mining Customer Portal for clients participating in the Gonka network.
 
 ## Overview
 

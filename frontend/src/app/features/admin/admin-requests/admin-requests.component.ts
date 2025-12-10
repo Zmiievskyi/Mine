@@ -14,7 +14,10 @@ import {
   createDebounce,
   downloadBlobWithDate,
   getRequestStatusVariant,
+  handleApiError,
+  extractErrorMessage,
 } from '../../../shared/utils';
+import { DEBOUNCE_DELAYS } from '../../../core/constants';
 import { ConfirmDialogData } from '../../../shared/models/confirm-dialog.model';
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
@@ -114,10 +117,7 @@ export class AdminRequestsComponent implements OnInit {
           this.meta.set(response.meta);
           this.loading.set(false);
         },
-        error: (err) => {
-          this.error.set(err.error?.message || 'Failed to load requests');
-          this.loading.set(false);
-        },
+        error: (err) => handleApiError(err, 'Failed to load requests', this.error, this.loading),
       });
   }
 
@@ -135,7 +135,7 @@ export class AdminRequestsComponent implements OnInit {
     this.searchDebounce(() => {
       this.currentPage = 1;
       this.loadRequests();
-    }, 300);
+    }, DEBOUNCE_DELAYS.SEARCH);
   }
 
   goToPage(page: number): void {
@@ -171,7 +171,7 @@ export class AdminRequestsComponent implements OnInit {
           this.loadRequests();
           this.loadStats();
         },
-        error: (err) => this.notification.error(err.error?.message || 'Failed to update request'),
+        error: (err) => this.notification.error(extractErrorMessage(err, 'Failed to update request')),
       });
   }
 
@@ -197,7 +197,7 @@ export class AdminRequestsComponent implements OnInit {
           this.editingRequest.set(null);
           this.loadRequests();
         },
-        error: (err) => this.notification.error(err.error?.message || 'Failed to save notes'),
+        error: (err) => this.notification.error(extractErrorMessage(err, 'Failed to save notes')),
       });
   }
 

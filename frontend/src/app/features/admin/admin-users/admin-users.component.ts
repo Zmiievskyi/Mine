@@ -10,7 +10,8 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 import { AdminUser, AdminUserWithStats, UserNode, UserNodeWithStats, AssignNodeDto, UserRole, AdminUsersQuery } from '../../../core/models/admin.model';
 import { AssignNodeModalComponent } from './assign-node-modal/assign-node-modal.component';
 import { UserListItemComponent } from './user-list-item/user-list-item.component';
-import { createDebounce, truncateAddress, downloadBlobWithDate } from '../../../shared/utils';
+import { createDebounce, truncateAddress, downloadBlobWithDate, handleApiError, extractErrorMessage } from '../../../shared/utils';
+import { DEBOUNCE_DELAYS } from '../../../core/constants';
 import { ConfirmDialogData } from '../../../shared/models/confirm-dialog.model';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInput } from '@spartan-ng/helm/input';
@@ -92,10 +93,7 @@ export class AdminUsersComponent implements OnInit {
         this.meta.set(response.meta);
         this.loading.set(false);
       },
-      error: (err) => {
-        this.error.set(err.error?.message || 'Failed to load users');
-        this.loading.set(false);
-      },
+      error: (err) => handleApiError(err, 'Failed to load users', this.error, this.loading),
     });
   }
 
@@ -103,7 +101,7 @@ export class AdminUsersComponent implements OnInit {
     this.searchDebounce(() => {
       this.currentPage = 1;
       this.loadUsers();
-    }, 300);
+    }, DEBOUNCE_DELAYS.SEARCH);
   }
 
   goToPage(page: number): void {
@@ -152,7 +150,7 @@ export class AdminUsersComponent implements OnInit {
           this.notification.success('User role updated');
           this.loadUsers();
         },
-        error: (err) => this.notification.error(err.error?.message || 'Failed to update user'),
+        error: (err) => this.notification.error(extractErrorMessage(err, 'Failed to update user')),
       });
     };
   }
@@ -174,7 +172,7 @@ export class AdminUsersComponent implements OnInit {
           this.notification.success(`User ${action}d successfully`);
           this.loadUsers();
         },
-        error: (err) => this.notification.error(err.error?.message || 'Failed to update user'),
+        error: (err) => this.notification.error(extractErrorMessage(err, 'Failed to update user')),
       });
     };
   }
@@ -202,10 +200,7 @@ export class AdminUsersComponent implements OnInit {
         this.closeAssignModal();
         this.loadUsers();
       },
-      error: (err) => {
-        this.assigning.set(false);
-        this.assignError.set(err.error?.message || 'Failed to assign node');
-      },
+      error: (err) => handleApiError(err, 'Failed to assign node', this.assignError, this.assigning),
     });
   }
 
@@ -230,7 +225,7 @@ export class AdminUsersComponent implements OnInit {
             this.loadUserWithStats(userId);
           }
         },
-        error: (err) => this.notification.error(err.error?.message || 'Failed to remove node'),
+        error: (err) => this.notification.error(extractErrorMessage(err, 'Failed to remove node')),
       });
     };
   }

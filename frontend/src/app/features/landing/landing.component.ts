@@ -5,6 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { NodesService } from '../../core/services/nodes.service';
 import { NetworkStats } from '../../core/models/node.model';
 import { createAutoRefresh } from '../../shared/utils';
+import { REFRESH_INTERVALS } from '../../core/constants';
 import { HeroSectionComponent } from './components/hero-section.component';
 import { NetworkStatsComponent } from './components/network-stats.component';
 import { FeaturesSectionComponent } from './components/features-section.component';
@@ -71,7 +72,7 @@ export class LandingComponent implements OnInit {
 
   ngOnInit(): void {
     // Redirect authenticated users to dashboard
-    if (this.authService.isAuthenticated()) {
+    if (this.authService.isAuthenticated) {
       this.router.navigate(['/dashboard']);
       return;
     }
@@ -82,7 +83,7 @@ export class LandingComponent implements OnInit {
 
   private loadNetworkStats(): void {
     createAutoRefresh(
-      60000,
+      REFRESH_INTERVALS.LANDING_STATS,
       () => this.nodesService.getPublicNetworkStats(),
       this.destroyRef
     ).subscribe({

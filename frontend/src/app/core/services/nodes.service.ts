@@ -1,9 +1,13 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError, of } from 'rxjs';
-import { Node, NodeDetail, NodeStats, DashboardData, NetworkStats } from '../models/node.model';
+import { Observable, catchError, of } from 'rxjs';
+import { Node, NodeDetail, DashboardData, NetworkStats } from '../models/node.model';
 import { environment } from '../../../environments/environment';
 
+/**
+ * Pure RxJS service for node data operations
+ * No internal state - consumers manage their own state with signals
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -11,50 +15,12 @@ export class NodesService {
   private http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/nodes`;
 
-  private nodesSignal = signal<Node[]>([]);
-  private statsSignal = signal<NodeStats | null>(null);
-  private loadingSignal = signal<boolean>(false);
-  private errorSignal = signal<string | null>(null);
-
-  readonly nodes = this.nodesSignal.asReadonly();
-  readonly stats = this.statsSignal.asReadonly();
-  readonly loading = this.loadingSignal.asReadonly();
-  readonly error = this.errorSignal.asReadonly();
-
   getDashboardData(): Observable<DashboardData> {
-    this.loadingSignal.set(true);
-    this.errorSignal.set(null);
-    return this.http.get<DashboardData>(`${this.apiUrl}/dashboard`).pipe(
-      tap((data) => {
-        this.nodesSignal.set(data.nodes);
-        this.statsSignal.set(data.stats);
-        this.loadingSignal.set(false);
-      }),
-      catchError((error) => {
-        this.loadingSignal.set(false);
-        this.errorSignal.set(error.error?.message || 'Failed to load dashboard');
-        return of({
-          stats: { totalNodes: 0, healthyNodes: 0, totalEarnings: 0, averageUptime: 0 },
-          nodes: [],
-        } as DashboardData);
-      })
-    );
+    return this.http.get<DashboardData>(`${this.apiUrl}/dashboard`);
   }
 
   getNodes(): Observable<Node[]> {
-    this.loadingSignal.set(true);
-    this.errorSignal.set(null);
-    return this.http.get<Node[]>(this.apiUrl).pipe(
-      tap((nodes) => {
-        this.nodesSignal.set(nodes);
-        this.loadingSignal.set(false);
-      }),
-      catchError((error) => {
-        this.loadingSignal.set(false);
-        this.errorSignal.set(error.error?.message || 'Failed to load nodes');
-        return of([]);
-      })
-    );
+    return this.http.get<Node[]>(this.apiUrl);
   }
 
   getNode(address: string): Observable<NodeDetail | null> {
@@ -63,7 +29,6 @@ export class NodesService {
     );
   }
 
-  // Public endpoint - no auth required (for landing page)
   getPublicNetworkStats(): Observable<NetworkStats | null> {
     return this.http.get<NetworkStats>(`${this.apiUrl}/public/stats`).pipe(
       catchError((error) => {

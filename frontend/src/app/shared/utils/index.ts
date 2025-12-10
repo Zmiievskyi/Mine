@@ -7,6 +7,7 @@ export * from './address.util';
 export * from './auto-refresh.util';
 export * from './debounce.util';
 export * from './download.util';
+export * from './error-handler.util';
 export * from './http.util';
 export * from './node-status.util';
 export * from './rate.util';

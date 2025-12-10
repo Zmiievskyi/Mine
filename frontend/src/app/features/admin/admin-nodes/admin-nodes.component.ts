@@ -11,7 +11,8 @@ import {
   NetworkHealthOverview,
   NodeStatus,
 } from '../../../core/models/admin.model';
-import { createDebounce, downloadBlobWithDate, getNodeStatusVariant, truncateAddress } from '../../../shared/utils';
+import { createDebounce, downloadBlobWithDate, getNodeStatusVariant, truncateAddress, handleApiError } from '../../../shared/utils';
+import { DEBOUNCE_DELAYS } from '../../../core/constants';
 import { PaginationMeta } from '../../../shared/types';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmBadge } from '@spartan-ng/helm/badge';
@@ -105,10 +106,7 @@ export class AdminNodesComponent implements OnInit {
         this.meta.set(response.meta);
         this.loading.set(false);
       },
-      error: (err) => {
-        this.error.set(err.error?.message || 'Failed to load nodes');
-        this.loading.set(false);
-      },
+      error: (err) => handleApiError(err, 'Failed to load nodes', this.error, this.loading),
     });
   }
 
@@ -116,7 +114,7 @@ export class AdminNodesComponent implements OnInit {
     this.searchDebounce(() => {
       this.currentPage = 1;
       this.loadNodes();
-    }, 300);
+    }, DEBOUNCE_DELAYS.SEARCH);
   }
 
   goToPage(page: number): void {
