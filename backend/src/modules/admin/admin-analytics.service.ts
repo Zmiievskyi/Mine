@@ -6,6 +6,7 @@ import { UserNode } from '../users/entities/user-node.entity';
 import { NodeRequest, RequestStatus } from '../requests/entities/node-request.entity';
 import { AdminAnalyticsDto } from './dto';
 import { NodesService, HyperfusionNode } from '../nodes/nodes.service';
+import { getNodeStatus } from '../../common/utils';
 
 @Injectable()
 export class AdminAnalyticsService {
@@ -65,7 +66,7 @@ export class AdminAnalyticsService {
     for (const node of allNodes) {
       const gpuType = node.gpuType || 'Unknown';
       const stats = statsMap.get(node.nodeAddress);
-      const status = this.getNodeStatus(stats);
+      const status = getNodeStatus(stats);
 
       if (!gpuStats.has(gpuType)) {
         gpuStats.set(gpuType, { count: 0, healthy: 0, jailed: 0, offline: 0 });
@@ -166,7 +167,7 @@ export class AdminAnalyticsService {
 
     for (const node of allNodes) {
       const stats = statsMap.get(node.nodeAddress);
-      const status = this.getNodeStatus(stats);
+      const status = getNodeStatus(stats);
 
       switch (status) {
         case 'healthy': healthyNodes++; break;
@@ -196,12 +197,5 @@ export class AdminAnalyticsService {
     } catch {
       return [];
     }
-  }
-
-  private getNodeStatus(stats?: HyperfusionNode): 'healthy' | 'jailed' | 'offline' | 'unknown' {
-    if (!stats) return 'unknown';
-    if (stats.is_offline) return 'offline';
-    if (stats.is_jailed) return 'jailed';
-    return 'healthy';
   }
 }

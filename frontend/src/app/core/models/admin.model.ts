@@ -1,4 +1,7 @@
-export type UserRole = 'user' | 'admin';
+import { UserRole } from './user.model';
+import { RequestStatus } from './request.model';
+
+export type { UserRole } from './user.model';
 
 export interface UserNode {
   id: string;
@@ -47,7 +50,7 @@ export interface AdminRequest {
   gpuCount: number;
   region?: string;
   message?: string;
-  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  status: RequestStatus;
   adminNotes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -60,7 +63,7 @@ export interface AdminRequest {
 }
 
 export interface UpdateRequestDto {
-  status?: 'pending' | 'approved' | 'rejected' | 'completed';
+  status?: RequestStatus;
   adminNotes?: string;
 }
 
@@ -143,7 +146,7 @@ export interface AdminUsersQuery {
 export interface AdminRequestsQuery {
   page?: number;
   limit?: number;
-  status?: 'pending' | 'approved' | 'rejected' | 'completed' | 'all';
+  status?: RequestStatus | 'all';
   gpuType?: string;
   userEmail?: string;
   dateFrom?: string;

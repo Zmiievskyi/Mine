@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AdminUser, AdminUserWithStats, UserNode, UserNodeWithStats, NodeStatus } from '../../../../core/models/admin.model';
+import { AdminUser, AdminUserWithStats, UserNodeWithStats } from '../../../../core/models/admin.model';
 import { getNodeStatusVariant, truncateAddress } from '../../../../shared/utils';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmTableImports } from '@spartan-ng/helm/table';
@@ -21,43 +21,43 @@ import { HlmButton } from '@spartan-ng/helm/button';
         <div class="flex items-center gap-4">
           <div
             class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-            [class]="user.role === 'admin' ? 'bg-purple-500' : 'bg-[var(--gcore-primary)]'"
+            [class]="user().role === 'admin' ? 'bg-purple-500' : 'bg-[var(--gcore-primary)]'"
           >
-            {{ user.name?.charAt(0) || user.email.charAt(0) | uppercase }}
+            {{ user().name?.charAt(0) || user().email.charAt(0) | uppercase }}
           </div>
           <div>
             <div class="font-medium text-[var(--gcore-text)]">
-              {{ user.name || 'No Name' }}
-              @if (user.role === 'admin') {
+              {{ user().name || 'No Name' }}
+              @if (user().role === 'admin') {
                 <span hlmBadge class="ml-2 bg-purple-100 text-purple-800">Admin</span>
               }
-              @if (!user.isActive) {
+              @if (!user().isActive) {
                 <span hlmBadge variant="secondary" class="ml-2">Inactive</span>
               }
             </div>
-            <div class="text-sm text-[var(--gcore-text-muted)]">{{ user.email }}</div>
+            <div class="text-sm text-[var(--gcore-text-muted)]">{{ user().email }}</div>
           </div>
         </div>
         <div class="flex items-center gap-4">
           <div class="text-sm text-[var(--gcore-text-muted)]">
-            {{ user.nodes.length }} node(s)
+            {{ user().nodes.length }} node(s)
           </div>
           <span class="text-[var(--gcore-text-muted)]">
-            {{ isExpanded ? '&#9650;' : '&#9660;' }}
+            {{ isExpanded() ? '&#9650;' : '&#9660;' }}
           </span>
         </div>
       </div>
 
       <!-- Expanded Content -->
-      @if (isExpanded) {
+      @if (isExpanded()) {
         <div class="border-t border-[var(--gcore-border)] px-6 py-4 bg-gray-50">
           <!-- User Actions -->
           <div class="flex gap-2 mb-4">
             <button hlmBtn variant="outline" size="sm" (click)="roleToggle.emit()">
-              {{ user.role === 'admin' ? 'Remove Admin' : 'Make Admin' }}
+              {{ user().role === 'admin' ? 'Remove Admin' : 'Make Admin' }}
             </button>
             <button hlmBtn variant="outline" size="sm" (click)="activeToggle.emit()">
-              {{ user.isActive ? 'Deactivate' : 'Activate' }}
+              {{ user().isActive ? 'Deactivate' : 'Activate' }}
             </button>
             <button hlmBtn size="sm" (click)="assignNode.emit()">
               + Assign Node
@@ -65,14 +65,14 @@ import { HlmButton } from '@spartan-ng/helm/button';
           </div>
 
           <!-- Loading state -->
-          @if (expandedLoading) {
+          @if (expandedLoading()) {
             <div class="py-4 text-center text-[var(--gcore-text-muted)]">
               Loading nodes...
             </div>
           }
 
           <!-- Nodes Table with Live Stats -->
-          @if (!expandedLoading && expandedData && expandedData.nodes.length > 0) {
+          @if (!expandedLoading() && expandedData() && expandedData()!.nodes.length > 0) {
             <div hlmTableContainer>
               <table hlmTable>
                 <thead hlmThead>
@@ -86,7 +86,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
                   </tr>
                 </thead>
                 <tbody hlmTbody>
-                  @for (node of expandedData.nodes; track node.id) {
+                  @for (node of expandedData()!.nodes; track node.id) {
                     <tr hlmTr>
                       <td hlmTd>
                         <div class="font-mono text-sm text-[var(--gcore-text)]">
@@ -120,7 +120,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
                 </tbody>
               </table>
             </div>
-          } @else if (!expandedLoading && (!expandedData || expandedData.nodes.length === 0)) {
+          } @else if (!expandedLoading() && (!expandedData() || expandedData()!.nodes.length === 0)) {
             <p class="text-[var(--gcore-text-muted)] text-sm py-4">No nodes assigned yet</p>
           }
         </div>
@@ -129,16 +129,16 @@ import { HlmButton } from '@spartan-ng/helm/button';
   `,
 })
 export class UserListItemComponent {
-  @Input() user!: AdminUser;
-  @Input() isExpanded = false;
-  @Input() expandedData: AdminUserWithStats | null = null;
-  @Input() expandedLoading = false;
+  user = input.required<AdminUser>();
+  isExpanded = input(false);
+  expandedData = input<AdminUserWithStats | null>(null);
+  expandedLoading = input(false);
 
-  @Output() expand = new EventEmitter<void>();
-  @Output() roleToggle = new EventEmitter<void>();
-  @Output() activeToggle = new EventEmitter<void>();
-  @Output() assignNode = new EventEmitter<void>();
-  @Output() nodeRemove = new EventEmitter<UserNodeWithStats>();
+  expand = output<void>();
+  roleToggle = output<void>();
+  activeToggle = output<void>();
+  assignNode = output<void>();
+  nodeRemove = output<UserNodeWithStats>();
 
   toggleExpanded(): void {
     this.expand.emit();

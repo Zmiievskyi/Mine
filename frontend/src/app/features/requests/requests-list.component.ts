@@ -7,20 +7,13 @@ import { LayoutComponent } from '../../shared/components/layout/layout.component
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { NodeRequest, GPU_OPTIONS } from '../../core/models/request.model';
 import { getGpuLabel } from '../../core/constants/pricing.constants';
-import { getRequestStatusVariant } from '../../shared/utils/request-status.util';
+import { getRequestStatusVariant } from '../../shared/utils';
+import { ConfirmDialogData } from '../../shared/models/confirm-dialog.model';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
-
-interface ConfirmDialogData {
-  title: string;
-  message: string;
-  confirmText: string;
-  variant: 'default' | 'destructive';
-  onConfirm: () => void;
-}
 
 @Component({
   selector: 'app-requests-list',

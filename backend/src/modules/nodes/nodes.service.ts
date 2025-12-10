@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import axios from 'axios';
 import { UserNode } from '../users/entities/user-node.entity';
-import { withRetry } from '../../common/utils';
+import { withRetry, getNodeStatus } from '../../common/utils';
 import { LruCache } from '../../common/services';
 
 export interface HyperfusionNode {
@@ -109,7 +109,7 @@ export class NodesService {
       return {
         ...node,
         stats,
-        status: this.getNodeStatus(stats),
+        status: getNodeStatus(stats),
       };
     });
   }
@@ -132,7 +132,7 @@ export class NodesService {
     return {
       ...node,
       stats,
-      status: this.getNodeStatus(stats),
+      status: getNodeStatus(stats),
     };
   }
 
@@ -170,14 +170,6 @@ export class NodesService {
     return nodes;
   }
 
-  private getNodeStatus(
-    stats?: HyperfusionNode,
-  ): 'healthy' | 'jailed' | 'offline' | 'unknown' {
-    if (!stats) return 'unknown';
-    if (stats.is_offline) return 'offline';
-    if (stats.is_jailed) return 'jailed';
-    return 'healthy';
-  }
 
   // Admin methods for managing user nodes
   async assignNodeToUser(

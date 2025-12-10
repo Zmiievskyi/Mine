@@ -1,8 +1,10 @@
+export type UserRole = 'user' | 'admin';
+
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'user' | 'admin';
+  role: UserRole;
   avatarUrl?: string;
   provider?: 'local' | 'google' | 'github';
   createdAt?: Date;

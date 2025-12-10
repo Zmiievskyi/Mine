@@ -5,6 +5,7 @@ import { User } from '../users/entities/user.entity';
 import { UserNode } from '../users/entities/user-node.entity';
 import { NodeRequest } from '../requests/entities/node-request.entity';
 import { NodesService, HyperfusionNode } from '../nodes/nodes.service';
+import { getNodeStatus } from '../../common/utils';
 
 @Injectable()
 export class AdminExportService {
@@ -53,7 +54,7 @@ export class AdminExportService {
     const headers = ['ID', 'Node Address', 'User Email', 'GPU Type', 'Status', 'Earnings (GNK)', 'Inference Count', 'Missed Rate', 'Created At'];
     const rows = allNodes.map((node) => {
       const stats = statsMap.get(node.nodeAddress);
-      const status = this.getNodeStatus(stats);
+      const status = getNodeStatus(stats);
       return [
         node.id,
         node.nodeAddress,
@@ -98,13 +99,6 @@ export class AdminExportService {
     } catch {
       return [];
     }
-  }
-
-  private getNodeStatus(stats?: HyperfusionNode): 'healthy' | 'jailed' | 'offline' | 'unknown' {
-    if (!stats) return 'unknown';
-    if (stats.is_offline) return 'offline';
-    if (stats.is_jailed) return 'jailed';
-    return 'healthy';
   }
 
   private toCsv(headers: string[], rows: (string | number)[][]): string {

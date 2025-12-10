@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { Component, input, output, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminUser, AssignNodeDto } from '../../../../core/models/admin.model';
@@ -28,10 +28,10 @@ import { HlmLabel } from '@spartan-ng/helm/label';
     HlmLabel,
   ],
   template: `
-    <hlm-dialog [state]="isOpen ? 'open' : 'closed'" (closed)="onClose()">
+    <hlm-dialog [state]="isOpen() ? 'open' : 'closed'" (closed)="onClose()">
       <hlm-dialog-content *brnDialogContent="let ctx" class="sm:max-w-lg">
         <hlm-dialog-header>
-          <h3 hlmDialogTitle>Assign Node to {{ user?.name || user?.email }}</h3>
+          <h3 hlmDialogTitle>Assign Node to {{ user()?.name || user()?.email }}</h3>
         </hlm-dialog-header>
 
         <div class="space-y-4 py-4">
@@ -105,21 +105,28 @@ import { HlmLabel } from '@spartan-ng/helm/label';
   `,
 })
 export class AssignNodeModalComponent {
-  @Input() user: AdminUser | null = null;
-  @Input() isOpen = false;
-  @Input() set errorMessage(value: string | null) {
-    this.error.set(value);
-  }
-  @Input() set isSubmitting(value: boolean) {
-    this.submitting.set(value);
-  }
+  user = input<AdminUser | null>(null);
+  isOpen = input(false);
+  errorMessage = input<string | null>(null);
+  isSubmitting = input(false);
 
-  @Output() close = new EventEmitter<void>();
-  @Output() assign = new EventEmitter<AssignNodeDto>();
+  close = output<void>();
+  assign = output<AssignNodeDto>();
 
   error = signal<string | null>(null);
   submitting = signal(false);
   gpuOptions = GPU_OPTIONS;
+
+  constructor() {
+    // Sync external errorMessage to internal error signal
+    effect(() => {
+      this.error.set(this.errorMessage());
+    });
+    // Sync external isSubmitting to internal submitting signal
+    effect(() => {
+      this.submitting.set(this.isSubmitting());
+    });
+  }
 
   formData: AssignNodeDto = {
     nodeAddress: '',

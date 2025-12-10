@@ -16,6 +16,7 @@ import {
   createPaginatedResponse,
 } from '../../common/dto';
 import { NodesService, HyperfusionNode } from '../nodes/nodes.service';
+import { getNodeStatus } from '../../common/utils';
 
 @Injectable()
 export class AdminService {
@@ -145,7 +146,7 @@ export class AdminService {
         notes: node.notes,
         isActive: node.isActive,
         createdAt: node.createdAt,
-        status: this.getNodeStatus(stats),
+        status: getNodeStatus(stats),
         earnings: stats ? parseFloat(stats.earned_coins) : 0,
         inferenceCount: stats?.inference_count || 0,
         missedRate: stats?.missed_rate || 0,
@@ -276,7 +277,7 @@ export class AdminService {
     // Merge nodes with stats
     let nodesWithStats = allNodes.map((node) => {
       const stats = statsMap.get(node.nodeAddress);
-      const nodeStatus = this.getNodeStatus(stats);
+      const nodeStatus = getNodeStatus(stats);
       return {
         id: node.id,
         nodeAddress: node.nodeAddress,
@@ -332,12 +333,5 @@ export class AdminService {
     } catch {
       return [];
     }
-  }
-
-  private getNodeStatus(stats?: HyperfusionNode): 'healthy' | 'jailed' | 'offline' | 'unknown' {
-    if (!stats) return 'unknown';
-    if (stats.is_offline) return 'offline';
-    if (stats.is_jailed) return 'jailed';
-    return 'healthy';
   }
 }
