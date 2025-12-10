@@ -15,10 +15,16 @@ COPY . .
 # Build the application
 RUN npm run build
 
+# Compile ormconfig.ts for production migrations
+RUN npx tsc ormconfig.ts --outDir dist --esModuleInterop --module commonjs --resolveJsonModule
+
 # Stage 2: Production
 FROM node:22-alpine AS production
 
 WORKDIR /app
+
+# Install postgresql-client for pg_isready in entrypoint
+RUN apk add --no-cache postgresql-client
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
@@ -27,11 +33,15 @@ RUN addgroup -g 1001 -S nodejs && \
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
+# Install production dependencies (typeorm CLI needed for migrations)
 RUN npm ci --only=production && npm cache clean --force
 
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
+
+# Copy entrypoint script
+COPY docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
 
 # Change ownership to non-root user
 RUN chown -R nestjs:nodejs /app
@@ -43,8 +53,8 @@ USER nestjs
 EXPOSE 3000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health/live || exit 1
 
-# Start the application
-CMD ["node", "dist/main.js"]
+# Use entrypoint script (runs migrations then starts app)
+ENTRYPOINT ["./docker-entrypoint.sh"]

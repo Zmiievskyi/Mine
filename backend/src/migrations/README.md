@@ -8,7 +8,23 @@ These migrations implement the database improvements outlined in the Database Au
 
 ## Migration Files
 
-### 1. CreateNodesTable (1733760000000)
+### 1. CreateUserTables (1733759000000)
+Creates the core user-related tables and enums. **Must run first** as other tables depend on `users`.
+
+**Tables Created:**
+- `users` - User accounts (email, password, OAuth IDs, role)
+- `user_nodes` - Links users to Gonka nodes
+- `node_requests` - User requests for new GPU nodes
+
+**Enums Created:**
+- `users_role_enum` - (user, admin)
+- `users_provider_enum` - (local, google, github)
+- `node_requests_gpu_type_enum` - (A100, H100, H200)
+- `node_requests_status_enum` - (pending, approved, rejected, completed)
+
+**Purpose:** Establishes the foundation for user management and node assignment.
+
+### 3. CreateNodesTable (1733760000000)
 Creates the `nodes` table to store canonical node reference data.
 
 **Tables Created:**
@@ -23,7 +39,7 @@ Creates the `nodes` table to store canonical node reference data.
 - Node lifecycle management independent of users
 - Cleaner admin audit trail
 
-### 2. CreateNodeStatsCacheTable (1733760001000)
+### 4. CreateNodeStatsCacheTable (1733760001000)
 Creates the `node_stats_cache` table for caching Gonka tracker data.
 
 **Tables Created:**
@@ -39,7 +55,7 @@ Creates the `node_stats_cache` table for caching Gonka tracker data.
 - Enables offline fallback if trackers are down
 - Recommended cache TTL: 1-5 minutes
 
-### 3. CreateEarningsHistoryTable (1733760002000)
+### 5. CreateEarningsHistoryTable (1733760002000)
 Creates the `earnings_history` table for historical earnings tracking.
 
 **Tables Created:**
@@ -58,7 +74,7 @@ Creates the `earnings_history` table for historical earnings tracking.
 - Historical verification of earnings accuracy
 - Data retention even if cache is cleared
 
-### 4. AddPerformanceIndexes (1733760003000)
+### 6. AddPerformanceIndexes (1733760003000)
 Adds performance indexes to existing tables.
 
 **Indexes Added:**
@@ -74,16 +90,6 @@ Adds performance indexes to existing tables.
   - `idx_users_is_active` - Partial index for active users only
 
 **Purpose:** Improves query performance, especially with >1000 records.
-
-### 5. AddMissingUserColumns (1733760004000)
-Adds missing columns to the `users` table.
-
-**Columns Added:**
-- `telegram` VARCHAR(100) - Telegram username for notifications
-- `discord` VARCHAR(100) - Discord username for notifications
-- `currency_preference` VARCHAR(10) - User's preferred currency (default: USD)
-
-**Purpose:** Enables user communication preferences and localization.
 
 ## Running Migrations
 
@@ -123,31 +129,71 @@ npm run migration:generate -- src/migrations/MigrationName
 
 **IMPORTANT:** Migrations must be run in this exact order:
 
-1. CreateNodesTable (creates `nodes` table)
-2. CreateNodeStatsCacheTable (references `nodes`)
-3. CreateEarningsHistoryTable (references `nodes`)
-4. AddPerformanceIndexes (adds indexes to existing tables)
-5. AddMissingUserColumns (modifies `users` table)
+1. **CreateUserTables** (creates `users`, `user_nodes`, `node_requests` + enums)
+2. CreateNodesTable (creates `nodes` table)
+3. CreateNodeStatsCacheTable (references `nodes`)
+4. CreateEarningsHistoryTable (references `nodes`)
+5. AddPerformanceIndexes (adds indexes to existing tables)
 
 TypeORM runs migrations in timestamp order automatically.
+
+## Fresh Database Setup (Production)
+
+### Option 1: Docker (Recommended)
+
+Migrations run **automatically** when using Docker:
+
+```bash
+# Clone repo on new machine
+git clone <repo> && cd gonka
+
+# Create .env file
+cp .env.example .env
+# Edit JWT_SECRET and other variables
+
+# Start everything (migrations run automatically)
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+The `docker-entrypoint.sh` script:
+1. Waits for PostgreSQL to be ready
+2. Runs `npm run migration:run:prod`
+3. Starts the application
+
+### Option 2: Manual
+
+For non-Docker deployments:
+
+```bash
+# 1. Ensure database exists and is accessible
+psql -U minegnk -d minegnk -c "SELECT 1"
+
+# 2. Run all migrations
+cd backend && npm run migration:run
+
+# 3. Verify tables created
+npm run migration:show
+```
+
+**Note:** The `ormconfig.ts` automatically detects `NODE_ENV=production` and uses compiled `.js` files from `dist/`.
 
 ## Database Schema After Migrations
 
 ```
-users (enhanced with telegram, discord, currency_preference)
+users
   |
-  ├── user_nodes (unchanged, but will be refactored later)
+  ├── user_nodes
   |      └── indexed on: user_id, is_active
   |
-  └── node_requests (unchanged)
+  └── node_requests
          └── indexed on: user_id, status, created_at
 
-nodes (NEW)
+nodes
   |
-  ├── node_stats_cache (NEW, 1:1)
+  ├── node_stats_cache (1:1)
   |      └── indexed on: fetched_at, status
   |
-  └── earnings_history (NEW, 1:N)
+  └── earnings_history (1:N)
          └── indexed on: (node_id, date), date
 ```
 
