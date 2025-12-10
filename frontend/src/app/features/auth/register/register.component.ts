@@ -71,7 +71,7 @@ export class RegisterComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/auth/verify-email']);
         },
         error: (err) => {
           this.loading.set(false);

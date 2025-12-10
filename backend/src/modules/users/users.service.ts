@@ -58,6 +58,7 @@ export class UsersService {
       avatarUrl: data.avatarUrl || null,
       provider: AuthProvider.GOOGLE,
       password: null,
+      emailVerified: true,
     });
     return this.usersRepository.save(user);
   }
@@ -92,6 +93,7 @@ export class UsersService {
       avatarUrl: data.avatarUrl || null,
       provider: AuthProvider.GITHUB,
       password: null,
+      emailVerified: true,
     });
     return this.usersRepository.save(user);
   }
@@ -107,5 +109,50 @@ export class UsersService {
     }
     await this.usersRepository.update(userId, updateData);
     return this.findById(userId);
+  }
+
+  async setVerificationCode(
+    userId: string,
+    code: string,
+    expiresAt: Date,
+  ): Promise<void> {
+    await this.usersRepository.update(userId, {
+      verificationCode: code,
+      verificationCodeExpiresAt: expiresAt,
+    });
+  }
+
+  async clearVerificationCode(userId: string): Promise<void> {
+    await this.usersRepository.update(userId, {
+      verificationCode: null,
+      verificationCodeExpiresAt: null,
+    });
+  }
+
+  async incrementVerificationAttempts(userId: string): Promise<void> {
+    await this.usersRepository.increment(
+      { id: userId },
+      'verificationAttempts',
+      1,
+    );
+  }
+
+  async lockVerification(userId: string, until: Date): Promise<void> {
+    await this.usersRepository.update(userId, {
+      verificationLockedUntil: until,
+    });
+  }
+
+  async resetVerificationAttempts(userId: string): Promise<void> {
+    await this.usersRepository.update(userId, {
+      verificationAttempts: 0,
+      verificationLockedUntil: null,
+    });
+  }
+
+  async setEmailVerified(userId: string, verified: boolean): Promise<void> {
+    await this.usersRepository.update(userId, {
+      emailVerified: verified,
+    });
   }
 }

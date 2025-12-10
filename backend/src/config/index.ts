@@ -6,3 +6,4 @@ export { default as googleConfig } from './google.config';
 export { default as githubConfig } from './github.config';
 export { default as retryConfig } from './retry.config';
 export { default as throttlerConfig } from './throttler.config';
+export { default as resendConfig } from './resend.config';

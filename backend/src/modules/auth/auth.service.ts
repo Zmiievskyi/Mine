@@ -3,11 +3,17 @@ import {
   Logger,
   UnauthorizedException,
   ConflictException,
+  ForbiddenException,
+  GoneException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { randomInt } from 'crypto';
+import { timingSafeEqual } from 'crypto';
 import { UsersService } from '../users/users.service';
+import { EmailService } from '../email/email.service';
 import { LoginDto, RegisterDto } from './dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { GoogleProfile } from './strategies/google.strategy';
@@ -21,6 +27,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -35,9 +42,28 @@ export class AuthService {
     const user = await this.usersService.create({
       ...registerDto,
       password: hashedPassword,
+      emailVerified: false,
     });
 
     this.logger.log(`New user registered: ${user.id} (${user.email})`);
+
+    // Generate and send verification code
+    const verificationCode = randomInt(100000, 1000000).toString().padStart(6, '0');
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await this.usersService.setVerificationCode(user.id, verificationCode, expiresAt);
+
+    try {
+      await this.emailService.sendVerificationEmail(
+        user.email,
+        verificationCode,
+        user.name || undefined,
+      );
+      this.logger.log(`Verification email sent to ${user.email}`);
+    } catch (error) {
+      this.logger.error(`Failed to send verification email to ${user.email}:`, error);
+      // Don't fail registration if email fails
+    }
 
     const tokens = this.generateTokens(user);
     return {
@@ -48,6 +74,7 @@ export class AuthService {
         role: user.role,
         avatarUrl: user.avatarUrl,
         provider: user.provider,
+        emailVerified: false,
       },
       ...tokens,
     };
@@ -91,6 +118,7 @@ export class AuthService {
         role: user.role,
         avatarUrl: user.avatarUrl,
         provider: user.provider,
+        emailVerified: user.emailVerified,
       },
       ...tokens,
     };
@@ -108,6 +136,7 @@ export class AuthService {
       role: user.role,
       avatarUrl: user.avatarUrl,
       provider: user.provider,
+      emailVerified: user.emailVerified,
     };
   }
 
@@ -222,6 +251,7 @@ export class AuthService {
     role: string;
     avatarUrl?: string | null;
     provider?: string;
+    emailVerified?: boolean;
   }) {
     const tokens = this.generateTokens(user);
     return {
@@ -232,6 +262,7 @@ export class AuthService {
         role: user.role,
         avatarUrl: user.avatarUrl,
         provider: user.provider,
+        emailVerified: user.emailVerified ?? true,
       },
       ...tokens,
     };
@@ -246,6 +277,120 @@ export class AuthService {
 
     return {
       accessToken: this.jwtService.sign(payload),
+    };
+  }
+
+  async verifyEmail(userId: string, code: string) {
+    const user = await this.usersService.findById(userId);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Already verified - return success
+    if (user.emailVerified) {
+      this.logger.log(`User ${userId} already verified`);
+      return { message: 'Email already verified', verified: true };
+    }
+
+    // Check if verification is locked
+    if (user.verificationLockedUntil && user.verificationLockedUntil > new Date()) {
+      const minutesLeft = Math.ceil(
+        (user.verificationLockedUntil.getTime() - Date.now()) / 60000,
+      );
+      this.logger.warn(`Verification locked for user ${userId}`);
+      throw new ForbiddenException(
+        `Too many failed attempts. Please try again in ${minutesLeft} minute(s)`,
+      );
+    }
+
+    // Check if code exists and not expired
+    if (!user.verificationCode || !user.verificationCodeExpiresAt) {
+      this.logger.warn(`No verification code for user ${userId}`);
+      throw new GoneException('Verification code expired or not found. Please request a new one');
+    }
+
+    if (user.verificationCodeExpiresAt < new Date()) {
+      this.logger.warn(`Expired verification code for user ${userId}`);
+      throw new GoneException('Verification code expired. Please request a new one');
+    }
+
+    // Increment attempts before validation
+    await this.usersService.incrementVerificationAttempts(userId);
+    const currentAttempts = user.verificationAttempts + 1;
+
+    // Lock after 5 failed attempts
+    if (currentAttempts >= 5) {
+      const lockUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+      await this.usersService.lockVerification(userId, lockUntil);
+      this.logger.warn(`User ${userId} locked after ${currentAttempts} failed attempts`);
+      throw new ForbiddenException('Too many failed attempts. Account locked for 30 minutes');
+    }
+
+    // Constant-time comparison to prevent timing attacks
+    const codeBuffer = Buffer.from(code.toLowerCase());
+    const storedCodeBuffer = Buffer.from(user.verificationCode.toLowerCase());
+
+    // Ensure buffers are same length for timingSafeEqual
+    if (codeBuffer.length !== storedCodeBuffer.length) {
+      this.logger.warn(`Invalid code length for user ${userId}`);
+      throw new UnprocessableEntityException('Invalid verification code');
+    }
+
+    const isValid = timingSafeEqual(codeBuffer, storedCodeBuffer);
+
+    if (!isValid) {
+      this.logger.warn(`Invalid verification code for user ${userId} (attempt ${currentAttempts}/5)`);
+      throw new UnprocessableEntityException('Invalid verification code');
+    }
+
+    // Success - mark as verified
+    await this.usersService.setEmailVerified(userId, true);
+    await this.usersService.clearVerificationCode(userId);
+    await this.usersService.resetVerificationAttempts(userId);
+
+    this.logger.log(`Email verified successfully for user ${userId}`);
+
+    return {
+      message: 'Email verified successfully',
+      verified: true,
+    };
+  }
+
+  async resendVerification(userId: string) {
+    const user = await this.usersService.findById(userId);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (user.emailVerified) {
+      throw new ConflictException('Email already verified');
+    }
+
+    // Generate new verification code
+    const verificationCode = randomInt(100000, 1000000).toString().padStart(6, '0');
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Reset attempts and clear lockout
+    await this.usersService.resetVerificationAttempts(userId);
+    await this.usersService.setVerificationCode(userId, verificationCode, expiresAt);
+
+    try {
+      await this.emailService.sendVerificationEmail(
+        user.email,
+        verificationCode,
+        user.name || undefined,
+      );
+      this.logger.log(`Verification code resent to ${user.email}`);
+    } catch (error) {
+      this.logger.error(`Failed to resend verification email to ${user.email}:`, error);
+      throw new Error('Failed to send verification email. Please try again later');
+    }
+
+    return {
+      message: 'Verification code sent',
+      expiresAt: expiresAt.toISOString(),
     };
   }
 }

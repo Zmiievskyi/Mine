@@ -19,6 +19,8 @@ export interface AdminUser {
   name?: string;
   role: UserRole;
   isActive: boolean;
+  emailVerified?: boolean;
+  provider?: 'local' | 'google' | 'github';
   createdAt: Date;
   nodes: UserNode[];
 }
@@ -202,4 +204,29 @@ export interface AdminAnalytics {
   nodesByGpu: NodesByGpu[];
   topUsersByNodes: TopUserByNodes[];
   topUsersByEarnings: TopUserByEarnings[];
+}
+
+// Pricing Management
+export interface PricingConfig {
+  id: string;
+  gpuType: string;
+  pricePerHour: number | null;
+  isContactSales: boolean;
+  displayOrder: number;
+  isActive: boolean;
+  updatedAt: Date;
+  updatedByEmail?: string;
+}
+
+export interface UpdatePricingDto {
+  pricePerHour?: number | null;
+  isContactSales?: boolean;
+  isActive?: boolean;
+}
+
+export interface PublicPricing {
+  gpuType: string;
+  pricePerHour: number | null;
+  isContactSales: boolean;
+  displayOrder: number;
 }

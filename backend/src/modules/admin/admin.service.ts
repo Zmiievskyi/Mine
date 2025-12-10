@@ -66,6 +66,8 @@ export class AdminService {
         'user.name',
         'user.role',
         'user.isActive',
+        'user.emailVerified',
+        'user.provider',
         'user.createdAt',
       ])
       .loadRelationCountAndMap('user.nodeCount', 'user.nodes', 'nodes', (qb) =>
@@ -119,7 +121,7 @@ export class AdminService {
   async findUserWithNodes(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id },
-      select: ['id', 'email', 'name', 'role', 'isActive', 'createdAt'],
+      select: ['id', 'email', 'name', 'role', 'isActive', 'emailVerified', 'provider', 'createdAt'],
       relations: ['nodes'],
     });
 

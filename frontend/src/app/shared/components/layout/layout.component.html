@@ -14,6 +14,11 @@
     </div>
   </header>
 
+  <!-- Email Verification Banner -->
+  @if (showVerificationBanner()) {
+    <app-email-verification-banner />
+  }
+
   <div class="flex">
     <!-- Sidebar -->
     <aside class="w-64 bg-white border-r border-[var(--gcore-border)] min-h-[calc(100vh-65px)]">

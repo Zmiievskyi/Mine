@@ -5,6 +5,7 @@ import { UnauthorizedException, ConflictException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
+import { EmailService } from '../email/email.service';
 import { RegisterDto, LoginDto } from './dto';
 import { UserRole } from '../users/entities/user.entity';
 
@@ -14,6 +15,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let usersService: jest.Mocked<UsersService>;
   let jwtService: jest.Mocked<JwtService>;
+  let emailService: jest.Mocked<EmailService>;
 
   const mockUser = {
     id: 'user-123',
@@ -24,6 +26,11 @@ describe('AuthService', () => {
     isActive: true,
     avatarUrl: null,
     provider: 'local',
+    emailVerified: false,
+    verificationCode: null,
+    verificationCodeExpiresAt: null,
+    verificationAttempts: 0,
+    verificationLockedUntil: null,
     nodes: [],
     requests: [],
     createdAt: new Date(),
@@ -40,6 +47,18 @@ describe('AuthService', () => {
             findByEmail: jest.fn(),
             findById: jest.fn(),
             create: jest.fn(),
+            setVerificationCode: jest.fn(),
+            clearVerificationCode: jest.fn(),
+            setEmailVerified: jest.fn(),
+            incrementVerificationAttempts: jest.fn(),
+            resetVerificationAttempts: jest.fn(),
+            lockVerification: jest.fn(),
+          },
+        },
+        {
+          provide: EmailService,
+          useValue: {
+            sendVerificationEmail: jest.fn(),
           },
         },
         {
@@ -63,6 +82,7 @@ describe('AuthService', () => {
     service = module.get<AuthService>(AuthService);
     usersService = module.get(UsersService);
     jwtService = module.get(JwtService);
+    emailService = module.get(EmailService);
   });
 
   afterEach(() => {
@@ -92,7 +112,10 @@ describe('AuthService', () => {
       expect(usersService.create).toHaveBeenCalledWith({
         ...registerDto,
         password: hashedPassword,
+        emailVerified: false,
       });
+      expect(usersService.setVerificationCode).toHaveBeenCalled();
+      expect(emailService.sendVerificationEmail).toHaveBeenCalled();
       expect(jwtService.sign).toHaveBeenCalledWith({
         sub: mockUser.id,
         email: registerDto.email,
@@ -106,6 +129,7 @@ describe('AuthService', () => {
           role: mockUser.role,
           avatarUrl: mockUser.avatarUrl,
           provider: mockUser.provider,
+          emailVerified: false,
         },
         accessToken,
       });
@@ -165,6 +189,7 @@ describe('AuthService', () => {
           role: mockUser.role,
           avatarUrl: mockUser.avatarUrl,
           provider: mockUser.provider,
+          emailVerified: mockUser.emailVerified,
         },
         accessToken,
       });
@@ -223,6 +248,7 @@ describe('AuthService', () => {
         role: mockUser.role,
         avatarUrl: mockUser.avatarUrl,
         provider: mockUser.provider,
+        emailVerified: mockUser.emailVerified,
       });
     });
 

@@ -1,8 +1,10 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { RequestsService } from '../../core/services/requests.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { AuthService } from '../../core/services/auth.service';
 import { LayoutComponent } from '../../shared/components/layout/layout.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { NodeRequest, GPU_OPTIONS } from '../../core/models/request.model';
@@ -36,12 +38,25 @@ export class RequestsListComponent implements OnInit {
   requests = signal<NodeRequest[]>([]);
   private requestsService = inject(RequestsService);
   private notification = inject(NotificationService);
+  private authService = inject(AuthService);
 
   loading = signal(true);
   error = signal<string | null>(null);
   selectedRequest = signal<NodeRequest | null>(null);
   confirmDialog = signal<ConfirmDialogData | null>(null);
   private pendingAction: (() => void) | null = null;
+
+  currentUser = toSignal(this.authService.currentUser$);
+
+  // Check if user can request nodes (email verified for local auth users)
+  canRequestNodes = computed(() => {
+    const user = this.currentUser();
+    if (!user) return false;
+    // OAuth users can always request
+    if (user.provider !== 'local') return true;
+    // Local auth users need verified email
+    return user.emailVerified === true;
+  });
 
   gpuOptions = GPU_OPTIONS;
   getGpuLabel = getGpuLabel;

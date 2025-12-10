@@ -58,6 +58,25 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ default: false })
+  emailVerified: boolean;
+
+  @Column({ type: 'varchar', length: 6, nullable: true })
+  @Exclude()
+  verificationCode: string | null;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Exclude()
+  verificationCodeExpiresAt: Date | null;
+
+  @Column({ default: 0 })
+  @Exclude()
+  verificationAttempts: number;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Exclude()
+  verificationLockedUntil: Date | null;
+
   @OneToMany(() => UserNode, (userNode) => userNode.user)
   nodes: UserNode[];
 

@@ -19,7 +19,7 @@ import {
 } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto } from './dto';
+import { LoginDto, RegisterDto, VerifyEmailDto } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleProfile } from './strategies/google.strategy';
 import { GitHubProfile } from './strategies/github.strategy';
@@ -63,6 +63,52 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getProfile(@Request() req) {
     return this.authService.validateUser(req.user.id);
+  }
+
+  @Post('verify-email')
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Verify email with PIN code' })
+  @ApiResponse({
+    status: 200,
+    description: 'Email verified successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        verified: { type: 'boolean' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Too many failed attempts or account locked' })
+  @ApiResponse({ status: 410, description: 'Verification code expired' })
+  @ApiResponse({ status: 422, description: 'Invalid verification code' })
+  async verifyEmail(@Body() dto: VerifyEmailDto, @Request() req) {
+    return this.authService.verifyEmail(req.user.id, dto.code);
+  }
+
+  @Post('resend-verification')
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Resend verification code' })
+  @ApiResponse({
+    status: 200,
+    description: 'Verification code sent',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        expiresAt: { type: 'string', format: 'date-time' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 409, description: 'Email already verified' })
+  async resendVerification(@Request() req) {
+    return this.authService.resendVerification(req.user.id);
   }
 
   @Get('google')

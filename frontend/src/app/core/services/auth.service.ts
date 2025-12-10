@@ -46,6 +46,26 @@ export class AuthService {
     );
   }
 
+  verifyEmail(code: string): Observable<{ message: string; verified: boolean }> {
+    return this.http.post<{ message: string; verified: boolean }>(`${this.apiUrl}/verify-email`, { code }).pipe(
+      tap((response) => {
+        if (response.verified) {
+          // Update user's emailVerified status in storage
+          const currentUser = this.currentUser;
+          if (currentUser) {
+            const updatedUser = { ...currentUser, emailVerified: true };
+            this.storage.setJson(USER_KEY, updatedUser);
+            this.currentUserSubject.next(updatedUser);
+          }
+        }
+      })
+    );
+  }
+
+  resendVerification(): Observable<{ message: string; expiresAt: string }> {
+    return this.http.post<{ message: string; expiresAt: string }>(`${this.apiUrl}/resend-verification`, {});
+  }
+
   logout(): void {
     this.storage.remove(TOKEN_KEY);
     this.storage.remove(USER_KEY);

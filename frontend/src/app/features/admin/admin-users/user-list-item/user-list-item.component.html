@@ -20,6 +20,12 @@
           @if (!user().isActive) {
             <span hlmBadge variant="secondary" class="ml-2">Inactive</span>
           }
+          @if (user().provider === 'local' && user().emailVerified === false) {
+            <span hlmBadge variant="destructive" class="ml-2">Unverified</span>
+          }
+          @if (user().provider && user().provider !== 'local') {
+            <span hlmBadge variant="outline" class="ml-2 capitalize">{{ user().provider }}</span>
+          }
         </div>
         <div class="text-sm text-[var(--gcore-text-muted)]">{{ user().email }}</div>
       </div>

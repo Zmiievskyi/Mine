@@ -5,6 +5,7 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
+  emailVerified?: boolean;
   avatarUrl?: string;
   provider?: 'local' | 'google' | 'github';
   createdAt?: Date;

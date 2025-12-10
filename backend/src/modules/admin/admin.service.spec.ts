@@ -191,7 +191,7 @@ describe('AdminService', () => {
 
       expect(usersRepository.findOne).toHaveBeenCalledWith({
         where: { id: 'user-123' },
-        select: ['id', 'email', 'name', 'role', 'isActive', 'createdAt'],
+        select: ['id', 'email', 'name', 'role', 'isActive', 'emailVerified', 'provider', 'createdAt'],
         relations: ['nodes'],
       });
       expect(result).toEqual(userWithNodes);
@@ -206,7 +206,7 @@ describe('AdminService', () => {
 
       expect(usersRepository.findOne).toHaveBeenCalledWith({
         where: { id: 'invalid-id' },
-        select: ['id', 'email', 'name', 'role', 'isActive', 'createdAt'],
+        select: ['id', 'email', 'name', 'role', 'isActive', 'emailVerified', 'provider', 'createdAt'],
         relations: ['nodes'],
       });
     });

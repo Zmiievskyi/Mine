@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from '../../core/guards/auth.guard';
 
 export const AUTH_ROUTES: Routes = [
   {
@@ -21,6 +22,14 @@ export const AUTH_ROUTES: Routes = [
     loadComponent: () =>
       import('./oauth-callback/oauth-callback.component').then(
         (m) => m.OAuthCallbackComponent
+      ),
+  },
+  {
+    path: 'verify-email',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./verify-email/verify-email.component').then(
+        (m) => m.VerifyEmailComponent
       ),
   },
 ];
