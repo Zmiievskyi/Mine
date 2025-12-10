@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, of } from 'rxjs';
 import { Node, NodeDetail, DashboardData, NetworkStats } from '../models/node.model';
+import { PublicPricing } from '../models/admin.model';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -33,6 +34,15 @@ export class NodesService {
     return this.http.get<NetworkStats>(`${this.apiUrl}/public/stats`).pipe(
       catchError((error) => {
         console.error('Failed to fetch network stats:', error);
+        return of(null);
+      })
+    );
+  }
+
+  getPublicPricing(): Observable<PublicPricing[] | null> {
+    return this.http.get<PublicPricing[]>(`${this.apiUrl}/public/pricing`).pipe(
+      catchError((error) => {
+        console.error('Failed to fetch pricing:', error);
         return of(null);
       })
     );

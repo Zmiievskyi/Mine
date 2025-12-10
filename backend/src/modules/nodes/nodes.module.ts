@@ -3,9 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NodesController } from './nodes.controller';
 import { NodesService } from './nodes.service';
 import { UserNode } from '../users/entities/user-node.entity';
+import { PricingModule } from '../pricing/pricing.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserNode])],
+  imports: [
+    TypeOrmModule.forFeature([UserNode]),
+    PricingModule,
+  ],
   controllers: [NodesController],
   providers: [NodesService],
   exports: [NodesService],

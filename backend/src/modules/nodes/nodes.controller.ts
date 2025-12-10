@@ -15,6 +15,8 @@ import {
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { NodesService, NodeWithStats, NetworkStats } from './nodes.service';
+import { PricingService } from '../pricing/pricing.service';
+import { PublicPricingDto } from '../pricing/dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 // Frontend-compatible response interfaces
@@ -69,9 +71,12 @@ interface DashboardResponse {
 @ApiTags('nodes')
 @Controller('nodes')
 export class NodesController {
-  constructor(private nodesService: NodesService) {}
+  constructor(
+    private nodesService: NodesService,
+    private pricingService: PricingService,
+  ) {}
 
-  // PUBLIC ENDPOINT - No auth required
+  // PUBLIC ENDPOINTS - No auth required
   @Get('public/stats')
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({ summary: 'Get public network statistics (no auth required)' })
@@ -79,6 +84,15 @@ export class NodesController {
   @ApiResponse({ status: 429, description: 'Too many requests' })
   async getPublicNetworkStats(): Promise<NetworkStats> {
     return this.nodesService.getPublicNetworkStats();
+  }
+
+  @Get('public/pricing')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @ApiOperation({ summary: 'Get public GPU pricing (no auth required)' })
+  @ApiResponse({ status: 200, description: 'GPU pricing list for landing page' })
+  @ApiResponse({ status: 429, description: 'Too many requests' })
+  async getPublicPricing(): Promise<PublicPricingDto[]> {
+    return this.pricingService.getPublicPricing();
   }
 
   @Get()
