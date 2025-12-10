@@ -6,7 +6,7 @@ import { getVerificationEmailTemplate } from './templates/verification.template'
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private readonly resend: Resend;
+  private readonly resend: Resend | null;
   private readonly fromEmail: string;
   private readonly fromName: string;
 
@@ -17,9 +17,10 @@ export class EmailService {
       this.logger.warn(
         'RESEND_API_KEY not configured. Email sending will be disabled.',
       );
+      this.resend = null;
+    } else {
+      this.resend = new Resend(apiKey);
     }
-
-    this.resend = new Resend(apiKey);
     this.fromEmail =
       this.configService.get<string>('resend.fromEmail') ||
       'noreply@minegnk.com';
@@ -32,9 +33,7 @@ export class EmailService {
     code: string,
     userName?: string,
   ): Promise<void> {
-    const apiKey = this.configService.get<string>('resend.apiKey');
-
-    if (!apiKey) {
+    if (!this.resend) {
       this.logger.warn(
         `Skipping email send to ${to} (Resend API key not configured)`,
       );

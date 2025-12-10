@@ -1,3 +1,29 @@
+# Production Docker Compose Configuration
+#
+# REQUIRED ENVIRONMENT VARIABLES:
+# - DB_HOST: Gcore PostgreSQL host (e.g., your-db.pg.k1.luxembourg-2.cloud.gcore.dev)
+# - DB_USERNAME: Database username
+# - DB_PASSWORD: Database password (secure, 32+ chars)
+# - DB_DATABASE: Database name
+# - JWT_SECRET: JWT signing secret (secure, 32+ chars)
+# - CORS_ORIGINS: Allowed CORS origins (e.g., https://minegnk.com)
+# - FRONTEND_URL: Frontend URL for OAuth callbacks
+#
+# OPTIONAL:
+# - APP_PORT: Frontend port (default: 8000, changed from 80)
+# - DB_PORT: Database port (default: 5432)
+# - JWT_EXPIRES_IN: JWT token expiry (default: 7d)
+# - GONKA_CACHE_TTL: Cache TTL in seconds (default: 120)
+# - OAuth credentials (GOOGLE_CLIENT_ID, GITHUB_CLIENT_ID, etc.)
+# - RESEND_API_KEY: Resend API key for email verification (optional, emails disabled if not set)
+# - RESEND_FROM_EMAIL: Sender email address (default: noreply@minegnk.com)
+# - RESEND_FROM_NAME: Sender name (default: MineGNK)
+#
+# NOTES:
+# - DB_SSL is hardcoded to "true" (required for Gcore managed PostgreSQL)
+# - Frontend now exposed on port 8000 instead of 80 (use APP_PORT to override)
+# - Database migrations run automatically on backend startup
+
 services:
   backend:
     build:
@@ -30,6 +56,10 @@ services:
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
       GITHUB_CALLBACK_URL: ${GITHUB_CALLBACK_URL:-}
       FRONTEND_URL: ${FRONTEND_URL}
+      # Email (Resend)
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-noreply@minegnk.com}
+      RESEND_FROM_NAME: ${RESEND_FROM_NAME:-MineGNK}
     restart: unless-stopped
     networks:
       - minegnk-network
