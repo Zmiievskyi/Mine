@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
+import { HlmButton } from '@spartan-ng/helm/button';
 
 /**
  * Reusable error alert component with optional retry button.
@@ -17,7 +17,7 @@ import { HlmButtonDirective } from '@spartan-ng/ui-button-helm';
 @Component({
   selector: 'app-error-alert',
   standalone: true,
-  imports: [HlmButtonDirective],
+  imports: [HlmButton],
   template: `
     <div class="bg-red-50 border border-red-200 rounded-lg p-6">
       <div class="flex items-center gap-3">

@@ -193,6 +193,7 @@ export class RequestsListComponent implements OnInit {
   error = signal<string | null>(null);
   selectedRequest = signal<NodeRequest | null>(null);
   confirmDialog = signal<ConfirmDialogData | null>(null);
+  private pendingAction: (() => void) | null = null;
 
   gpuOptions = GPU_OPTIONS;
   getGpuLabel = getGpuLabel;
@@ -225,10 +226,8 @@ export class RequestsListComponent implements OnInit {
       message: 'Are you sure you want to cancel this request? This action cannot be undone.',
       confirmText: 'Cancel Request',
       variant: 'destructive',
-      onConfirm: () => {
-        this.cancelRequest(id);
-      },
     });
+    this.pendingAction = () => this.cancelRequest(id);
   }
 
   cancelRequest(id: string): void {
@@ -245,13 +244,14 @@ export class RequestsListComponent implements OnInit {
 
   cancelConfirm(): void {
     this.confirmDialog.set(null);
+    this.pendingAction = null;
   }
 
   executeConfirm(): void {
-    const dialog = this.confirmDialog();
-    if (dialog) {
-      dialog.onConfirm();
+    if (this.pendingAction) {
+      this.pendingAction();
       this.confirmDialog.set(null);
+      this.pendingAction = null;
     }
   }
 

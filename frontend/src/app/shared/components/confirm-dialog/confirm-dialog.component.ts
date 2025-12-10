@@ -1,10 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
-import {
-  HlmDialogImports,
-  HlmDialogComponent,
-} from '@spartan-ng/helm/dialog';
-import { HlmButtonDirective } from '@spartan-ng/helm/button';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmButton } from '@spartan-ng/helm/button';
 import { ConfirmDialogData } from '../../models/confirm-dialog.model';
 
 /**
@@ -32,7 +29,7 @@ import { ConfirmDialogData } from '../../models/confirm-dialog.model';
 @Component({
   selector: 'app-confirm-dialog',
   standalone: true,
-  imports: [BrnDialogImports, HlmDialogImports, HlmButtonDirective],
+  imports: [BrnDialogImports, HlmDialogImports, HlmButton],
   template: `
     <hlm-dialog [state]="data() ? 'open' : 'closed'" (closed)="onCancel()">
       <hlm-dialog-content *brnDialogContent="let ctx" class="sm:max-w-[400px]">

@@ -69,6 +69,7 @@ export class AdminRequestsComponent implements OnInit {
   stats = signal({ pending: 0, approved: 0, completed: 0 });
   exporting = signal(false);
   confirmDialog = signal<ConfirmDialogData | null>(null);
+  private pendingAction: (() => void) | null = null;
 
   // Filter state
   statusFilter: 'pending' | 'approved' | 'rejected' | 'completed' | 'all' = 'all';
@@ -152,8 +153,8 @@ export class AdminRequestsComponent implements OnInit {
       message: 'Are you sure you want to reject this request?',
       confirmText: 'Reject',
       variant: 'destructive',
-      onConfirm: () => this.updateStatus(request.id, 'rejected'),
     });
+    this.pendingAction = () => this.updateStatus(request.id, 'rejected');
   }
 
   completeRequest(request: AdminRequest): void {
@@ -202,13 +203,14 @@ export class AdminRequestsComponent implements OnInit {
 
   cancelConfirm(): void {
     this.confirmDialog.set(null);
+    this.pendingAction = null;
   }
 
   executeConfirm(): void {
-    const dialog = this.confirmDialog();
-    if (dialog) {
-      dialog.onConfirm();
+    if (this.pendingAction) {
+      this.pendingAction();
       this.confirmDialog.set(null);
+      this.pendingAction = null;
     }
   }
 
