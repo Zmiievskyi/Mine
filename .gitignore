@@ -1,0 +1,64 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+
+# Build outputs
+dist/
+build/
+.angular/
+
+# IDE
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temp files
+*.tmp
+*.temp
+.cache/
+
+# Local tool configs
+.mcp.json
+.playwright-mcp/
+.claude/
+
+# Local documentation (research, notes)
+docs/
+
+# Secrets/credentials
+hyperfusion_cookies.md
+
+# Gcore database configs (keep -example.json only)
+gcore-db-config.json
+gcore-*.config.json
+gcore-db-cli.sh
+gcore-db-config-example.json
+
+# Local scripts
+seed-admins.sh
+
+# Project instructions (private)
+CLAUDE.md
+seed-admins-cloud.sh
