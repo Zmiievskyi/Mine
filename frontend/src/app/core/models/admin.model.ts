@@ -1,6 +1,8 @@
 import { UserRole } from './user.model';
+import { KycStatus, KycData } from './kyc.model';
 
 export type { UserRole } from './user.model';
+export type { KycStatus, KycData } from './kyc.model';
 
 export interface UserNode {
   id: string;
@@ -21,6 +23,11 @@ export interface AdminUser {
   isActive: boolean;
   emailVerified?: boolean;
   provider?: 'local' | 'google' | 'github';
+  kycStatus?: KycStatus;
+  kycData?: KycData | null;
+  kycSubmittedAt?: Date | null;
+  kycVerifiedAt?: Date | null;
+  kycRejectionReason?: string | null;
   createdAt: Date;
   nodes: UserNode[];
 }
@@ -140,6 +147,7 @@ export interface AdminUsersQuery {
   search?: string;
   role?: 'user' | 'admin' | 'all';
   isActive?: boolean;
+  kycStatus?: KycStatus | 'all';
   sortBy?: 'nodeCount' | 'createdAt' | 'email';
   sortOrder?: 'asc' | 'desc';
 }

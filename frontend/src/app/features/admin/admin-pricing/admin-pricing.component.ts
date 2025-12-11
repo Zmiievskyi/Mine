@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -34,28 +34,29 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
     HlmCardImports,
   ],
   templateUrl: './admin-pricing.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminPricingComponent implements OnInit {
-  private adminService = inject(AdminService);
-  private notification = inject(NotificationService);
-  private destroyRef = inject(DestroyRef);
+  private readonly adminService = inject(AdminService);
+  private readonly notification = inject(NotificationService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  pricingConfigs = signal<PricingConfig[]>([]);
-  loading = signal(true);
-  error = signal<string | null>(null);
-  saving = signal<string | null>(null);
+  protected readonly pricingConfigs = signal<PricingConfig[]>([]);
+  protected readonly loading = signal(true);
+  protected readonly error = signal<string | null>(null);
+  protected readonly saving = signal<string | null>(null);
 
-  editingGpu = signal<string | null>(null);
-  editForm = signal<{ pricePerHour: string; isContactSales: boolean }>({
+  protected readonly editingGpu = signal<string | null>(null);
+  protected readonly editForm = signal<{ pricePerHour: string; isContactSales: boolean }>({
     pricePerHour: '',
     isContactSales: false,
   });
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.loadPricing();
   }
 
-  loadPricing(): void {
+  protected loadPricing(): void {
     this.loading.set(true);
     this.error.set(null);
 
@@ -71,7 +72,7 @@ export class AdminPricingComponent implements OnInit {
       });
   }
 
-  startEdit(config: PricingConfig): void {
+  protected startEdit(config: PricingConfig): void {
     this.editingGpu.set(config.gpuType);
     this.editForm.set({
       pricePerHour: config.pricePerHour?.toString() ?? '',
@@ -79,21 +80,21 @@ export class AdminPricingComponent implements OnInit {
     });
   }
 
-  cancelEdit(): void {
+  protected cancelEdit(): void {
     this.editingGpu.set(null);
   }
 
-  onContactSalesChange(event: Event): void {
+  protected onContactSalesChange(event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
     this.editForm.update((form) => ({ ...form, isContactSales: checked }));
   }
 
-  onPriceChange(event: Event): void {
+  protected onPriceChange(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.editForm.update((form) => ({ ...form, pricePerHour: value }));
   }
 
-  savePrice(gpuType: string): void {
+  protected savePrice(gpuType: string): void {
     const form = this.editForm();
     const dto: UpdatePricingDto = {
       isContactSales: form.isContactSales,
@@ -129,7 +130,7 @@ export class AdminPricingComponent implements OnInit {
       });
   }
 
-  formatPrice(config: PricingConfig): string {
+  protected formatPrice(config: PricingConfig): string {
     if (config.isContactSales || config.pricePerHour === null) {
       return 'Contact Sales';
     }

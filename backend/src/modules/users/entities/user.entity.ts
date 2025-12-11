@@ -9,6 +9,7 @@ import {
 import { Exclude } from 'class-transformer';
 import { UserNode } from './user-node.entity';
 import { NodeRequest } from '../../requests/entities/node-request.entity';
+import { KycStatus, KycData } from '../interfaces';
 
 export enum UserRole {
   USER = 'user',
@@ -83,6 +84,27 @@ export class User {
   @Column({ type: 'timestamp with time zone', nullable: true })
   @Exclude()
   verificationLockedUntil: Date | null;
+
+  // KYC Fields
+  @Column({
+    type: 'enum',
+    enum: KycStatus,
+    default: KycStatus.NOT_SUBMITTED,
+    name: 'kyc_status',
+  })
+  kycStatus: KycStatus;
+
+  @Column({ type: 'jsonb', nullable: true, name: 'kyc_data' })
+  kycData: KycData | null;
+
+  @Column({ type: 'timestamp with time zone', nullable: true, name: 'kyc_submitted_at' })
+  kycSubmittedAt: Date | null;
+
+  @Column({ type: 'timestamp with time zone', nullable: true, name: 'kyc_verified_at' })
+  kycVerifiedAt: Date | null;
+
+  @Column({ type: 'text', nullable: true, name: 'kyc_rejection_reason' })
+  kycRejectionReason: string | null;
 
   @OneToMany(() => UserNode, (userNode) => userNode.user)
   nodes: UserNode[];

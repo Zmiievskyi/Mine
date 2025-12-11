@@ -1,3 +1,5 @@
+import { KycStatus } from './kyc.model';
+
 export type UserRole = 'user' | 'admin';
 
 export interface User {
@@ -9,12 +11,14 @@ export interface User {
   avatarUrl?: string;
   provider?: 'local' | 'google' | 'github' | 'telegram';
   telegramUsername?: string;
+  kycStatus?: KycStatus;
   createdAt?: Date;
 }
 
 export interface LoginRequest {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface RegisterRequest {

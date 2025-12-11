@@ -38,6 +38,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'kyc',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/kyc/kyc-form.component').then(
+        (m) => m.KycFormComponent
+      ),
+  },
+  {
     path: 'admin',
     canActivate: [authGuard, adminGuard],
     loadChildren: () =>

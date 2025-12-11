@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideAlertTriangle } from '@ng-icons/lucide';
@@ -26,11 +26,12 @@ import { HlmButton } from '@spartan-ng/helm/button';
       </div>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmailVerificationBannerComponent {
-  private router = inject(Router);
+  private readonly router = inject(Router);
 
-  navigateToVerify(): void {
+  protected navigateToVerify(): void {
     this.router.navigate(['/auth/verify-email']);
   }
 }

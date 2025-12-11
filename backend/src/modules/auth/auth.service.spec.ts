@@ -4,6 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { UnauthorizedException, ConflictException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
+import { AuthTokenService } from './auth-token.service';
+import { AuthOAuthService } from './auth-oauth.service';
 import { UsersService } from '../users/users.service';
 import { EmailService } from '../email/email.service';
 import { RegisterDto, LoginDto } from './dto';
@@ -78,6 +80,25 @@ describe('AuthService', () => {
               if (key === 'app.bcryptRounds') return 12;
               return null;
             }),
+          },
+        },
+        {
+          provide: AuthTokenService,
+          useValue: {
+            generateTokenPair: jest.fn(),
+            refreshAccessToken: jest.fn(),
+            revokeRefreshToken: jest.fn(),
+            revokeAllUserSessions: jest.fn(),
+            getActiveSessionsCount: jest.fn(),
+            cleanupExpiredTokens: jest.fn(),
+          },
+        },
+        {
+          provide: AuthOAuthService,
+          useValue: {
+            googleLogin: jest.fn(),
+            githubLogin: jest.fn(),
+            telegramLogin: jest.fn(),
           },
         },
       ],

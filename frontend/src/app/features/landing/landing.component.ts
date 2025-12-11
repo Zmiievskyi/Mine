@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { NodesService } from '../../core/services/nodes.service';
@@ -44,31 +44,32 @@ import { LandingFooterComponent } from './components/landing-footer.component';
     LandingFooterComponent
   ],
   templateUrl: './landing.component.html',
-  styleUrl: './landing.component.scss'
+  styleUrl: './landing.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LandingComponent implements OnInit {
-  private authService = inject(AuthService);
-  private nodesService = inject(NodesService);
-  private router = inject(Router);
-  private destroyRef = inject(DestroyRef);
+  private readonly authService = inject(AuthService);
+  private readonly nodesService = inject(NodesService);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Navigation state
-  isMobileMenuOpen = false;
+  protected isMobileMenuOpen = false;
 
   // Network stats state
-  networkStats = signal<NetworkStats | null>(null);
-  statsLoading = signal(true);
-  statsError = signal<string | null>(null);
+  protected readonly networkStats = signal<NetworkStats | null>(null);
+  protected readonly statsLoading = signal(true);
+  protected readonly statsError = signal<string | null>(null);
 
   // Navigation links
-  navLinks = [
+  protected readonly navLinks = [
     { label: 'Features', href: '#features' },
     { label: 'How It Works', href: '#how-it-works' },
     { label: 'Pricing', href: '#pricing' },
     { label: 'FAQ', href: '#faq' }
   ];
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     // Redirect authenticated users to dashboard
     if (this.authService.isAuthenticated) {
       this.router.navigate(['/dashboard']);
@@ -101,14 +102,14 @@ export class LandingComponent implements OnInit {
   /**
    * Toggle mobile menu visibility
    */
-  toggleMobileMenu(): void {
+  protected toggleMobileMenu(): void {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
 
   /**
    * Scroll to specific section
    */
-  scrollToSection(sectionId: string): void {
+  protected scrollToSection(sectionId: string): void {
     const element = document.querySelector(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });

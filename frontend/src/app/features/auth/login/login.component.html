@@ -40,6 +40,19 @@
         />
       </div>
 
+      <div class="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="rememberMe"
+          name="rememberMe"
+          [(ngModel)]="rememberMe"
+          class="h-4 w-4 rounded border-gray-300 text-[var(--gcore-primary)] focus:ring-[var(--gcore-primary)]"
+        />
+        <label for="rememberMe" class="text-sm text-[var(--gcore-text-muted)] cursor-pointer select-none">
+          Remember me for 7 days
+        </label>
+      </div>
+
       <button hlmBtn type="submit" [disabled]="loading()" class="w-full">
         @if (loading()) {
           Signing in...

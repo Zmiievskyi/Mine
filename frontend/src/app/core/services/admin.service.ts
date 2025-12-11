@@ -112,4 +112,13 @@ export class AdminService {
   updatePricing(gpuType: string, data: UpdatePricingDto): Observable<PricingConfig> {
     return this.http.put<PricingConfig>(`${this.apiUrl}/pricing/${gpuType}`, data);
   }
+
+  // KYC Management
+  verifyKyc(userId: string): Observable<AdminUser> {
+    return this.http.put<AdminUser>(`${this.apiUrl}/users/${userId}/kyc/verify`, {});
+  }
+
+  rejectKyc(userId: string, reason: string): Observable<AdminUser> {
+    return this.http.put<AdminUser>(`${this.apiUrl}/users/${userId}/kyc/reject`, { reason });
+  }
 }

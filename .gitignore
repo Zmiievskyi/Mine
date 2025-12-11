@@ -34,6 +34,10 @@ yarn-error.log*
 coverage/
 .nyc_output/
 
+# File uploads (KYC documents) - only ignore root and backend uploads directories
+/uploads/
+/backend/uploads/
+
 # Temp files
 *.tmp
 *.temp

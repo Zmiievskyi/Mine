@@ -1,5 +1,4 @@
-import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, inject, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -17,7 +16,6 @@ import {
   selector: 'app-login',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     RouterLink,
     HlmButton,
@@ -28,38 +26,40 @@ import {
     TelegramOAuthButtonComponent,
   ],
   templateUrl: './login.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent implements OnInit {
-  private authService = inject(AuthService);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
-  private destroyRef = inject(DestroyRef);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
-  email = '';
-  password = '';
-  loading = signal(false);
-  error = signal<string | null>(null);
+  public email = '';
+  public password = '';
+  public rememberMe = false;
+  protected readonly loading = signal(false);
+  protected readonly error = signal<string | null>(null);
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     const errorParam = this.route.snapshot.queryParams['error'];
     if (errorParam) {
       this.error.set(decodeURIComponent(errorParam));
     }
   }
 
-  loginWithGoogle(): void {
+  protected loginWithGoogle(): void {
     this.authService.loginWithGoogle();
   }
 
-  loginWithGithub(): void {
+  protected loginWithGithub(): void {
     this.authService.loginWithGithub();
   }
 
-  loginWithTelegram(): void {
+  protected loginWithTelegram(): void {
     this.authService.loginWithTelegram();
   }
 
-  onSubmit(): void {
+  protected onSubmit(): void {
     if (!this.email || !this.password) {
       this.error.set('Please fill in all fields');
       return;
@@ -69,7 +69,7 @@ export class LoginComponent implements OnInit {
     this.error.set(null);
 
     this.authService
-      .login({ email: this.email, password: this.password })
+      .login({ email: this.email, password: this.password, rememberMe: this.rememberMe })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {

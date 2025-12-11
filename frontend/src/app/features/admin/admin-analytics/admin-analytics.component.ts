@@ -1,5 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
@@ -15,7 +14,6 @@ import { HlmButton } from '@spartan-ng/helm/button';
   selector: 'app-admin-analytics',
   standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     LayoutComponent,
     LoadingSpinnerComponent,
@@ -25,19 +23,20 @@ import { HlmButton } from '@spartan-ng/helm/button';
     HlmButton,
   ],
   templateUrl: './admin-analytics.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminAnalyticsComponent implements OnInit {
-  private adminService = inject(AdminService);
+  private readonly adminService = inject(AdminService);
 
-  analytics = signal<AdminAnalytics | null>(null);
-  loading = signal(true);
-  error = signal<string | null>(null);
+  protected readonly analytics = signal<AdminAnalytics | null>(null);
+  protected readonly loading = signal(true);
+  protected readonly error = signal<string | null>(null);
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.loadAnalytics();
   }
 
-  loadAnalytics(): void {
+  protected loadAnalytics(): void {
     this.loading.set(true);
     this.error.set(null);
 

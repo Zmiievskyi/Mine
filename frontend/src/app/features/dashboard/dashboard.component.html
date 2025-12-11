@@ -66,31 +66,64 @@
 
         <!-- Checklist Items -->
         <div class="space-y-3">
+          <!-- Step 1: Create account (always complete) -->
           <div class="flex items-center gap-3">
             <span class="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm">✓</span>
             <span class="text-[var(--gcore-text)] line-through opacity-60">Create your account</span>
           </div>
+
+          <!-- Step 2: Sign in (always complete) -->
           <div class="flex items-center gap-3">
             <span class="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm">✓</span>
             <span class="text-[var(--gcore-text)] line-through opacity-60">Sign in to dashboard</span>
           </div>
+
+          <!-- Step 3: Complete KYC Verification -->
+          <div class="flex items-center gap-3">
+            @if (isKycComplete()) {
+              <span class="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm">✓</span>
+              <span class="text-[var(--gcore-text)] line-through opacity-60">Complete KYC verification</span>
+            } @else if (isKycPending()) {
+              <span class="w-6 h-6 rounded-full bg-yellow-500 text-white flex items-center justify-center text-sm">⏳</span>
+              <span class="text-yellow-600 font-medium">KYC pending verification</span>
+            } @else if (isKycRejected()) {
+              <span class="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center text-sm">!</span>
+              <a routerLink="/kyc" class="text-red-600 hover:underline font-medium">
+                KYC rejected - Click to resubmit 👉
+              </a>
+            } @else {
+              <span class="w-6 h-6 rounded-full border-2 border-[var(--gcore-primary)] text-[var(--gcore-primary)] flex items-center justify-center text-sm font-bold">3</span>
+              <a routerLink="/kyc" class="text-[var(--gcore-primary)] hover:underline font-medium">
+                Complete KYC verification 👉
+              </a>
+            }
+          </div>
+
+          <!-- Step 4: Request your first node -->
           <div class="flex items-center gap-3">
             @if (nodes().length > 0) {
               <span class="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm">✓</span>
               <span class="text-[var(--gcore-text)] line-through opacity-60">Request your first node</span>
-            } @else {
-              <span class="w-6 h-6 rounded-full border-2 border-[var(--gcore-primary)] text-[var(--gcore-primary)] flex items-center justify-center text-sm font-bold">3</span>
+            } @else if (isKycComplete()) {
+              <span class="w-6 h-6 rounded-full border-2 border-[var(--gcore-primary)] text-[var(--gcore-primary)] flex items-center justify-center text-sm font-bold">4</span>
               <a routerLink="/nodes/request" class="text-[var(--gcore-primary)] hover:underline font-medium">
                 Request your first node 👉
               </a>
+            } @else {
+              <span class="w-6 h-6 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-sm">4</span>
+              <span class="text-[var(--gcore-text-muted)]">Request your first node</span>
             }
           </div>
-          <div class="flex items-center gap-3">
-            <span class="w-6 h-6 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-sm">4</span>
-            <span class="text-[var(--gcore-text-muted)]">Wait for node assignment (24-48h)</span>
-          </div>
+
+          <!-- Step 5: Wait for assignment -->
           <div class="flex items-center gap-3">
             <span class="w-6 h-6 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-sm">5</span>
+            <span class="text-[var(--gcore-text-muted)]">Wait for node assignment (24-48h)</span>
+          </div>
+
+          <!-- Step 6: Start earning -->
+          <div class="flex items-center gap-3">
+            <span class="w-6 h-6 rounded-full border-2 border-gray-300 text-gray-400 flex items-center justify-center text-sm">6</span>
             <span class="text-[var(--gcore-text-muted)]">Start earning GNK!</span>
           </div>
         </div>

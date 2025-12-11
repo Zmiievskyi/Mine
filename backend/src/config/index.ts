@@ -8,3 +8,4 @@ export { default as telegramConfig } from './telegram.config';
 export { default as retryConfig } from './retry.config';
 export { default as throttlerConfig } from './throttler.config';
 export { default as resendConfig } from './resend.config';
+export { default as s3Config } from './s3.config';

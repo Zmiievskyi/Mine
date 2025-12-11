@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.directive';
 
 /**
@@ -17,5 +17,6 @@ import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.
   standalone: true,
   imports: [ScrollRevealDirective],
   templateUrl: './managed-services-section.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManagedServicesSectionComponent {}

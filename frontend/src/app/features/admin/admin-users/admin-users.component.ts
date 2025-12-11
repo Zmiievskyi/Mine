@@ -1,5 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../core/services/admin.service';
@@ -7,7 +6,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
-import { AdminUser, AdminUserWithStats, UserNode, UserNodeWithStats, AssignNodeDto, UserRole, AdminUsersQuery } from '../../../core/models/admin.model';
+import { AdminUser, AdminUserWithStats, UserNode, UserNodeWithStats, AssignNodeDto, UserRole, AdminUsersQuery, KycStatus } from '../../../core/models/admin.model';
 import { AssignNodeModalComponent } from './assign-node-modal/assign-node-modal.component';
 import { UserListItemComponent } from './user-list-item/user-list-item.component';
 import { createDebounce, truncateAddress, downloadBlobWithDate, handleApiError, extractErrorMessage } from '../../../shared/utils';
@@ -19,12 +18,13 @@ import { HlmLabel } from '@spartan-ng/helm/label';
 import { BrnSelectImports } from '@spartan-ng/brain/select';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmCardImports } from '@spartan-ng/helm/card';
+import { BrnDialogImports } from '@spartan-ng/brain/dialog';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 
 @Component({
   selector: 'app-admin-users',
   standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     FormsModule,
     LayoutComponent,
@@ -38,42 +38,50 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
     BrnSelectImports,
     HlmSelectImports,
     HlmCardImports,
+    BrnDialogImports,
+    HlmDialogImports,
   ],
   templateUrl: './admin-users.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminUsersComponent implements OnInit {
-  private adminService = inject(AdminService);
-  private notification = inject(NotificationService);
-  protected Math = Math;
+  private readonly adminService = inject(AdminService);
+  private readonly notification = inject(NotificationService);
+  protected readonly Math = Math;
 
-  users = signal<AdminUser[]>([]);
-  meta = signal<{ page: number; limit: number; total: number; totalPages: number } | null>(null);
-  loading = signal(true);
-  error = signal<string | null>(null);
-  expandedUser = signal<string | null>(null);
-  expandedUserData = signal<AdminUserWithStats | null>(null);
-  expandedUserLoading = signal(false);
-  assigningUser = signal<AdminUser | null>(null);
-  assignError = signal<string | null>(null);
-  assigning = signal(false);
-  exporting = signal(false);
-  confirmDialog = signal<ConfirmDialogData | null>(null);
-  pendingAction: (() => void) | null = null;
+  protected readonly users = signal<AdminUser[]>([]);
+  protected readonly meta = signal<{ page: number; limit: number; total: number; totalPages: number } | null>(null);
+  protected readonly loading = signal(true);
+  protected readonly error = signal<string | null>(null);
+  protected readonly expandedUser = signal<string | null>(null);
+  protected readonly expandedUserData = signal<AdminUserWithStats | null>(null);
+  protected readonly expandedUserLoading = signal(false);
+  protected readonly assigningUser = signal<AdminUser | null>(null);
+  protected readonly assignError = signal<string | null>(null);
+  protected readonly assigning = signal(false);
+  protected readonly exporting = signal(false);
+  protected readonly confirmDialog = signal<ConfirmDialogData | null>(null);
+  private pendingAction: (() => void) | null = null;
 
   // Filter state
-  searchQuery = '';
-  roleFilter: 'user' | 'admin' | 'all' = 'all';
-  activeFilter: 'true' | 'false' | 'all' = 'all';
-  sortBy: 'nodeCount' | 'createdAt' | 'email' = 'createdAt';
-  currentPage = 1;
+  public searchQuery = '';
+  public roleFilter: 'user' | 'admin' | 'all' = 'all';
+  public activeFilter: 'true' | 'false' | 'all' = 'all';
+  public kycFilter: KycStatus | 'all' = 'all';
+  public sortBy: 'nodeCount' | 'createdAt' | 'email' = 'createdAt';
+  public currentPage = 1;
 
-  private searchDebounce = createDebounce();
+  // KYC rejection modal state
+  protected readonly rejectingUser = signal<AdminUser | null>(null);
+  protected readonly rejectionReason = signal('');
 
-  ngOnInit(): void {
+  private readonly searchDebounce = createDebounce();
+
+  public ngOnInit(): void {
     this.loadUsers();
   }
 
-  loadUsers(): void {
+  protected loadUsers(): void {
     this.loading.set(true);
     this.error.set(null);
 
@@ -83,6 +91,7 @@ export class AdminUsersComponent implements OnInit {
       search: this.searchQuery || undefined,
       role: this.roleFilter,
       isActive: this.activeFilter === 'all' ? undefined : this.activeFilter === 'true',
+      kycStatus: this.kycFilter === 'all' ? undefined : this.kycFilter,
       sortBy: this.sortBy,
       sortOrder: 'desc',
     };
@@ -97,19 +106,19 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
-  onFilterChange(): void {
+  protected onFilterChange(): void {
     this.searchDebounce(() => {
       this.currentPage = 1;
       this.loadUsers();
     }, DEBOUNCE_DELAYS.SEARCH);
   }
 
-  goToPage(page: number): void {
+  protected goToPage(page: number): void {
     this.currentPage = page;
     this.loadUsers();
   }
 
-  toggleUser(id: string): void {
+  protected toggleUser(id: string): void {
     if (this.expandedUser() === id) {
       this.expandedUser.set(null);
       this.expandedUserData.set(null);
@@ -132,7 +141,7 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
-  toggleRole(user: AdminUser): void {
+  protected toggleRole(user: AdminUser): void {
     const newRole: UserRole = user.role === 'admin' ? 'user' : 'admin';
     const action = newRole === 'admin' ? 'make admin' : 'remove admin privileges from';
 
@@ -155,7 +164,7 @@ export class AdminUsersComponent implements OnInit {
     };
   }
 
-  toggleActive(user: AdminUser): void {
+  protected toggleActive(user: AdminUser): void {
     const action = user.isActive ? 'deactivate' : 'activate';
 
     this.confirmDialog.set({
@@ -177,17 +186,17 @@ export class AdminUsersComponent implements OnInit {
     };
   }
 
-  openAssignModal(user: AdminUser): void {
+  protected openAssignModal(user: AdminUser): void {
     this.assignError.set(null);
     this.assigningUser.set(user);
   }
 
-  closeAssignModal(): void {
+  protected closeAssignModal(): void {
     this.assigningUser.set(null);
     this.assignError.set(null);
   }
 
-  assignNode(nodeData: AssignNodeDto): void {
+  protected assignNode(nodeData: AssignNodeDto): void {
     const user = this.assigningUser();
     if (!user) return;
 
@@ -204,7 +213,7 @@ export class AdminUsersComponent implements OnInit {
     });
   }
 
-  removeNode(userId: string, node: UserNode | UserNodeWithStats): void {
+  protected removeNode(userId: string, node: UserNode | UserNodeWithStats): void {
     const truncated = truncateAddress(node.nodeAddress);
 
     this.confirmDialog.set({
@@ -230,12 +239,12 @@ export class AdminUsersComponent implements OnInit {
     };
   }
 
-  onConfirmDialogCancel(): void {
+  protected onConfirmDialogCancel(): void {
     this.confirmDialog.set(null);
     this.pendingAction = null;
   }
 
-  onConfirmDialogConfirm(): void {
+  protected onConfirmDialogConfirm(): void {
     if (this.pendingAction) {
       this.pendingAction();
       this.confirmDialog.set(null);
@@ -243,7 +252,7 @@ export class AdminUsersComponent implements OnInit {
     }
   }
 
-  exportToCsv(): void {
+  protected exportToCsv(): void {
     this.exporting.set(true);
     this.adminService.exportUsers().subscribe({
       next: (blob) => {
@@ -254,6 +263,57 @@ export class AdminUsersComponent implements OnInit {
         this.notification.error('Failed to export users');
         this.exporting.set(false);
       },
+    });
+  }
+
+  // KYC Management Methods
+  protected verifyKyc(user: AdminUser): void {
+    this.confirmDialog.set({
+      title: 'Verify KYC',
+      message: `Are you sure you want to verify KYC for ${user.email}?`,
+      confirmText: 'Verify',
+      variant: 'default',
+    });
+
+    this.pendingAction = () => {
+      this.adminService.verifyKyc(user.id).subscribe({
+        next: () => {
+          this.notification.success('KYC verified successfully');
+          this.loadUsers();
+          if (this.expandedUser() === user.id) {
+            this.loadUserWithStats(user.id);
+          }
+        },
+        error: (err) => this.notification.error(extractErrorMessage(err, 'Failed to verify KYC')),
+      });
+    };
+  }
+
+  protected openRejectKycModal(user: AdminUser): void {
+    this.rejectingUser.set(user);
+    this.rejectionReason.set('');
+  }
+
+  protected closeRejectKycModal(): void {
+    this.rejectingUser.set(null);
+    this.rejectionReason.set('');
+  }
+
+  protected submitKycRejection(): void {
+    const user = this.rejectingUser();
+    const reason = this.rejectionReason();
+    if (!user || !reason.trim()) return;
+
+    this.adminService.rejectKyc(user.id, reason).subscribe({
+      next: () => {
+        this.notification.success('KYC rejected');
+        this.closeRejectKycModal();
+        this.loadUsers();
+        if (this.expandedUser() === user.id) {
+          this.loadUserWithStats(user.id);
+        }
+      },
+      error: (err) => this.notification.error(extractErrorMessage(err, 'Failed to reject KYC')),
     });
   }
 }

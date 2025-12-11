@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-node-detail-history',
@@ -14,5 +14,6 @@ import { Component } from '@angular/core';
       </p>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NodeDetailHistoryComponent {}

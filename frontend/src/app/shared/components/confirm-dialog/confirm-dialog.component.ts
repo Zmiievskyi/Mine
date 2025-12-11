@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -52,22 +52,23 @@ import { ConfirmDialogData } from '../../models/confirm-dialog.model';
       </hlm-dialog-content>
     </hlm-dialog>
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmDialogComponent {
   // Dialog data - when not null, dialog opens
-  data = input<ConfirmDialogData | null>(null);
+  public readonly data = input<ConfirmDialogData | null>(null);
 
   // Emitted when user confirms action
-  confirmed = output<void>();
+  public readonly confirmed = output<void>();
 
   // Emitted when user cancels or closes dialog
-  cancelled = output<void>();
+  public readonly cancelled = output<void>();
 
-  onConfirm(): void {
+  protected onConfirm(): void {
     this.confirmed.emit();
   }
 
-  onCancel(): void {
+  protected onCancel(): void {
     this.cancelled.emit();
   }
 }

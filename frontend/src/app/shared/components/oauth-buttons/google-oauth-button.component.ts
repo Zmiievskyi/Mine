@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 
 /**
@@ -47,14 +47,15 @@ import { HlmButton } from '@spartan-ng/helm/button';
       {{ label() }}
     </button>
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GoogleOAuthButtonComponent {
   /** Button label text */
-  label = input<string>('Sign in with Google');
+  public readonly label = input<string>('Sign in with Google');
 
   /** Whether the button is disabled */
-  disabled = input<boolean>(false);
+  public readonly disabled = input<boolean>(false);
 
   /** Emitted when button is clicked */
-  clicked = output<void>();
+  public readonly clicked = output<void>();
 }

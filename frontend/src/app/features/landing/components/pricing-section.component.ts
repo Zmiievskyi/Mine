@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.directive';
@@ -18,14 +18,15 @@ interface PricingItem {
   standalone: true,
   imports: [CommonModule, RouterModule, ScrollRevealDirective, DecimalPipe],
   templateUrl: './pricing-section.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PricingSectionComponent implements OnInit {
-  private nodesService = inject(NodesService);
+  private readonly nodesService = inject(NodesService);
 
-  pricing = signal<PricingItem[]>([]);
-  loading = signal(true);
+  protected readonly pricing = signal<PricingItem[]>([]);
+  protected readonly loading = signal(true);
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.loadPricing();
   }
 

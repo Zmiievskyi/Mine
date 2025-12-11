@@ -5,7 +5,9 @@ import {
   Get,
   UseGuards,
   Request,
+  Req,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
@@ -17,20 +19,57 @@ import {
   ApiBearerAuth,
   ApiExcludeEndpoint,
 } from '@nestjs/swagger';
-import type { Response } from 'express';
+import type { Request as ExpressRequest, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, VerifyEmailDto, TelegramAuthDto } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleProfile } from './strategies/google.strategy';
 import { GitHubProfile } from './strategies/github.strategy';
 
+// Extend Express Request to include cookies
+interface RequestWithCookies extends ExpressRequest {
+  cookies: { refresh_token?: string };
+}
+
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
+  private readonly REFRESH_TOKEN_COOKIE = 'refresh_token';
+
   constructor(
     private authService: AuthService,
     private configService: ConfigService,
   ) {}
+
+  /**
+   * Set refresh token as HttpOnly cookie.
+   */
+  private setRefreshTokenCookie(res: Response, refreshToken: string, expiresAt: Date): void {
+    const isSecure = this.configService.get<boolean>('jwt.cookieSecure') ?? false;
+    const domain = this.configService.get<string>('jwt.cookieDomain');
+
+    res.cookie(this.REFRESH_TOKEN_COOKIE, refreshToken, {
+      httpOnly: true,
+      secure: isSecure,
+      sameSite: 'strict',
+      path: '/api/auth', // Only sent to auth endpoints
+      expires: expiresAt,
+      ...(domain && { domain }),
+    });
+  }
+
+  /**
+   * Clear refresh token cookie.
+   */
+  private clearRefreshTokenCookie(res: Response): void {
+    const domain = this.configService.get<string>('jwt.cookieDomain');
+
+    res.clearCookie(this.REFRESH_TOKEN_COOKIE, {
+      httpOnly: true,
+      path: '/api/auth',
+      ...(domain && { domain }),
+    });
+  }
 
   @Post('register')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
@@ -38,8 +77,28 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'User registered successfully' })
   @ApiResponse({ status: 400, description: 'Validation error' })
   @ApiResponse({ status: 409, description: 'Email already exists' })
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  async register(
+    @Body() registerDto: RegisterDto,
+    @Req() req: RequestWithCookies,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.register(registerDto);
+
+    // Generate token pair and set refresh token cookie
+    const { accessToken, refreshToken, expiresAt } =
+      await this.authService.generateTokenPair(
+        result.user,
+        true, // New registrations get "remember me" by default
+        req.headers['user-agent'] as string,
+        req.ip,
+      );
+
+    this.setRefreshTokenCookie(res, refreshToken, expiresAt);
+
+    return {
+      user: result.user,
+      accessToken,
+    };
   }
 
   @Post('login')
@@ -50,8 +109,85 @@ export class AuthController {
     description: 'Login successful, returns JWT token',
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(
+    @Body() loginDto: LoginDto,
+    @Req() req: RequestWithCookies,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.login(loginDto);
+
+    // Generate token pair and set refresh token cookie
+    const { accessToken, refreshToken, expiresAt } =
+      await this.authService.generateTokenPair(
+        result.user,
+        loginDto.rememberMe ?? false,
+        req.headers['user-agent'] as string,
+        req.ip,
+      );
+
+    this.setRefreshTokenCookie(res, refreshToken, expiresAt);
+
+    return {
+      user: result.user,
+      accessToken,
+    };
+  }
+
+  @Post('refresh')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
+  @ApiOperation({ summary: 'Refresh access token using refresh token cookie' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns new access token',
+    schema: {
+      type: 'object',
+      properties: {
+        accessToken: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
+  async refresh(
+    @Req() req: RequestWithCookies,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = req.cookies?.refresh_token;
+
+    if (!refreshToken) {
+      this.clearRefreshTokenCookie(res);
+      throw new UnauthorizedException('No refresh token provided');
+    }
+
+    const { accessToken, refreshToken: newRefreshToken, expiresAt } =
+      await this.authService.refreshAccessToken(
+        refreshToken,
+        req.headers['user-agent'] as string,
+        req.ip,
+      );
+
+    this.setRefreshTokenCookie(res, newRefreshToken, expiresAt);
+
+    return { accessToken };
+  }
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Logout and revoke refresh token' })
+  @ApiResponse({ status: 200, description: 'Logged out successfully' })
+  async logout(
+    @Req() req: RequestWithCookies,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = req.cookies?.refresh_token;
+
+    if (refreshToken) {
+      await this.authService.revokeRefreshToken(refreshToken);
+    }
+
+    this.clearRefreshTokenCookie(res);
+
+    return { message: 'Logged out successfully' };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -124,7 +260,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   @ApiExcludeEndpoint()
   async googleCallback(
-    @Request() req: Request & { user: GoogleProfile },
+    @Req() req: ExpressRequest & { user: GoogleProfile },
     @Res() res: Response,
   ) {
     const frontendUrl =
@@ -134,12 +270,24 @@ export class AuthController {
     try {
       const result = await this.authService.googleLogin(req.user);
 
-      // Use URL fragment (#) instead of query params (?) for security:
+      // Generate token pair with refresh token
+      const { accessToken, refreshToken, expiresAt } =
+        await this.authService.generateTokenPair(
+          result.user,
+          true, // OAuth logins get "remember me" by default
+          req.headers['user-agent'] as string,
+          req.ip,
+        );
+
+      // Set refresh token cookie
+      this.setRefreshTokenCookie(res, refreshToken, expiresAt);
+
+      // Use URL fragment (#) for access token (security):
       // - Fragments are NOT sent to server in HTTP requests
       // - Fragments are NOT included in Referrer header
       // - Fragments are NOT logged in server access logs
       const params = new URLSearchParams({
-        token: result.accessToken,
+        token: accessToken,
         user: JSON.stringify(result.user),
       });
 
@@ -166,7 +314,7 @@ export class AuthController {
   @UseGuards(AuthGuard('github'))
   @ApiExcludeEndpoint()
   async githubCallback(
-    @Request() req: Request & { user: GitHubProfile },
+    @Req() req: ExpressRequest & { user: GitHubProfile },
     @Res() res: Response,
   ) {
     const frontendUrl =
@@ -176,8 +324,20 @@ export class AuthController {
     try {
       const result = await this.authService.githubLogin(req.user);
 
+      // Generate token pair with refresh token
+      const { accessToken, refreshToken, expiresAt } =
+        await this.authService.generateTokenPair(
+          result.user,
+          true, // OAuth logins get "remember me" by default
+          req.headers['user-agent'] as string,
+          req.ip,
+        );
+
+      // Set refresh token cookie
+      this.setRefreshTokenCookie(res, refreshToken, expiresAt);
+
       const params = new URLSearchParams({
-        token: result.accessToken,
+        token: accessToken,
         user: JSON.stringify(result.user),
       });
 
@@ -199,7 +359,27 @@ export class AuthController {
     description: 'Login successful, returns JWT token and user',
   })
   @ApiResponse({ status: 401, description: 'Invalid or expired Telegram authentication' })
-  async telegramVerify(@Body() telegramAuthDto: TelegramAuthDto) {
-    return this.authService.telegramLogin(telegramAuthDto);
+  async telegramVerify(
+    @Body() telegramAuthDto: TelegramAuthDto,
+    @Req() req: RequestWithCookies,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.telegramLogin(telegramAuthDto);
+
+    // Generate token pair and set refresh token cookie
+    const { accessToken, refreshToken, expiresAt } =
+      await this.authService.generateTokenPair(
+        result.user,
+        true, // Telegram logins get "remember me" by default
+        req.headers['user-agent'] as string,
+        req.ip,
+      );
+
+    this.setRefreshTokenCookie(res, refreshToken, expiresAt);
+
+    return {
+      user: result.user,
+      accessToken,
+    };
   }
 }

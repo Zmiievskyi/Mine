@@ -1,7 +1,7 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, inject, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminService } from '../../../core/services/admin.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { LayoutComponent, LoadingSpinnerComponent, PaginationComponent } from '../../../shared/components';
@@ -27,7 +27,6 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
   selector: 'app-admin-nodes',
   standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     FormsModule,
     LayoutComponent,
@@ -43,31 +42,33 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
     HlmCardImports,
   ],
   templateUrl: './admin-nodes.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminNodesComponent implements OnInit {
-  private adminService = inject(AdminService);
-  private notification = inject(NotificationService);
-  private route = inject(ActivatedRoute);
+  private readonly adminService = inject(AdminService);
+  private readonly notification = inject(NotificationService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
-  nodes = signal<AdminNodeWithUser[]>([]);
-  health = signal<NetworkHealthOverview | null>(null);
-  meta = signal<PaginationMeta | null>(null);
-  loading = signal(true);
-  error = signal<string | null>(null);
-  exporting = signal(false);
+  protected readonly nodes = signal<AdminNodeWithUser[]>([]);
+  protected readonly health = signal<NetworkHealthOverview | null>(null);
+  protected readonly meta = signal<PaginationMeta | null>(null);
+  protected readonly loading = signal(true);
+  protected readonly error = signal<string | null>(null);
+  protected readonly exporting = signal(false);
 
   // Filter state
-  searchQuery = '';
-  statusFilter: 'healthy' | 'jailed' | 'offline' | 'all' = 'all';
-  gpuFilter = '';
-  sortBy: 'earnings' | 'user' | 'createdAt' = 'createdAt';
-  currentPage = 1;
+  public searchQuery = '';
+  public statusFilter: 'healthy' | 'jailed' | 'offline' | 'all' = 'all';
+  public gpuFilter = '';
+  public sortBy: 'earnings' | 'user' | 'createdAt' = 'createdAt';
+  public currentPage = 1;
 
-  private searchDebounce = createDebounce();
+  private readonly searchDebounce = createDebounce();
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     // Read initial filter from query params
-    this.route.queryParams.subscribe((params) => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       if (params['status'] && ['healthy', 'jailed', 'offline', 'all'].includes(params['status'])) {
         this.statusFilter = params['status'];
       }
@@ -79,14 +80,17 @@ export class AdminNodesComponent implements OnInit {
     });
   }
 
-  loadHealth(): void {
-    this.adminService.getNetworkHealth().subscribe({
-      next: (health) => this.health.set(health),
-      error: () => {}, // Silent fail for health stats
-    });
+  private loadHealth(): void {
+    this.adminService
+      .getNetworkHealth()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (health) => this.health.set(health),
+        error: () => {}, // Silent fail for health stats
+      });
   }
 
-  loadNodes(): void {
+  protected loadNodes(): void {
     this.loading.set(true);
     this.error.set(null);
 
@@ -100,48 +104,54 @@ export class AdminNodesComponent implements OnInit {
       sortOrder: 'desc',
     };
 
-    this.adminService.getAllNodes(query).subscribe({
-      next: (response) => {
-        this.nodes.set(response.data);
-        this.meta.set(response.meta);
-        this.loading.set(false);
-      },
-      error: (err) => handleApiError(err, 'Failed to load nodes', this.error, this.loading),
-    });
+    this.adminService
+      .getAllNodes(query)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.nodes.set(response.data);
+          this.meta.set(response.meta);
+          this.loading.set(false);
+        },
+        error: (err) => handleApiError(err, 'Failed to load nodes', this.error, this.loading),
+      });
   }
 
-  onFilterChange(): void {
+  protected onFilterChange(): void {
     this.searchDebounce(() => {
       this.currentPage = 1;
       this.loadNodes();
     }, DEBOUNCE_DELAYS.SEARCH);
   }
 
-  goToPage(page: number): void {
+  protected goToPage(page: number): void {
     this.currentPage = page;
     this.loadNodes();
   }
 
-  getTruncatedAddress = truncateAddress;
-  getStatusVariant = getNodeStatusVariant;
+  protected readonly getTruncatedAddress = truncateAddress;
+  protected readonly getStatusVariant = getNodeStatusVariant;
 
-  copyAddress(address: string): void {
+  protected copyAddress(address: string): void {
     navigator.clipboard.writeText(address).then(() => {
       this.notification.success('Address copied to clipboard');
     });
   }
 
-  exportToCsv(): void {
+  protected exportToCsv(): void {
     this.exporting.set(true);
-    this.adminService.exportNodes().subscribe({
-      next: (blob) => {
-        downloadBlobWithDate(blob, 'nodes');
-        this.exporting.set(false);
-      },
-      error: () => {
-        this.notification.error('Failed to export nodes');
-        this.exporting.set(false);
-      },
-    });
+    this.adminService
+      .exportNodes()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (blob) => {
+          downloadBlobWithDate(blob, 'nodes');
+          this.exporting.set(false);
+        },
+        error: () => {
+          this.notification.error('Failed to export nodes');
+          this.exporting.set(false);
+        },
+      });
   }
 }

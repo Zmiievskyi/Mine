@@ -1,6 +1,6 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, inject, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin } from 'rxjs';
 import { AdminService } from '../../../core/services/admin.service';
 import { LayoutComponent } from '../../../shared/components/layout/layout.component';
@@ -10,18 +10,19 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, LayoutComponent, HlmCardImports],
+  imports: [RouterLink, LayoutComponent, HlmCardImports],
   templateUrl: './admin-dashboard.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminDashboardComponent implements OnInit {
-  stats = signal<AdminDashboardStats>({
+  protected readonly stats = signal<AdminDashboardStats>({
     totalUsers: 0,
     totalNodes: 0,
     pendingRequests: 0,
     approvedRequests: 0,
   });
 
-  networkHealth = signal<NetworkHealthOverview>({
+  protected readonly networkHealth = signal<NetworkHealthOverview>({
     totalNodes: 0,
     healthyNodes: 0,
     jailedNodes: 0,
@@ -30,18 +31,21 @@ export class AdminDashboardComponent implements OnInit {
     totalEarnings: '0',
   });
 
-  private adminService = inject(AdminService);
+  private readonly adminService = inject(AdminService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     forkJoin({
       stats: this.adminService.getDashboardStats(),
       health: this.adminService.getNetworkHealth(),
-    }).subscribe({
-      next: ({ stats, health }) => {
-        this.stats.set(stats);
-        this.networkHealth.set(health);
-      },
-      error: () => {},
-    });
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ stats, health }) => {
+          this.stats.set(stats);
+          this.networkHealth.set(health);
+        },
+        error: () => {},
+      });
   }
 }

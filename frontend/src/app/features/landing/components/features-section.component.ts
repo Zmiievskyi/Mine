@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.directive';
 
 /**
@@ -13,6 +13,7 @@ import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.
   selector: 'app-features-section',
   standalone: true,
   imports: [ScrollRevealDirective],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section id="features" class="py-16 md:py-24">
       <div class="mx-auto w-full max-w-screen-xl px-4 md:px-12 lg:px-20">

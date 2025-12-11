@@ -1,4 +1,4 @@
-import { Component, input, output, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, computed } from '@angular/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 
 /**
@@ -47,35 +47,36 @@ import { HlmButton } from '@spartan-ng/helm/button';
       </div>
     }
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaginationComponent {
   // Inputs
-  meta = input<{ page: number; limit: number; total: number; totalPages: number } | null>(null);
-  entityName = input<string>('items');
+  public readonly meta = input<{ page: number; limit: number; total: number; totalPages: number } | null>(null);
+  public readonly entityName = input<string>('items');
 
   // Outputs
-  pageChange = output<number>();
+  public readonly pageChange = output<number>();
 
   // Computed properties
-  startItem = computed(() => {
+  protected readonly startItem = computed(() => {
     const m = this.meta();
     return m ? (m.page - 1) * m.limit + 1 : 0;
   });
 
-  endItem = computed(() => {
+  protected readonly endItem = computed(() => {
     const m = this.meta();
     return m ? Math.min(m.page * m.limit, m.total) : 0;
   });
 
   // Methods
-  previousPage(): void {
+  protected previousPage(): void {
     const m = this.meta();
     if (m && m.page > 1) {
       this.pageChange.emit(m.page - 1);
     }
   }
 
-  nextPage(): void {
+  protected nextPage(): void {
     const m = this.meta();
     if (m && m.page < m.totalPages) {
       this.pageChange.emit(m.page + 1);

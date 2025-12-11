@@ -33,7 +33,9 @@ import {
   NodeParamsDto,
   AdminNodesQueryDto,
   AdminUsersQueryDto,
+  RejectKycDto,
 } from './dto';
+import { UsersService } from '../users/users.service';
 import { UpdatePricingDto, PricingResponseDto } from '../pricing/dto';
 import { User } from '../users/entities/user.entity';
 import { UserNode } from '../users/entities/user-node.entity';
@@ -49,6 +51,7 @@ export class AdminController {
     private analyticsService: AdminAnalyticsService,
     private exportService: AdminExportService,
     private pricingService: PricingService,
+    private usersService: UsersService,
   ) {}
 
   @Get('dashboard')
@@ -225,6 +228,46 @@ export class AdminController {
     return this.pricingService.updatePricing(gpuType, dto, req.user.id);
   }
 
+  // KYC Management
+  @Put('users/:id/kyc/verify')
+  @ApiOperation({ summary: 'Verify user KYC' })
+  @ApiParam({ name: 'id', description: 'User UUID' })
+  @ApiResponse({ status: 200, description: 'KYC verified' })
+  @ApiResponse({ status: 400, description: 'KYC not pending or user not found' })
+  async verifyKyc(@Param() params: UuidParamDto) {
+    const user = await this.usersService.verifyKyc(params.id);
+    return this.transformUserWithKyc(user);
+  }
+
+  @Put('users/:id/kyc/reject')
+  @ApiOperation({ summary: 'Reject user KYC' })
+  @ApiParam({ name: 'id', description: 'User UUID' })
+  @ApiResponse({ status: 200, description: 'KYC rejected' })
+  @ApiResponse({ status: 400, description: 'KYC not pending or user not found' })
+  async rejectKyc(
+    @Param() params: UuidParamDto,
+    @Body() rejectDto: RejectKycDto,
+  ) {
+    const user = await this.usersService.rejectKyc(params.id, rejectDto.reason);
+    return this.transformUserWithKyc(user);
+  }
+
+  private transformUserWithKyc(user: User) {
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      isActive: user.isActive,
+      kycStatus: user.kycStatus,
+      kycData: user.kycData,
+      kycSubmittedAt: user.kycSubmittedAt,
+      kycVerifiedAt: user.kycVerifiedAt,
+      kycRejectionReason: user.kycRejectionReason,
+      createdAt: user.createdAt,
+    };
+  }
+
   private transformUserSummary(user: User & { nodeCount?: number }) {
     return {
       id: user.id,
@@ -232,6 +275,7 @@ export class AdminController {
       name: user.name,
       role: user.role,
       isActive: user.isActive,
+      kycStatus: user.kycStatus,
       createdAt: user.createdAt,
       nodeCount: user.nodeCount || 0,
     };

@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { HlmButton } from '@spartan-ng/helm/button';
 
 /**
@@ -42,18 +42,19 @@ import { HlmButton } from '@spartan-ng/helm/button';
     :host {
       display: block;
     }
-  `]
+  `],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ErrorAlertComponent {
   /** Error message to display (required) */
-  message = input.required<string>();
+  public readonly message = input.required<string>();
 
   /** Alert title (defaults to "Error") */
-  title = input<string>('Error');
+  public readonly title = input<string>('Error');
 
   /** Whether to show retry button (defaults to true) */
-  showRetry = input<boolean>(true);
+  public readonly showRetry = input<boolean>(true);
 
   /** Emits when retry button is clicked */
-  retry = output<void>();
+  public readonly retry = output<void>();
 }

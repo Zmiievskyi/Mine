@@ -1,5 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { TelegramAuthData } from '../../../core/models/user.model';
@@ -7,16 +6,17 @@ import { TelegramAuthData } from '../../../core/models/user.model';
 @Component({
   selector: 'app-telegram-callback',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink],
   templateUrl: './telegram-callback.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TelegramCallbackComponent implements OnInit {
-  private router = inject(Router);
-  private authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
-  error = signal<string | null>(null);
+  protected readonly error = signal<string | null>(null);
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     // Telegram returns: #tgAuthResult=BASE64_ENCODED_JSON
     const fragment = window.location.hash.substring(1);
     const params = new URLSearchParams(fragment);

@@ -1,4 +1,4 @@
-import { Component, signal, inject, DestroyRef, ViewChildren, QueryList, ElementRef, afterNextRender, OnInit } from '@angular/core';
+import { Component, signal, inject, DestroyRef, ViewChildren, QueryList, ElementRef, afterNextRender, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../core/services/auth.service';
@@ -10,22 +10,22 @@ import { HlmButton } from '@spartan-ng/helm/button';
   standalone: true,
   imports: [HlmButton],
   templateUrl: './verify-email.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VerifyEmailComponent implements OnInit {
-  private authService = inject(AuthService);
-  private router = inject(Router);
-  private destroyRef = inject(DestroyRef);
-  private notify = inject(NotificationService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly notify = inject(NotificationService);
 
   @ViewChildren('digitInput') digitInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
-  digits = signal<string[]>(['', '', '', '', '', '']);
-  loading = signal(false);
-  resending = signal(false);
-  error = signal<string | null>(null);
-  resendCooldown = signal(0);
-
-  userEmail = signal(this.authService.currentUser?.email || '');
+  protected readonly digits = signal<string[]>(['', '', '', '', '', '']);
+  protected readonly loading = signal(false);
+  protected readonly resending = signal(false);
+  protected readonly error = signal<string | null>(null);
+  protected readonly resendCooldown = signal(0);
+  protected readonly userEmail = signal(this.authService.currentUser?.email || '');
 
   private cooldownInterval?: number;
 
@@ -36,7 +36,7 @@ export class VerifyEmailComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     // Redirect to dashboard if user is already verified
     // (email verification is currently disabled - all users are auto-verified)
     const user = this.authService.currentUser;
@@ -45,7 +45,7 @@ export class VerifyEmailComponent implements OnInit {
     }
   }
 
-  onDigitInput(event: Event, index: number): void {
+  protected onDigitInput(event: Event, index: number): void {
     const input = event.target as HTMLInputElement;
     const value = input.value;
 
@@ -76,7 +76,7 @@ export class VerifyEmailComponent implements OnInit {
     }
   }
 
-  onKeyDown(event: KeyboardEvent, index: number): void {
+  protected onKeyDown(event: KeyboardEvent, index: number): void {
     // Handle backspace
     if (event.key === 'Backspace') {
       const currentDigits = [...this.digits()];
@@ -96,7 +96,7 @@ export class VerifyEmailComponent implements OnInit {
     }
   }
 
-  onPaste(event: ClipboardEvent): void {
+  protected onPaste(event: ClipboardEvent): void {
     event.preventDefault();
     const pasteData = event.clipboardData?.getData('text') || '';
 
@@ -119,11 +119,11 @@ export class VerifyEmailComponent implements OnInit {
     }
   }
 
-  isComplete(): boolean {
+  protected isComplete(): boolean {
     return this.digits().every(digit => digit !== '');
   }
 
-  verify(): void {
+  protected verify(): void {
     if (!this.isComplete() || this.loading()) {
       return;
     }
@@ -158,7 +158,7 @@ export class VerifyEmailComponent implements OnInit {
       });
   }
 
-  resendCode(): void {
+  protected resendCode(): void {
     if (this.resending() || this.resendCooldown() > 0) {
       return;
     }

@@ -64,6 +64,23 @@
           </brn-select>
         </div>
         <div>
+          <label hlmLabel>KYC Status</label>
+          <brn-select [(ngModel)]="kycFilter" (ngModelChange)="onFilterChange()" class="w-full mt-1">
+            <hlm-select-trigger>
+              <hlm-select-value />
+            </hlm-select-trigger>
+            <hlm-select-content>
+              <hlm-option value="all">All KYC</hlm-option>
+              <hlm-option value="not_submitted">Not Submitted</hlm-option>
+              <hlm-option value="pending">Pending</hlm-option>
+              <hlm-option value="verified">Verified</hlm-option>
+              <hlm-option value="rejected">Rejected</hlm-option>
+            </hlm-select-content>
+          </brn-select>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+        <div>
           <label hlmLabel>Sort By</label>
           <brn-select [(ngModel)]="sortBy" (ngModelChange)="onFilterChange()" class="w-full mt-1">
             <hlm-select-trigger>
@@ -111,6 +128,8 @@
           (activeToggle)="toggleActive(user)"
           (assignNode)="openAssignModal(user)"
           (nodeRemove)="removeNode(user.id, $event)"
+          (kycVerify)="verifyKyc(user)"
+          (kycReject)="openRejectKycModal(user)"
         />
       }
     </div>
@@ -168,4 +187,39 @@
     (confirmed)="onConfirmDialogConfirm()"
     (cancelled)="onConfirmDialogCancel()"
   />
+
+  <!-- KYC Rejection Modal -->
+  <hlm-dialog [state]="rejectingUser() ? 'open' : 'closed'" (closed)="closeRejectKycModal()">
+    <hlm-dialog-content *brnDialogContent="let ctx" class="sm:max-w-md">
+      <hlm-dialog-header>
+        <h3 hlmDialogTitle>Reject KYC</h3>
+        <p hlmDialogDescription>
+          Provide a reason for rejecting KYC for {{ rejectingUser()?.email }}
+        </p>
+      </hlm-dialog-header>
+
+      <div class="py-4">
+        <label hlmLabel>Rejection Reason *</label>
+        <textarea
+          hlmInput
+          class="w-full mt-2 min-h-[100px]"
+          placeholder="Enter reason for rejection..."
+          [ngModel]="rejectionReason()"
+          (ngModelChange)="rejectionReason.set($event)"
+        ></textarea>
+      </div>
+
+      <hlm-dialog-footer>
+        <button hlmBtn variant="outline" (click)="closeRejectKycModal()">Cancel</button>
+        <button
+          hlmBtn
+          variant="destructive"
+          [disabled]="!rejectionReason().trim()"
+          (click)="submitKycRejection()"
+        >
+          Reject KYC
+        </button>
+      </hlm-dialog-footer>
+    </hlm-dialog-content>
+  </hlm-dialog>
 </app-layout>

@@ -1,5 +1,4 @@
-import { Component, signal, inject, DestroyRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, inject, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -17,7 +16,6 @@ import {
   selector: 'app-register',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     RouterLink,
     HlmButton,
@@ -28,31 +26,32 @@ import {
     TelegramOAuthButtonComponent,
   ],
   templateUrl: './register.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegisterComponent {
-  private authService = inject(AuthService);
-  private router = inject(Router);
-  private destroyRef = inject(DestroyRef);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
-  name = '';
-  email = '';
-  password = '';
-  loading = signal(false);
-  error = signal<string | null>(null);
+  public name = '';
+  public email = '';
+  public password = '';
+  protected readonly loading = signal(false);
+  protected readonly error = signal<string | null>(null);
 
-  signUpWithGoogle(): void {
+  protected signUpWithGoogle(): void {
     this.authService.loginWithGoogle();
   }
 
-  signUpWithGithub(): void {
+  protected signUpWithGithub(): void {
     this.authService.loginWithGithub();
   }
 
-  signUpWithTelegram(): void {
+  protected signUpWithTelegram(): void {
     this.authService.loginWithTelegram();
   }
 
-  onSubmit(): void {
+  protected onSubmit(): void {
     if (!this.name || !this.email || !this.password) {
       this.error.set('Please fill in all fields');
       return;

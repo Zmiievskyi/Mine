@@ -22,6 +22,18 @@ export default registerAs('jwt', () => {
 
   return {
     secret: secret || DEV_SECRET,
+    // Access token (short-lived, in Authorization header)
+    accessTokenExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
+    // Refresh token (long-lived, in HttpOnly cookie) - with "Remember me"
+    refreshTokenExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+    // Refresh token without "Remember me"
+    refreshTokenShortExpiresIn: process.env.JWT_REFRESH_SHORT_EXPIRES_IN || '24h',
+    // Cookie settings
+    cookieDomain: process.env.COOKIE_DOMAIN || undefined,
+    cookieSecure: nodeEnv === 'production',
+    // Max concurrent sessions per user
+    maxSessions: parseInt(process.env.MAX_SESSIONS || '5', 10),
+    // Legacy: keep for backward compatibility during migration
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   };
 });

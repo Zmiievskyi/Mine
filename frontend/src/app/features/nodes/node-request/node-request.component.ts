@@ -1,5 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { RequestsService } from '../../../core/services/requests.service';
@@ -21,7 +20,6 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
   selector: 'app-node-request',
   standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     FormsModule,
     LayoutComponent,
@@ -32,46 +30,47 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
     HlmSelectImports,
   ],
   templateUrl: './node-request.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NodeRequestComponent {
-  private requestsService = inject(RequestsService);
-  private router = inject(Router);
+  private readonly requestsService = inject(RequestsService);
+  private readonly router = inject(Router);
 
-  gpuOptions = GPU_OPTIONS;
-  regionOptions = REGION_OPTIONS;
+  protected readonly gpuOptions = GPU_OPTIONS;
+  protected readonly regionOptions = REGION_OPTIONS;
 
-  formData: CreateRequestDto = {
+  public formData: CreateRequestDto = {
     gpuType: 'H100',
     gpuCount: 1,
     region: '',
     message: '',
   };
 
-  submitting = signal(false);
-  success = signal(false);
-  error = signal<string | null>(null);
+  protected readonly submitting = signal(false);
+  protected readonly success = signal(false);
+  protected readonly error = signal<string | null>(null);
 
-  incrementCount(): void {
+  protected incrementCount(): void {
     if (this.formData.gpuCount < 10) {
       this.formData.gpuCount++;
     }
   }
 
-  decrementCount(): void {
+  protected decrementCount(): void {
     if (this.formData.gpuCount > 1) {
       this.formData.gpuCount--;
     }
   }
 
-  getGpuLabel(type: GpuType): string {
+  protected getGpuLabel(type: GpuType): string {
     return this.gpuOptions.find((g) => g.value === type)?.label || type;
   }
 
-  getRegionLabel(value: string | undefined): string {
+  protected getRegionLabel(value: string | undefined): string {
     return this.regionOptions.find((r) => r.value === value)?.label || '';
   }
 
-  onSubmit(): void {
+  protected onSubmit(): void {
     if (!this.formData.gpuType) {
       this.error.set('Please select a GPU type');
       return;
@@ -96,7 +95,7 @@ export class NodeRequestComponent {
     });
   }
 
-  resetForm(): void {
+  protected resetForm(): void {
     this.formData = {
       gpuType: 'H100',
       gpuCount: 1,

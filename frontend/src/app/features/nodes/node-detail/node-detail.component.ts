@@ -1,5 +1,4 @@
-import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, inject, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NodesService } from '../../../core/services/nodes.service';
@@ -19,7 +18,6 @@ import { HlmBadge } from '@spartan-ng/helm/badge';
   selector: 'app-node-detail',
   standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     LayoutComponent,
     LoadingSpinnerComponent,
@@ -32,19 +30,20 @@ import { HlmBadge } from '@spartan-ng/helm/badge';
     HlmBadge,
   ],
   templateUrl: './node-detail.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NodeDetailComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private nodesService = inject(NodesService);
-  private destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly nodesService = inject(NodesService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  node = signal<NodeDetail | null>(null);
-  loading = signal(true);
-  error = signal<string | null>(null);
+  protected readonly node = signal<NodeDetail | null>(null);
+  protected readonly loading = signal(true);
+  protected readonly error = signal<string | null>(null);
 
   private nodeAddress: string = '';
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.route.params
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((params) => {
@@ -53,7 +52,7 @@ export class NodeDetailComponent implements OnInit {
       });
   }
 
-  loadNode(): void {
+  protected loadNode(): void {
     if (!this.nodeAddress) return;
 
     this.loading.set(true);
@@ -75,6 +74,6 @@ export class NodeDetailComponent implements OnInit {
       });
   }
 
-  getNodeStatusVariant = getNodeStatusVariant;
-  truncateAddress = truncateAddress;
+  protected readonly getNodeStatusVariant = getNodeStatusVariant;
+  protected readonly truncateAddress = truncateAddress;
 }

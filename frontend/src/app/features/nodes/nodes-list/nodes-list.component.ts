@@ -1,5 +1,4 @@
-import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, inject, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NodesService } from '../../../core/services/nodes.service';
@@ -14,7 +13,6 @@ import { HlmButton } from '@spartan-ng/helm/button';
   selector: 'app-nodes-list',
   standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     ErrorAlertComponent,
     LayoutComponent,
@@ -24,20 +22,21 @@ import { HlmButton } from '@spartan-ng/helm/button';
     HlmButton
   ],
   templateUrl: './nodes-list.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NodesListComponent implements OnInit {
-  private nodesService = inject(NodesService);
-  private destroyRef = inject(DestroyRef);
+  private readonly nodesService = inject(NodesService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  nodes = signal<Node[]>([]);
-  loading = signal(true);
-  error = signal<string | null>(null);
+  protected readonly nodes = signal<Node[]>([]);
+  protected readonly loading = signal(true);
+  protected readonly error = signal<string | null>(null);
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.loadNodes();
   }
 
-  loadNodes(): void {
+  protected loadNodes(): void {
     this.loading.set(true);
     this.error.set(null);
 
@@ -54,17 +53,17 @@ export class NodesListComponent implements OnInit {
   }
 
   // Assign utility functions for template access
-  getStatusVariant = getNodeStatusVariant;
-  truncateAddress = truncateAddress;
-  getUptimeBarClass = getUptimeBarClass;
-  getRateClass = getRateClass;
+  protected readonly getStatusVariant = getNodeStatusVariant;
+  protected readonly truncateAddress = truncateAddress;
+  protected readonly getUptimeBarClass = getUptimeBarClass;
+  protected readonly getRateClass = getRateClass;
 
-  getTotalEarnings(): number {
+  protected getTotalEarnings(): number {
     return this.nodes().reduce((sum, node) => sum + node.earnedCoins, 0);
   }
 
   // Check if node has problems (>10% missed or invalid rate, or jailed)
-  isProblematicNode(node: Node): boolean {
+  protected isProblematicNode(node: Node): boolean {
     return (
       (node.missedRate || 0) > 0.1 ||
       (node.invalidationRate || 0) > 0.1 ||

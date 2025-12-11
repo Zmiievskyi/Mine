@@ -1,5 +1,4 @@
-import { Component, input, output, signal, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input, output, signal, effect, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminUser, AssignNodeDto } from '../../../../core/models/admin.model';
 import { GPU_OPTIONS } from '../../../../core/models/request.model';
@@ -16,7 +15,6 @@ import { HlmLabel } from '@spartan-ng/helm/label';
   selector: 'app-assign-node-modal',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     BrnDialogImports,
     HlmDialogImports,
@@ -28,19 +26,22 @@ import { HlmLabel } from '@spartan-ng/helm/label';
     HlmLabel,
   ],
   templateUrl: './assign-node-modal.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssignNodeModalComponent {
-  user = input<AdminUser | null>(null);
-  isOpen = input(false);
-  errorMessage = input<string | null>(null);
-  isSubmitting = input(false);
+  // Inputs - public API for parent components
+  public readonly user = input<AdminUser | null>(null);
+  public readonly isOpen = input(false);
+  public readonly errorMessage = input<string | null>(null);
+  public readonly isSubmitting = input(false);
 
-  close = output<void>();
-  assign = output<AssignNodeDto>();
+  // Outputs - public API for parent components
+  public readonly close = output<void>();
+  public readonly assign = output<AssignNodeDto>();
 
-  error = signal<string | null>(null);
-  submitting = signal(false);
-  gpuOptions = GPU_OPTIONS;
+  protected readonly error = signal<string | null>(null);
+  protected readonly submitting = signal(false);
+  protected readonly gpuOptions = GPU_OPTIONS;
 
   constructor() {
     // Sync external errorMessage to internal error signal
@@ -53,28 +54,28 @@ export class AssignNodeModalComponent {
     });
   }
 
-  formData: AssignNodeDto = {
+  public formData: AssignNodeDto = {
     nodeAddress: '',
     label: '',
     gpuType: '',
     notes: '',
   };
 
-  isValid(): boolean {
+  protected isValid(): boolean {
     return !!this.formData.nodeAddress.trim();
   }
 
-  onAssign(): void {
+  protected onAssign(): void {
     if (!this.isValid()) return;
     this.assign.emit({ ...this.formData });
   }
 
-  onClose(): void {
+  protected onClose(): void {
     this.resetForm();
     this.close.emit();
   }
 
-  resetForm(): void {
+  private resetForm(): void {
     this.formData = {
       nodeAddress: '',
       label: '',

@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, AuthProvider } from './entities/user.entity';
+import { KycStatus, KycData } from './interfaces';
+import { SubmitKycDto } from './dto';
 
 @Injectable()
 export class UsersService {
@@ -194,5 +196,100 @@ export class UsersService {
     await this.usersRepository.update(userId, {
       emailVerified: verified,
     });
+  }
+
+  // KYC Methods
+  async getKycStatus(userId: string): Promise<{
+    status: KycStatus;
+    data: KycData | null;
+    submittedAt: Date | null;
+    verifiedAt: Date | null;
+    rejectionReason: string | null;
+  }> {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return {
+      status: user.kycStatus,
+      data: user.kycData,
+      submittedAt: user.kycSubmittedAt,
+      verifiedAt: user.kycVerifiedAt,
+      rejectionReason: user.kycRejectionReason,
+    };
+  }
+
+  async submitKyc(userId: string, kycDto: SubmitKycDto): Promise<User> {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    // Don't allow resubmission if already verified
+    if (user.kycStatus === KycStatus.VERIFIED) {
+      throw new BadRequestException('KYC is already verified');
+    }
+
+    const kycData: KycData = {
+      accountType: kycDto.accountType,
+      firstName: kycDto.firstName,
+      lastName: kycDto.lastName,
+      email: kycDto.email,
+      countryOfResidence: kycDto.countryOfResidence,
+      address: kycDto.address,
+      companyName: kycDto.companyName,
+      companyAddress: kycDto.companyAddress,
+      companyRegistrationNumber: kycDto.companyRegistrationNumber,
+      companyVatNumber: kycDto.companyVatNumber,
+      companyRepresentativeName: kycDto.companyRepresentativeName,
+      hasParentCompanyAbroad: kycDto.hasParentCompanyAbroad,
+      residencyDocumentUrl: kycDto.residencyDocumentUrl,
+      marketingConsent: kycDto.marketingConsent,
+    };
+
+    await this.usersRepository.update(userId, {
+      kycStatus: KycStatus.PENDING,
+      kycData,
+      kycSubmittedAt: new Date(),
+      kycRejectionReason: null, // Clear previous rejection reason
+    });
+
+    return this.findById(userId) as Promise<User>;
+  }
+
+  async verifyKyc(userId: string): Promise<User> {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (user.kycStatus !== KycStatus.PENDING) {
+      throw new BadRequestException('KYC is not pending verification');
+    }
+
+    await this.usersRepository.update(userId, {
+      kycStatus: KycStatus.VERIFIED,
+      kycVerifiedAt: new Date(),
+    });
+
+    return this.findById(userId) as Promise<User>;
+  }
+
+  async rejectKyc(userId: string, reason: string): Promise<User> {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (user.kycStatus !== KycStatus.PENDING) {
+      throw new BadRequestException('KYC is not pending verification');
+    }
+
+    await this.usersRepository.update(userId, {
+      kycStatus: KycStatus.REJECTED,
+      kycRejectionReason: reason,
+    });
+
+    return this.findById(userId) as Promise<User>;
   }
 }

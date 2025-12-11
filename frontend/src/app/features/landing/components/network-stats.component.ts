@@ -1,5 +1,5 @@
-import { Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { NetworkStats } from '../../../core/models/node.model';
 import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.directive';
 
@@ -17,10 +17,11 @@ import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.
 @Component({
   selector: 'app-network-stats',
   standalone: true,
-  imports: [CommonModule, ScrollRevealDirective],
+  imports: [DecimalPipe, ScrollRevealDirective],
   templateUrl: './network-stats.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NetworkStatsComponent {
-  stats = input<NetworkStats | null>(null);
-  loading = input<boolean>(true);
+  public readonly stats = input<NetworkStats | null>(null);
+  public readonly loading = input<boolean>(true);
 }

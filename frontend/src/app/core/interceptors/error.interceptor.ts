@@ -2,7 +2,6 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { NotificationService } from '../services/notification.service';
-import { AuthService } from '../services/auth.service';
 
 const ERROR_MESSAGES: Record<number, string> = {
   0: 'Unable to connect to server. Please check your internet connection.',
@@ -18,17 +17,22 @@ const ERROR_MESSAGES: Record<number, string> = {
   504: 'Request timed out. Please try again.',
 };
 
+/**
+ * Error interceptor that shows user-friendly error notifications.
+ * Note: 401 errors are handled by authInterceptor with silent refresh.
+ * This interceptor only shows the notification AFTER refresh has failed.
+ */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const notificationService = inject(NotificationService);
-  const authService = inject(AuthService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Don't show error for 401 on auth endpoints (handled separately)
       const isAuthEndpoint = req.url.includes('/auth/');
 
+      // For 401 errors:
+      // - Auth endpoints (login/register): Show backend error message
+      // - Other endpoints: Show session expired (this runs after authInterceptor refresh fails)
       if (error.status === 401) {
-        authService.logout();
         if (!isAuthEndpoint) {
           notificationService.error(ERROR_MESSAGES[401]);
         }
@@ -38,8 +42,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       // Get user-friendly message
       const message = getErrorMessage(error);
 
-      // Only show notification for non-auth errors or failed logins
-      if (!isAuthEndpoint || error.status !== 401) {
+      // Show notification for all non-401 errors
+      // Don't show for some auth endpoints (e.g., login validation errors are shown in forms)
+      if (!isAuthEndpoint || ![400].includes(error.status)) {
         notificationService.error(message);
       }
 

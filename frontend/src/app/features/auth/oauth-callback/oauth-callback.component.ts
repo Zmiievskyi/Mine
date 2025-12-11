@@ -1,22 +1,22 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-oauth-callback',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink],
   templateUrl: './oauth-callback.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class OAuthCallbackComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
-  error = signal<string | null>(null);
+  protected readonly error = signal<string | null>(null);
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     // Check for error in query params (errors are still sent via query params)
     const queryParams = this.route.snapshot.queryParams;
     if (queryParams['error']) {

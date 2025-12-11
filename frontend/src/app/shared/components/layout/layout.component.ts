@@ -1,5 +1,5 @@
-import { Component, Input, inject, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy, Input, inject, computed } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -9,22 +9,23 @@ import { toSignal } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, HlmButton, EmailVerificationBannerComponent],
+  imports: [AsyncPipe, RouterLink, RouterLinkActive, HlmButton, EmailVerificationBannerComponent],
   templateUrl: './layout.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LayoutComponent {
   @Input() pageTitle = '';
 
-  authService = inject(AuthService);
-  currentUser = toSignal(this.authService.currentUser$);
+  protected readonly authService = inject(AuthService);
+  protected readonly currentUser = toSignal(this.authService.currentUser$);
 
   // Show banner only for local auth users who haven't verified email
-  showVerificationBanner = computed(() => {
+  protected readonly showVerificationBanner = computed(() => {
     const user = this.currentUser();
     return user?.provider === 'local' && user?.emailVerified === false;
   });
 
-  logout(): void {
+  protected logout(): void {
     this.authService.logout();
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { Component, OnInit, signal, inject, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -33,23 +33,24 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
     HlmDialogImports,
   ],
   templateUrl: './requests-list.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RequestsListComponent implements OnInit {
-  requests = signal<NodeRequest[]>([]);
-  private requestsService = inject(RequestsService);
-  private notification = inject(NotificationService);
-  private authService = inject(AuthService);
+  private readonly requestsService = inject(RequestsService);
+  private readonly notification = inject(NotificationService);
+  private readonly authService = inject(AuthService);
 
-  loading = signal(true);
-  error = signal<string | null>(null);
-  selectedRequest = signal<NodeRequest | null>(null);
-  confirmDialog = signal<ConfirmDialogData | null>(null);
+  protected readonly requests = signal<NodeRequest[]>([]);
+  protected readonly loading = signal(true);
+  protected readonly error = signal<string | null>(null);
+  protected readonly selectedRequest = signal<NodeRequest | null>(null);
+  protected readonly confirmDialog = signal<ConfirmDialogData | null>(null);
   private pendingAction: (() => void) | null = null;
 
-  currentUser = toSignal(this.authService.currentUser$);
+  protected readonly currentUser = toSignal(this.authService.currentUser$);
 
   // Check if user can request nodes (email verified for local auth users)
-  canRequestNodes = computed(() => {
+  protected readonly canRequestNodes = computed(() => {
     const user = this.currentUser();
     if (!user) return false;
     // OAuth users can always request
@@ -58,14 +59,14 @@ export class RequestsListComponent implements OnInit {
     return user.emailVerified === true;
   });
 
-  gpuOptions = GPU_OPTIONS;
-  getGpuLabel = getGpuLabel;
+  protected readonly gpuOptions = GPU_OPTIONS;
+  protected readonly getGpuLabel = getGpuLabel;
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.loadRequests();
   }
 
-  loadRequests(): void {
+  protected loadRequests(): void {
     this.loading.set(true);
     this.error.set(null);
 
@@ -78,9 +79,9 @@ export class RequestsListComponent implements OnInit {
     });
   }
 
-  getStatusVariant = getRequestStatusVariant;
+  protected readonly getStatusVariant = getRequestStatusVariant;
 
-  confirmCancelRequest(id: string): void {
+  protected confirmCancelRequest(id: string): void {
     this.confirmDialog.set({
       title: 'Cancel Request',
       message: 'Are you sure you want to cancel this request? This action cannot be undone.',
@@ -90,7 +91,7 @@ export class RequestsListComponent implements OnInit {
     this.pendingAction = () => this.cancelRequest(id);
   }
 
-  cancelRequest(id: string): void {
+  private cancelRequest(id: string): void {
     this.requestsService.cancelRequest(id).subscribe({
       next: () => {
         this.notification.success('Request cancelled successfully');
@@ -102,12 +103,12 @@ export class RequestsListComponent implements OnInit {
     });
   }
 
-  cancelConfirm(): void {
+  protected cancelConfirm(): void {
     this.confirmDialog.set(null);
     this.pendingAction = null;
   }
 
-  executeConfirm(): void {
+  protected executeConfirm(): void {
     if (this.pendingAction) {
       this.pendingAction();
       this.confirmDialog.set(null);
@@ -115,7 +116,7 @@ export class RequestsListComponent implements OnInit {
     }
   }
 
-  showNotes(request: NodeRequest): void {
+  protected showNotes(request: NodeRequest): void {
     this.selectedRequest.set(request);
   }
 }

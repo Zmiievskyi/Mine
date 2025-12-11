@@ -1,4 +1,4 @@
-import { Component, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, output } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 /**
@@ -16,12 +16,13 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [RouterModule],
   templateUrl: './landing-footer.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LandingFooterComponent {
-  sectionClick = output<string>();
-  currentYear = new Date().getFullYear();
+  public readonly sectionClick = output<string>();
+  protected readonly currentYear = new Date().getFullYear();
 
-  onSectionClick(sectionId: string): void {
+  protected onSectionClick(sectionId: string): void {
     this.sectionClick.emit(sectionId);
   }
 }

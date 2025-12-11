@@ -1,7 +1,7 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, map, tap } from 'rxjs';
+import { BehaviorSubject, Observable, map, tap, firstValueFrom, timeout } from 'rxjs';
 import {
   User,
   LoginRequest,
@@ -12,7 +12,6 @@ import {
 import { environment } from '../../../environments/environment';
 import { StorageService } from './storage.service';
 
-const TOKEN_KEY = 'access_token';
 const USER_KEY = 'user';
 
 @Injectable({
@@ -24,7 +23,14 @@ export class AuthService {
   private router = inject(Router);
   private storage = inject(StorageService);
 
+  // In-memory token storage (NOT in localStorage for security)
+  private accessToken = signal<string | null>(null);
+
+  // User stored in localStorage for persistence across page reloads
   private currentUserSubject = new BehaviorSubject<User | null>(this.loadUserFromStorage());
+
+  // Refresh state management - single promise for concurrent request deduplication
+  private refreshPromise: Promise<string> | null = null;
 
   readonly currentUser$ = this.currentUserSubject.asObservable();
   readonly isAuthenticated$ = this.currentUser$.pipe(map(user => !!user));
@@ -35,23 +41,52 @@ export class AuthService {
   get isAuthenticated(): boolean { return !!this.currentUserSubject.value; }
   get isAdmin(): boolean { return this.currentUserSubject.value?.role === 'admin'; }
 
+  /**
+   * Get current access token from memory.
+   */
+  getToken(): string | null {
+    return this.accessToken();
+  }
+
+  /**
+   * Login with email and password.
+   * Sets access token in memory and user in localStorage.
+   */
   login(credentials: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, credentials).pipe(
+    return this.http.post<AuthResponse>(
+      `${this.apiUrl}/login`,
+      credentials,
+      { withCredentials: true }
+    ).pipe(
       tap((response) => this.handleAuthResponse(response))
     );
   }
 
+  /**
+   * Register a new user.
+   * Sets access token in memory and user in localStorage.
+   */
   register(data: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, data).pipe(
+    return this.http.post<AuthResponse>(
+      `${this.apiUrl}/register`,
+      data,
+      { withCredentials: true }
+    ).pipe(
       tap((response) => this.handleAuthResponse(response))
     );
   }
 
+  /**
+   * Verify email with code.
+   */
   verifyEmail(code: string): Observable<{ message: string; verified: boolean }> {
-    return this.http.post<{ message: string; verified: boolean }>(`${this.apiUrl}/verify-email`, { code }).pipe(
+    return this.http.post<{ message: string; verified: boolean }>(
+      `${this.apiUrl}/verify-email`,
+      { code },
+      { withCredentials: true }
+    ).pipe(
       tap((response) => {
         if (response.verified) {
-          // Update user's emailVerified status in storage
           const currentUser = this.currentUser;
           if (currentUser) {
             const updatedUser = { ...currentUser, emailVerified: true };
@@ -63,19 +98,100 @@ export class AuthService {
     );
   }
 
+  /**
+   * Resend verification code.
+   */
   resendVerification(): Observable<{ message: string; expiresAt: string }> {
-    return this.http.post<{ message: string; expiresAt: string }>(`${this.apiUrl}/resend-verification`, {});
+    return this.http.post<{ message: string; expiresAt: string }>(
+      `${this.apiUrl}/resend-verification`,
+      {},
+      { withCredentials: true }
+    );
   }
 
+  /**
+   * Logout and revoke refresh token.
+   * Calls backend to revoke refresh token, then clears local state.
+   */
   logout(): void {
-    this.storage.remove(TOKEN_KEY);
+    // Call backend to revoke refresh token (fire and forget)
+    this.http.post(
+      `${this.apiUrl}/logout`,
+      {},
+      { withCredentials: true }
+    ).subscribe({
+      complete: () => this.clearAuthState(),
+      error: () => this.clearAuthState(), // Clear even on error
+    });
+  }
+
+  /**
+   * Clear all auth state (token, user, navigate to home).
+   */
+  private clearAuthState(): void {
+    this.accessToken.set(null);
     this.storage.remove(USER_KEY);
     this.currentUserSubject.next(null);
     this.router.navigate(['/']);
   }
 
-  getToken(): string | null {
-    return this.storage.get(TOKEN_KEY);
+  /**
+   * Refresh access token using refresh token cookie.
+   * Returns a promise that resolves to the new access token.
+   * Handles concurrent refresh requests by sharing the same promise (atomic check).
+   */
+  async refreshToken(): Promise<string> {
+    // Atomic check: if promise exists, return it (handles concurrent requests)
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    // Create promise atomically - no race condition possible
+    this.refreshPromise = this.performTokenRefresh();
+    return this.refreshPromise;
+  }
+
+  /**
+   * Performs the actual token refresh HTTP call.
+   * Separated to ensure cleanup happens in finally block.
+   */
+  private async performTokenRefresh(): Promise<string> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<{ accessToken: string }>(
+          `${this.apiUrl}/refresh`,
+          {},
+          { withCredentials: true }
+        ).pipe(
+          timeout(10000) // 10 second timeout to prevent hanging
+        )
+      );
+      this.accessToken.set(response.accessToken);
+      return response.accessToken;
+    } catch (error) {
+      this.clearAuthState();
+      throw error;
+    } finally {
+      // Always clear the promise so next refresh can proceed
+      this.refreshPromise = null;
+    }
+  }
+
+  /**
+   * Initialize auth state on app startup.
+   * If user exists in storage, try to refresh token.
+   * Returns a promise that resolves when initialization is complete.
+   */
+  async initializeAuth(): Promise<void> {
+    const user = this.loadUserFromStorage();
+    if (user) {
+      try {
+        await this.refreshToken();
+      } catch {
+        // Refresh failed, user will be logged out
+        this.clearAuthState();
+      }
+    }
   }
 
   /**
@@ -118,16 +234,24 @@ export class AuthService {
    * which must then be sent to the backend for verification.
    */
   verifyTelegramAuth(data: TelegramAuthData): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/telegram/verify`, data).pipe(
+    return this.http.post<AuthResponse>(
+      `${this.apiUrl}/telegram/verify`,
+      data,
+      { withCredentials: true }
+    ).pipe(
       tap((response) => this.handleAuthResponse(response))
     );
   }
 
+  /**
+   * Handle OAuth callback - stores access token in memory and user in localStorage.
+   * Refresh token is already set as HttpOnly cookie by the backend.
+   */
   handleOAuthCallback(token: string, userJson: string): boolean {
     try {
       const user: User = JSON.parse(userJson);
-      this.storage.set(TOKEN_KEY, token);
-      this.storage.set(USER_KEY, userJson);
+      this.accessToken.set(token);
+      this.storage.setJson(USER_KEY, user);
       this.currentUserSubject.next(user);
       return true;
     } catch {
@@ -135,12 +259,18 @@ export class AuthService {
     }
   }
 
+  /**
+   * Handle auth response - stores access token in memory and user in localStorage.
+   */
   private handleAuthResponse(response: AuthResponse): void {
-    this.storage.set(TOKEN_KEY, response.accessToken);
+    this.accessToken.set(response.accessToken);
     this.storage.setJson(USER_KEY, response.user);
     this.currentUserSubject.next(response.user);
   }
 
+  /**
+   * Load user from localStorage.
+   */
   private loadUserFromStorage(): User | null {
     return this.storage.getJson<User>(USER_KEY);
   }

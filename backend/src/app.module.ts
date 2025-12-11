@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import {
   appConfig,
@@ -13,6 +14,7 @@ import {
   telegramConfig,
   retryConfig,
   throttlerConfig,
+  s3Config,
 } from './config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -20,6 +22,7 @@ import { NodesModule } from './modules/nodes/nodes.module';
 import { RequestsModule } from './modules/requests/requests.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { HealthModule } from './modules/health/health.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
 import { User } from './modules/users/entities/user.entity';
 import { UserNode } from './modules/users/entities/user-node.entity';
 import { NodeRequest } from './modules/requests/entities/node-request.entity';
@@ -39,6 +42,7 @@ import { PricingConfig } from './modules/pricing/entities/pricing-config.entity'
         telegramConfig,
         retryConfig,
         throttlerConfig,
+        s3Config,
       ],
     }),
     ThrottlerModule.forRootAsync({
@@ -83,12 +87,14 @@ import { PricingConfig } from './modules/pricing/entities/pricing-config.entity'
       }),
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
     NodesModule,
     RequestsModule,
     AdminModule,
     HealthModule,
+    UploadsModule,
   ],
   providers: [
     {

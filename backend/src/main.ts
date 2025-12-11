@@ -3,6 +3,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters';
@@ -20,6 +21,7 @@ async function bootstrap() {
 
   // Security middleware
   app.use(helmet());
+  app.use(cookieParser());
   app.use(json({ limit: bodyLimit }));
   app.use(urlencoded({ extended: true, limit: bodyLimit }));
 
@@ -50,9 +52,11 @@ async function bootstrap() {
       'JWT-auth',
     )
     .addTag('auth', 'Authentication endpoints')
+    .addTag('users', 'User profile and KYC endpoints')
     .addTag('nodes', 'Node monitoring endpoints')
     .addTag('requests', 'Node request management')
     .addTag('admin', 'Admin panel endpoints')
+    .addTag('uploads', 'File upload endpoints')
     .addTag('health', 'Health check endpoints')
     .build();
 

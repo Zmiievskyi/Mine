@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
+import { Component, OnInit, signal, inject, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -56,44 +56,45 @@ type RequestStatus = 'pending' | 'approved' | 'rejected' | 'completed';
     HlmBadge,
   ],
   templateUrl: './admin-requests.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminRequestsComponent implements OnInit {
-  private adminService = inject(AdminService);
-  private notification = inject(NotificationService);
-  private destroyRef = inject(DestroyRef);
-  protected Math = Math;
+  private readonly adminService = inject(AdminService);
+  private readonly notification = inject(NotificationService);
+  private readonly destroyRef = inject(DestroyRef);
+  protected readonly Math = Math;
 
-  requests = signal<AdminRequest[]>([]);
-  meta = signal<{ page: number; limit: number; total: number; totalPages: number } | null>(null);
-  loading = signal(true);
-  error = signal<string | null>(null);
-  editingRequest = signal<AdminRequest | null>(null);
-  notesText = '';
-  stats = signal({ pending: 0, approved: 0, completed: 0 });
-  exporting = signal(false);
-  confirmDialog = signal<ConfirmDialogData | null>(null);
+  protected readonly requests = signal<AdminRequest[]>([]);
+  protected readonly meta = signal<{ page: number; limit: number; total: number; totalPages: number } | null>(null);
+  protected readonly loading = signal(true);
+  protected readonly error = signal<string | null>(null);
+  protected readonly editingRequest = signal<AdminRequest | null>(null);
+  public notesText = '';
+  protected readonly stats = signal({ pending: 0, approved: 0, completed: 0 });
+  protected readonly exporting = signal(false);
+  protected readonly confirmDialog = signal<ConfirmDialogData | null>(null);
   private pendingAction: (() => void) | null = null;
 
   // Filter state
-  statusFilter: 'pending' | 'approved' | 'rejected' | 'completed' | 'all' = 'all';
-  gpuFilter = '';
-  userEmailFilter = '';
-  dateFrom = '';
-  dateTo = '';
-  currentPage = 1;
+  public statusFilter: 'pending' | 'approved' | 'rejected' | 'completed' | 'all' = 'all';
+  public gpuFilter = '';
+  public userEmailFilter = '';
+  public dateFrom = '';
+  public dateTo = '';
+  public currentPage = 1;
 
-  gpuOptions = GPU_OPTIONS;
-  getRequestStatusVariant = getRequestStatusVariant;
-  getGpuLabel = getGpuLabel;
+  protected readonly gpuOptions = GPU_OPTIONS;
+  protected readonly getRequestStatusVariant = getRequestStatusVariant;
+  protected readonly getGpuLabel = getGpuLabel;
 
-  private searchDebounce = createDebounce();
+  private readonly searchDebounce = createDebounce();
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.loadRequests();
     this.loadStats();
   }
 
-  loadRequests(): void {
+  protected loadRequests(): void {
     this.loading.set(true);
     this.error.set(null);
 
@@ -121,7 +122,7 @@ export class AdminRequestsComponent implements OnInit {
       });
   }
 
-  loadStats(): void {
+  private loadStats(): void {
     this.adminService
       .getRequestStats()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -131,23 +132,23 @@ export class AdminRequestsComponent implements OnInit {
       });
   }
 
-  onFilterChange(): void {
+  protected onFilterChange(): void {
     this.searchDebounce(() => {
       this.currentPage = 1;
       this.loadRequests();
     }, DEBOUNCE_DELAYS.SEARCH);
   }
 
-  goToPage(page: number): void {
+  protected goToPage(page: number): void {
     this.currentPage = page;
     this.loadRequests();
   }
 
-  approveRequest(request: AdminRequest): void {
+  protected approveRequest(request: AdminRequest): void {
     this.updateStatus(request.id, 'approved');
   }
 
-  rejectRequest(request: AdminRequest): void {
+  protected rejectRequest(request: AdminRequest): void {
     this.confirmDialog.set({
       title: 'Reject Request',
       message: 'Are you sure you want to reject this request?',
@@ -157,7 +158,7 @@ export class AdminRequestsComponent implements OnInit {
     this.pendingAction = () => this.updateStatus(request.id, 'rejected');
   }
 
-  completeRequest(request: AdminRequest): void {
+  protected completeRequest(request: AdminRequest): void {
     this.updateStatus(request.id, 'completed');
   }
 
@@ -175,16 +176,16 @@ export class AdminRequestsComponent implements OnInit {
       });
   }
 
-  editNotes(request: AdminRequest): void {
+  protected editNotes(request: AdminRequest): void {
     this.notesText = request.adminNotes || '';
     this.editingRequest.set(request);
   }
 
-  closeNotesDialog(): void {
+  protected closeNotesDialog(): void {
     this.editingRequest.set(null);
   }
 
-  saveNotes(): void {
+  protected saveNotes(): void {
     const request = this.editingRequest();
     if (!request) return;
 
@@ -201,12 +202,12 @@ export class AdminRequestsComponent implements OnInit {
       });
   }
 
-  cancelConfirm(): void {
+  protected cancelConfirm(): void {
     this.confirmDialog.set(null);
     this.pendingAction = null;
   }
 
-  executeConfirm(): void {
+  protected executeConfirm(): void {
     if (this.pendingAction) {
       this.pendingAction();
       this.confirmDialog.set(null);
@@ -214,7 +215,7 @@ export class AdminRequestsComponent implements OnInit {
     }
   }
 
-  exportToCsv(): void {
+  protected exportToCsv(): void {
     this.exporting.set(true);
     this.adminService.exportRequests().subscribe({
       next: (blob) => {
