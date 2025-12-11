@@ -127,6 +127,8 @@ export class AuthOAuthService {
   }
 
   async telegramLogin(telegramData: TelegramAuthData) {
+    this.logger.debug(`Telegram auth data received: ${JSON.stringify(telegramData)}`);
+
     // 1. Verify the hash from Telegram
     if (!this.verifyTelegramHash(telegramData)) {
       this.logger.warn('Telegram login with invalid hash');
@@ -179,9 +181,14 @@ export class AuthOAuthService {
     // Create secret key from bot token
     const secretKey = createHash('sha256').update(botToken).digest();
 
-    // Build data-check-string (sorted alphabetically, excluding hash)
+    // Build data-check-string (sorted alphabetically, excluding hash and undefined/null values)
+    // Per Telegram docs: only include fields that have actual values
     const checkString = Object.keys(data)
-      .filter((key) => key !== 'hash')
+      .filter((key) => {
+        if (key === 'hash') return false;
+        const value = data[key as keyof TelegramAuthData];
+        return value !== undefined && value !== null && value !== '';
+      })
       .sort()
       .map((key) => `${key}=${data[key as keyof TelegramAuthData]}`)
       .join('\n');
@@ -189,10 +196,14 @@ export class AuthOAuthService {
     // Calculate HMAC-SHA256
     const hmac = createHmac('sha256', secretKey).update(checkString).digest('hex');
 
+    this.logger.debug(`Telegram hash verification - checkString: ${checkString}`);
+    this.logger.debug(`Telegram hash verification - calculated: ${hmac}, received: ${data.hash}`);
+
     // Timing-safe comparison
     try {
       return timingSafeEqual(Buffer.from(hmac, 'hex'), Buffer.from(data.hash, 'hex'));
-    } catch {
+    } catch (e) {
+      this.logger.error(`Telegram hash comparison failed: ${e}`);
       return false;
     }
   }
