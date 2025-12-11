@@ -32,7 +32,17 @@ export class TelegramCallbackComponent implements OnInit {
 
     try {
       // Decode base64 -> JSON
-      const data: TelegramAuthData = JSON.parse(atob(tgAuthResult));
+      const decoded = atob(tgAuthResult);
+
+      // Telegram returns "false" when auth fails (domain mismatch, user cancelled, etc.)
+      if (decoded === 'false') {
+        this.error.set(
+          'Telegram authentication was denied. This may be due to domain configuration. Please contact support.'
+        );
+        return;
+      }
+
+      const data: TelegramAuthData = JSON.parse(decoded);
 
       // Verify with backend
       this.authService.verifyTelegramAuth(data).subscribe({

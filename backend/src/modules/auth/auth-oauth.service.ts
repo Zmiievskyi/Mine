@@ -140,8 +140,9 @@ export class AuthOAuthService {
       throw new UnauthorizedException('Telegram authentication expired. Please try again.');
     }
 
-    // 3. Check if user exists by Telegram ID
-    let user = await this.usersService.findByTelegramId(telegramData.id);
+    // 3. Check if user exists by Telegram ID (convert number to string for DB)
+    const telegramIdStr = String(telegramData.id);
+    let user = await this.usersService.findByTelegramId(telegramIdStr);
 
     if (user) {
       if (!user.isActive) {
@@ -158,7 +159,7 @@ export class AuthOAuthService {
       .join(' ');
 
     user = await this.usersService.createFromTelegram({
-      telegramId: telegramData.id,
+      telegramId: telegramIdStr,
       name: fullName || undefined,
       telegramUsername: telegramData.username,
       avatarUrl: telegramData.photo_url,

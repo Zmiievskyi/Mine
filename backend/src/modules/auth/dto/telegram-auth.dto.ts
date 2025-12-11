@@ -2,9 +2,9 @@ import { IsString, IsNumber, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class TelegramAuthDto {
-  @ApiProperty({ example: '123456789', description: 'Telegram user ID' })
-  @IsString()
-  id: string;
+  @ApiProperty({ example: 123456789, description: 'Telegram user ID' })
+  @IsNumber()
+  id: number;
 
   @ApiPropertyOptional({ example: 'John', description: 'User first name' })
   @IsOptional()
@@ -43,7 +43,7 @@ export class TelegramAuthDto {
 
 // Interface for type safety in service
 export interface TelegramAuthData {
-  id: string;
+  id: number;
   first_name?: string;
   last_name?: string;
   username?: string;

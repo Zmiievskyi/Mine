@@ -33,7 +33,7 @@ export interface AuthResponse {
 }
 
 export interface TelegramAuthData {
-  id: string;
+  id: number;
   first_name?: string;
   last_name?: string;
   username?: string;
