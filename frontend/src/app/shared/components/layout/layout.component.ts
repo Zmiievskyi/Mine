@@ -25,6 +25,15 @@ export class LayoutComponent {
     return user?.provider === 'local' && user?.emailVerified === false;
   });
 
+  protected getDisplayName(): string {
+    const user = this.currentUser();
+    return user?.name || user?.telegramUsername || user?.email || 'User';
+  }
+
+  protected getInitial(): string {
+    return this.getDisplayName().charAt(0).toUpperCase();
+  }
+
   protected logout(): void {
     this.authService.logout();
   }

@@ -228,6 +228,7 @@ export class AuthOAuthService {
         avatarUrl: user.avatarUrl,
         provider: user.provider,
         emailVerified: user.emailVerified ?? true,
+        telegramUsername: user.telegramUsername,
       },
       ...tokens,
     };
