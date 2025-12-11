@@ -14,15 +14,17 @@
 # - DB_PORT: Database port (default: 5432)
 # - JWT_EXPIRES_IN: JWT token expiry (default: 7d)
 # - GONKA_CACHE_TTL: Cache TTL in seconds (default: 120)
-# - OAuth credentials (GOOGLE_CLIENT_ID, GITHUB_CLIENT_ID, etc.)
+# - OAuth credentials (GOOGLE_CLIENT_ID, GITHUB_CLIENT_ID, TELEGRAM_BOT_TOKEN, etc.)
 # - RESEND_API_KEY: Resend API key for email verification (optional, emails disabled if not set)
 # - RESEND_FROM_EMAIL: Sender email address (default: noreply@minegnk.com)
 # - RESEND_FROM_NAME: Sender name (default: MineGNK)
+# - S3_* variables: Gcore Object Storage for KYC documents (required for KYC feature)
 #
 # NOTES:
 # - DB_SSL is hardcoded to "true" (required for Gcore managed PostgreSQL)
 # - Frontend now exposed on port 8000 instead of 80 (use APP_PORT to override)
 # - Database migrations run automatically on backend startup
+# - COOKIE_SECURE should be true in production (requires HTTPS)
 
 services:
   backend:
@@ -41,9 +43,15 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_DATABASE: ${DB_DATABASE}
       DB_SSL: "true"
-      # JWT
+      # JWT & Session Management
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN:-15m}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+      JWT_REFRESH_SHORT_EXPIRES_IN: ${JWT_REFRESH_SHORT_EXPIRES_IN:-24h}
+      MAX_SESSIONS: ${MAX_SESSIONS:-5}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
       # Gonka API
       HYPERFUSION_URL: ${HYPERFUSION_URL:-https://tracker.gonka.hyperfusion.io}
       GONKA_API_NODES: ${GONKA_API_NODES:-http://node1.gonka.ai:8000,http://node2.gonka.ai:8000,http://node3.gonka.ai:8000}
@@ -55,11 +63,22 @@ services:
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
       GITHUB_CALLBACK_URL: ${GITHUB_CALLBACK_URL:-}
+      # Telegram OAuth
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      TELEGRAM_BOT_ID: ${TELEGRAM_BOT_ID:-}
       FRONTEND_URL: ${FRONTEND_URL}
       # Email (Resend)
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-noreply@minegnk.com}
       RESEND_FROM_NAME: ${RESEND_FROM_NAME:-MineGNK}
+      # Gcore S3 Object Storage (KYC documents)
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-}
+      S3_BUCKET: ${S3_BUCKET:-minegnk-kyc-documents}
+      S3_REGION: ${S3_REGION:-eu-central-1}
+      S3_PRESIGNED_URL_EXPIRATION: ${S3_PRESIGNED_URL_EXPIRATION:-3600}
     restart: unless-stopped
     networks:
       - minegnk-network
