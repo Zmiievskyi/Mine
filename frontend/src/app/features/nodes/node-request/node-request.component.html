@@ -10,12 +10,15 @@
       </a>
       <h1 class="text-2xl font-bold text-[var(--gcore-text)]">Request New Node</h1>
       <p class="text-[var(--gcore-text-muted)] mt-1">
-        Submit a request for new GPU nodes. Our team will process it within 24-48 hours.
+        Submit a request for a new GPU node. Our team will process it within 24-48 hours.
       </p>
     </div>
 
-    <!-- Success State -->
-    @if (success()) {
+    <!-- Loading State -->
+    @if (loading()) {
+      <app-loading-spinner message="Loading pricing..." />
+    } @else if (success()) {
+      <!-- Success State -->
       <div class="bg-green-50 border border-green-200 rounded-lg p-6">
         <div class="flex items-center gap-3">
           <span class="text-green-600 text-2xl">&#10003;</span>
@@ -44,101 +47,41 @@
             Select GPU Type
           </h2>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            @for (gpu of gpuOptions; track gpu.value) {
-              <label
-                class="relative flex items-center justify-between p-4 rounded-lg border-2 cursor-pointer transition-colors"
+            @for (gpu of gpuOptions(); track gpu.value) {
+              <button
+                type="button"
+                (click)="selectGpu(gpu.value)"
+                class="relative flex items-center justify-between p-4 rounded-lg border-2 cursor-pointer transition-colors text-left"
                 [class]="
-                  formData.gpuType === gpu.value
-                    ? 'border-[var(--gcore-primary)] bg-purple-50'
+                  selectedGpuType() === gpu.value
+                    ? 'border-[var(--gcore-primary)] bg-orange-50'
                     : 'border-[var(--gcore-border)] hover:border-gray-300'
                 "
               >
-                <div class="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    name="gpuType"
-                    [value]="gpu.value"
-                    [(ngModel)]="formData.gpuType"
-                    class="sr-only"
-                  />
-                  <div>
-                    <p class="font-medium text-[var(--gcore-text)]">{{ gpu.label }}</p>
-                    <p class="text-sm text-[var(--gcore-text-muted)]">{{ gpu.price }}</p>
-                  </div>
+                <div>
+                  <p class="font-medium text-[var(--gcore-text)]">{{ gpu.label }}</p>
+                  <p class="text-sm text-[var(--gcore-text-muted)]">{{ gpu.price }}</p>
                 </div>
-                @if (formData.gpuType === gpu.value) {
+                @if (selectedGpuType() === gpu.value) {
                   <span class="text-[var(--gcore-primary)]">&#10003;</span>
                 }
-              </label>
+              </button>
             }
           </div>
         </div>
 
-        <!-- Quantity -->
-        <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-6">
-          <label hlmLabel class="block">Number of GPUs</label>
-          <div class="mt-2 flex items-center gap-4">
-            <button
-              hlmBtn
-              variant="outline"
-              size="icon"
-              type="button"
-              (click)="decrementCount()"
-              [disabled]="formData.gpuCount <= 1"
-            >
-              -
-            </button>
-            <input
-              hlmInput
-              type="number"
-              [(ngModel)]="formData.gpuCount"
-              name="gpuCount"
-              min="1"
-              max="10"
-              class="w-20 text-center text-lg font-semibold"
-            />
-            <button
-              hlmBtn
-              variant="outline"
-              size="icon"
-              type="button"
-              (click)="incrementCount()"
-              [disabled]="formData.gpuCount >= 10"
-            >
-              +
-            </button>
-          </div>
-          <p class="text-sm text-muted-foreground mt-2">
-            Maximum 10 GPUs per request
-          </p>
-        </div>
-
-        <!-- Region -->
-        <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-6">
-          <label hlmLabel class="block mb-2">Preferred Region (Optional)</label>
-          <brn-select [(ngModel)]="formData.region" name="region" placeholder="No preference">
-            <hlm-select-trigger class="w-full">
-              <hlm-select-value />
-            </hlm-select-trigger>
-            <hlm-select-content>
-              <hlm-option value="">No preference</hlm-option>
-              @for (region of regionOptions; track region.value) {
-                <hlm-option [value]="region.value">{{ region.label }}</hlm-option>
-              }
-            </hlm-select-content>
-          </brn-select>
-        </div>
-
         <!-- Message -->
         <div class="bg-white rounded-lg shadow-sm border border-[var(--gcore-border)] p-6">
-          <label hlmLabel class="block mb-2">Additional Notes (Optional)</label>
+          <label class="block text-sm font-medium text-[var(--gcore-text)] mb-2">
+            Additional Notes (Optional)
+          </label>
           <textarea
-            hlmInput
-            [(ngModel)]="formData.message"
+            [ngModel]="message()"
+            (ngModelChange)="message.set($event)"
             name="message"
             rows="3"
             placeholder="Any specific requirements or questions..."
-            class="w-full min-h-[80px]"
+            class="w-full min-h-[80px] px-3 py-2 border border-[var(--gcore-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--gcore-primary)] focus:border-transparent"
           ></textarea>
         </div>
 
@@ -149,20 +92,12 @@
             <div class="flex justify-between">
               <span class="text-[var(--gcore-text-muted)]">GPU Type:</span>
               <span class="text-[var(--gcore-text)] font-medium">
-                {{ getGpuLabel(formData.gpuType) }}
+                {{ selectedGpuType() }}
               </span>
             </div>
             <div class="flex justify-between">
               <span class="text-[var(--gcore-text-muted)]">Quantity:</span>
-              <span class="text-[var(--gcore-text)] font-medium">
-                {{ formData.gpuCount }} GPU(s)
-              </span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-[var(--gcore-text-muted)]">Region:</span>
-              <span class="text-[var(--gcore-text)] font-medium">
-                {{ getRegionLabel(formData.region) || 'No preference' }}
-              </span>
+              <span class="text-[var(--gcore-text)] font-medium">1 GPU</span>
             </div>
           </div>
         </div>
@@ -179,7 +114,7 @@
           <button
             hlmBtn
             type="submit"
-            [disabled]="submitting() || !formData.gpuType"
+            [disabled]="submitting() || !selectedGpuType()"
             class="flex-1"
           >
             @if (submitting()) {

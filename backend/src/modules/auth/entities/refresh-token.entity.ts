@@ -25,10 +25,10 @@ export class RefreshToken {
   @Column({ name: 'token_hash', length: 64 })
   tokenHash: string;
 
-  @Column({ name: 'device_info', nullable: true, length: 255 })
+  @Column({ type: 'varchar', name: 'device_info', nullable: true, length: 255 })
   deviceInfo: string | null;
 
-  @Column({ name: 'ip_address', length: 45, nullable: true })
+  @Column({ type: 'varchar', name: 'ip_address', length: 45, nullable: true })
   ipAddress: string | null;
 
   @Column({ name: 'expires_at', type: 'timestamp with time zone' })

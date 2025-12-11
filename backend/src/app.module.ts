@@ -81,6 +81,7 @@ import { PricingConfig } from './modules/pricing/entities/pricing-config.entity'
           NodeRequest,
           PricingConfig,
         ],
+        autoLoadEntities: true,
         synchronize: configService.get<boolean>('database.synchronize'),
         logging: configService.get<boolean>('database.logging'),
         ssl: configService.get('database.ssl'),
