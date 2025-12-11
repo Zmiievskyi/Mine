@@ -111,6 +111,46 @@ export class UsersService {
     return this.findById(userId);
   }
 
+  async findByTelegramId(telegramId: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { telegramId } });
+  }
+
+  async createFromTelegram(data: {
+    telegramId: string;
+    name?: string;
+    telegramUsername?: string;
+    avatarUrl?: string;
+  }): Promise<User> {
+    const user = this.usersRepository.create({
+      email: null, // Telegram doesn't provide email
+      name: data.name || data.telegramUsername || null,
+      telegramId: data.telegramId,
+      telegramUsername: data.telegramUsername || null,
+      avatarUrl: data.avatarUrl || null,
+      provider: AuthProvider.TELEGRAM,
+      password: null,
+      emailVerified: false, // N/A for Telegram users
+    });
+    return this.usersRepository.save(user);
+  }
+
+  async linkTelegramAccount(
+    userId: string,
+    telegramId: string,
+    telegramUsername?: string,
+    avatarUrl?: string,
+  ): Promise<User | null> {
+    const updateData: Partial<User> = { telegramId };
+    if (telegramUsername) {
+      updateData.telegramUsername = telegramUsername;
+    }
+    if (avatarUrl) {
+      updateData.avatarUrl = avatarUrl;
+    }
+    await this.usersRepository.update(userId, updateData);
+    return this.findById(userId);
+  }
+
   async setVerificationCode(
     userId: string,
     code: string,

@@ -1,5 +1,4 @@
 import { Component, OnInit, inject, signal, DestroyRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { NodesService } from '../../core/services/nodes.service';
@@ -34,7 +33,6 @@ import { LandingFooterComponent } from './components/landing-footer.component';
   selector: 'app-landing',
   standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     HeroSectionComponent,
     NetworkStatsComponent,

@@ -10,6 +10,7 @@ import {
   gonkaConfig,
   googleConfig,
   githubConfig,
+  telegramConfig,
   retryConfig,
   throttlerConfig,
 } from './config';
@@ -35,6 +36,7 @@ import { PricingConfig } from './modules/pricing/entities/pricing-config.entity'
         gonkaConfig,
         googleConfig,
         githubConfig,
+        telegramConfig,
         retryConfig,
         throttlerConfig,
       ],

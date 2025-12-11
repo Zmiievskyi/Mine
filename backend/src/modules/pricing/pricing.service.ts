@@ -83,7 +83,7 @@ export class PricingService {
       displayOrder: config.displayOrder,
       isActive: config.isActive,
       updatedAt: config.updatedAt,
-      updatedByEmail: config.updatedBy?.email,
+      updatedByEmail: config.updatedBy?.email ?? undefined,
     };
   }
 }

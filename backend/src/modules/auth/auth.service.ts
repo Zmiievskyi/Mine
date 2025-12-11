@@ -10,11 +10,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { randomInt } from 'crypto';
-import { timingSafeEqual } from 'crypto';
+import { randomInt, timingSafeEqual, createHash, createHmac } from 'crypto';
 import { UsersService } from '../users/users.service';
 import { EmailService } from '../email/email.service';
-import { LoginDto, RegisterDto } from './dto';
+import { LoginDto, RegisterDto, TelegramAuthData } from './dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { GoogleProfile } from './strategies/google.strategy';
 import { GitHubProfile } from './strategies/github.strategy';
@@ -42,28 +41,26 @@ export class AuthService {
     const user = await this.usersService.create({
       ...registerDto,
       password: hashedPassword,
-      emailVerified: false,
+      emailVerified: true, // Auto-verify (email verification disabled)
     });
 
     this.logger.log(`New user registered: ${user.id} (${user.email})`);
 
-    // Generate and send verification code
-    const verificationCode = randomInt(100000, 1000000).toString().padStart(6, '0');
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-    await this.usersService.setVerificationCode(user.id, verificationCode, expiresAt);
-
-    try {
-      await this.emailService.sendVerificationEmail(
-        user.email,
-        verificationCode,
-        user.name || undefined,
-      );
-      this.logger.log(`Verification email sent to ${user.email}`);
-    } catch (error) {
-      this.logger.error(`Failed to send verification email to ${user.email}:`, error);
-      // Don't fail registration if email fails
-    }
+    // DISABLED: Email verification (Resend domain not configured)
+    // To re-enable: uncomment below and change emailVerified to false above
+    // const verificationCode = randomInt(100000, 1000000).toString().padStart(6, '0');
+    // const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    // await this.usersService.setVerificationCode(user.id, verificationCode, expiresAt);
+    // try {
+    //   await this.emailService.sendVerificationEmail(
+    //     user.email,
+    //     verificationCode,
+    //     user.name || undefined,
+    //   );
+    //   this.logger.log(`Verification email sent to ${user.email}`);
+    // } catch (error) {
+    //   this.logger.error(`Failed to send verification email to ${user.email}:`, error);
+    // }
 
     const tokens = this.generateTokens(user);
     return {
@@ -74,7 +71,7 @@ export class AuthService {
         role: user.role,
         avatarUrl: user.avatarUrl,
         provider: user.provider,
-        emailVerified: false,
+        emailVerified: true,
       },
       ...tokens,
     };
@@ -244,14 +241,86 @@ export class AuthService {
     return this.createAuthResponse(user);
   }
 
+  async telegramLogin(telegramData: TelegramAuthData) {
+    // 1. Verify the hash from Telegram
+    if (!this.verifyTelegramHash(telegramData)) {
+      this.logger.warn('Telegram login with invalid hash');
+      throw new UnauthorizedException('Invalid Telegram authentication');
+    }
+
+    // 2. Check auth_date is not too old (5 minutes max)
+    const authAge = Date.now() / 1000 - telegramData.auth_date;
+    if (authAge > 300) {
+      this.logger.warn(`Telegram auth expired (age: ${authAge}s)`);
+      throw new UnauthorizedException('Telegram authentication expired. Please try again.');
+    }
+
+    // 3. Check if user exists by Telegram ID
+    let user = await this.usersService.findByTelegramId(telegramData.id);
+
+    if (user) {
+      if (!user.isActive) {
+        this.logger.warn(`Telegram login blocked for inactive user: ${user.id}`);
+        throw new UnauthorizedException('Account is disabled');
+      }
+      this.logger.log(`Telegram login for existing user: ${user.id}`);
+      return this.createAuthResponse(user);
+    }
+
+    // 4. Create new user from Telegram profile
+    const fullName = [telegramData.first_name, telegramData.last_name]
+      .filter(Boolean)
+      .join(' ');
+
+    user = await this.usersService.createFromTelegram({
+      telegramId: telegramData.id,
+      name: fullName || undefined,
+      telegramUsername: telegramData.username,
+      avatarUrl: telegramData.photo_url,
+    });
+
+    this.logger.log(`New user created via Telegram: ${user.id} (@${telegramData.username || 'no-username'})`);
+    return this.createAuthResponse(user);
+  }
+
+  private verifyTelegramHash(data: TelegramAuthData): boolean {
+    const botToken = this.configService.get<string>('telegram.botToken');
+    if (!botToken) {
+      this.logger.error('Telegram bot token not configured');
+      return false;
+    }
+
+    // Create secret key from bot token
+    const secretKey = createHash('sha256').update(botToken).digest();
+
+    // Build data-check-string (sorted alphabetically, excluding hash)
+    const checkString = Object.keys(data)
+      .filter((key) => key !== 'hash')
+      .sort()
+      .map((key) => `${key}=${data[key as keyof TelegramAuthData]}`)
+      .join('\n');
+
+    // Calculate HMAC-SHA256
+    const hmac = createHmac('sha256', secretKey).update(checkString).digest('hex');
+
+    // Timing-safe comparison
+    try {
+      return timingSafeEqual(Buffer.from(hmac, 'hex'), Buffer.from(data.hash, 'hex'));
+    } catch {
+      // Buffer lengths don't match (invalid hash format)
+      return false;
+    }
+  }
+
   private createAuthResponse(user: {
     id: string;
-    email: string;
+    email: string | null;
     name: string | null;
     role: string;
     avatarUrl?: string | null;
     provider?: string;
     emailVerified?: boolean;
+    telegramUsername?: string | null;
   }) {
     const tokens = this.generateTokens(user);
     return {
@@ -268,10 +337,10 @@ export class AuthService {
     };
   }
 
-  private generateTokens(user: { id: string; email: string; role: string }) {
+  private generateTokens(user: { id: string; email: string | null; role: string }) {
     const payload: JwtPayload = {
       sub: user.id,
-      email: user.email,
+      email: user.email || '', // JWT requires string, use empty string for Telegram users
       role: user.role,
     };
 
@@ -362,6 +431,10 @@ export class AuthService {
 
     if (!user) {
       throw new UnauthorizedException('User not found');
+    }
+
+    if (!user.email) {
+      throw new ConflictException('Email verification not available for this account');
     }
 
     if (user.emailVerified) {

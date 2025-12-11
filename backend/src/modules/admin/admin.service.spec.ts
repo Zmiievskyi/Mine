@@ -3,7 +3,7 @@ import { getRepositoryToken, getDataSourceToken } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { User, UserRole } from '../users/entities/user.entity';
+import { User, UserRole, AuthProvider } from '../users/entities/user.entity';
 import { UserNode } from '../users/entities/user-node.entity';
 import { NodeRequest, RequestStatus } from '../requests/entities/node-request.entity';
 import { AssignNodeDto, UpdateUserDto } from './dto';
@@ -23,7 +23,18 @@ describe('AdminService', () => {
     password: 'hashedPassword',
     name: 'Test User',
     role: UserRole.USER,
+    provider: AuthProvider.LOCAL,
+    googleId: null,
+    githubId: null,
+    telegramId: null,
+    telegramUsername: null,
+    avatarUrl: null,
     isActive: true,
+    emailVerified: true,
+    verificationCode: null,
+    verificationCodeExpiresAt: null,
+    verificationAttempts: 0,
+    verificationLockedUntil: null,
     nodes: [],
     requests: [],
     createdAt: new Date(),

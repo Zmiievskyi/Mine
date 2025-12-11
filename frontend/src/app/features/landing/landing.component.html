@@ -18,12 +18,13 @@
 
           <!-- Desktop Navigation -->
           <div class="hidden md:flex items-center gap-6">
-            <a *ngFor="let link of navLinks"
-               [href]="link.href"
-               (click)="scrollToSection(link.href); $event.preventDefault()"
-               class="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              {{ link.label }}
-            </a>
+            @for (link of navLinks; track link.href) {
+              <a [href]="link.href"
+                 (click)="scrollToSection(link.href); $event.preventDefault()"
+                 class="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                {{ link.label }}
+              </a>
+            }
           </div>
         </div>
 
@@ -49,30 +50,36 @@
           (click)="toggleMobileMenu()"
           aria-label="Toggle menu"
           [attr.aria-expanded]="isMobileMenuOpen">
-          <svg *ngIf="!isMobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
-          <svg *ngIf="isMobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
+          @if (!isMobileMenuOpen) {
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          } @else {
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          }
         </button>
       </nav>
 
       <!-- Mobile Navigation -->
-      <div *ngIf="isMobileMenuOpen" class="md:hidden absolute left-0 right-0 top-14 bg-background border-b border-border p-4">
-        <div class="flex flex-col gap-4">
-          <a *ngFor="let link of navLinks"
-             [href]="link.href"
-             (click)="scrollToSection(link.href); $event.preventDefault()"
-             class="text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
-            {{ link.label }}
-          </a>
-          <div class="flex flex-col gap-2 pt-4 border-t border-border">
-            <a routerLink="/auth/login" class="w-full text-center py-2 text-sm border border-border rounded-md">Sign In</a>
-            <a routerLink="/auth/register" class="w-full text-center py-2 text-sm bg-white/80 text-zinc-900 rounded-md">Get Started</a>
+      @if (isMobileMenuOpen) {
+        <div class="md:hidden absolute left-0 right-0 top-14 bg-background border-b border-border p-4">
+          <div class="flex flex-col gap-4">
+            @for (link of navLinks; track link.href) {
+              <a [href]="link.href"
+                 (click)="scrollToSection(link.href); $event.preventDefault()"
+                 class="text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
+                {{ link.label }}
+              </a>
+            }
+            <div class="flex flex-col gap-2 pt-4 border-t border-border">
+              <a routerLink="/auth/login" class="w-full text-center py-2 text-sm border border-border rounded-md">Sign In</a>
+              <a routerLink="/auth/register" class="w-full text-center py-2 text-sm bg-white/80 text-zinc-900 rounded-md">Get Started</a>
+            </div>
           </div>
         </div>
-      </div>
+      }
     </div>
   </header>
 

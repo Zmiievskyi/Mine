@@ -7,6 +7,7 @@ import {
   LoginRequest,
   RegisterRequest,
   AuthResponse,
+  TelegramAuthData,
 } from '../models/user.model';
 import { environment } from '../../../environments/environment';
 import { StorageService } from './storage.service';
@@ -93,6 +94,33 @@ export class AuthService {
    */
   loginWithGithub(): void {
     window.location.href = `${environment.apiUrl}/auth/github`;
+  }
+
+  /**
+   * Redirects to Telegram OAuth login page.
+   * NOTE: Uses window.location.href intentionally because Telegram OAuth
+   * requires a full page redirect to their OAuth domain.
+   */
+  loginWithTelegram(): void {
+    const botId = environment.telegramBotId;
+    if (!botId) {
+      console.error('Telegram bot ID not configured');
+      return;
+    }
+    const origin = encodeURIComponent(window.location.origin);
+    const returnTo = encodeURIComponent(`${window.location.origin}/auth/telegram-callback`);
+    window.location.href = `https://oauth.telegram.org/auth?bot_id=${botId}&origin=${origin}&return_to=${returnTo}&embed=0`;
+  }
+
+  /**
+   * Verifies Telegram auth data with the backend.
+   * Unlike Google/GitHub which use redirects, Telegram returns data to the frontend
+   * which must then be sent to the backend for verification.
+   */
+  verifyTelegramAuth(data: TelegramAuthData): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/telegram/verify`, data).pipe(
+      tap((response) => this.handleAuthResponse(response))
+    );
   }
 
   handleOAuthCallback(token: string, userJson: string): boolean {

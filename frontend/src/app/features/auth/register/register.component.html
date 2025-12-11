@@ -86,6 +86,13 @@
       (clicked)="signUpWithGithub()"
     />
 
+    <app-telegram-oauth-button
+      class="mt-3 block"
+      [label]="'Sign up with Telegram'"
+      [disabled]="loading()"
+      (clicked)="signUpWithTelegram()"
+    />
+
     <p class="mt-6 text-center text-sm text-[var(--gcore-text-muted)]">
       Already have an account?
       <a routerLink="/auth/login" class="text-[var(--gcore-primary)] hover:underline">

@@ -25,6 +25,13 @@ export const AUTH_ROUTES: Routes = [
       ),
   },
   {
+    path: 'telegram-callback',
+    loadComponent: () =>
+      import('./telegram-callback/telegram-callback.component').then(
+        (m) => m.TelegramCallbackComponent
+      ),
+  },
+  {
     path: 'verify-email',
     canActivate: [authGuard],
     loadComponent: () =>

@@ -10,6 +10,7 @@ import { HlmLabel } from '@spartan-ng/helm/label';
 import {
   GoogleOAuthButtonComponent,
   GithubOAuthButtonComponent,
+  TelegramOAuthButtonComponent,
 } from '../../../shared/components';
 
 @Component({
@@ -24,6 +25,7 @@ import {
     HlmLabel,
     GoogleOAuthButtonComponent,
     GithubOAuthButtonComponent,
+    TelegramOAuthButtonComponent,
   ],
   templateUrl: './register.component.html',
 })
@@ -44,6 +46,10 @@ export class RegisterComponent {
 
   signUpWithGithub(): void {
     this.authService.loginWithGithub();
+  }
+
+  signUpWithTelegram(): void {
+    this.authService.loginWithTelegram();
   }
 
   onSubmit(): void {
@@ -71,7 +77,8 @@ export class RegisterComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.router.navigate(['/auth/verify-email']);
+          // Email verification disabled - go straight to dashboard
+          this.router.navigate(['/dashboard']);
         },
         error: (err) => {
           this.loading.set(false);

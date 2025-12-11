@@ -1,4 +1,4 @@
-import { Component, signal, inject, DestroyRef, ViewChildren, QueryList, ElementRef, afterNextRender } from '@angular/core';
+import { Component, signal, inject, DestroyRef, ViewChildren, QueryList, ElementRef, afterNextRender, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../core/services/auth.service';
@@ -11,7 +11,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
   imports: [HlmButton],
   templateUrl: './verify-email.component.html',
 })
-export class VerifyEmailComponent {
+export class VerifyEmailComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
@@ -34,6 +34,15 @@ export class VerifyEmailComponent {
     afterNextRender(() => {
       this.focusInput(0);
     });
+  }
+
+  ngOnInit(): void {
+    // Redirect to dashboard if user is already verified
+    // (email verification is currently disabled - all users are auto-verified)
+    const user = this.authService.currentUser;
+    if (user?.emailVerified) {
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   onDigitInput(event: Event, index: number): void {

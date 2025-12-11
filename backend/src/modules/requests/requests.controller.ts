@@ -22,7 +22,8 @@ import { RequestsService } from './requests.service';
 import { CreateRequestDto, UpdateRequestDto, AdminRequestsQueryDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
-import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
+// DISABLED: Email verification guard (Resend domain not configured)
+// import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 import { NodeRequest } from './entities/node-request.entity';
 
 @ApiTags('requests')
@@ -33,11 +34,10 @@ export class RequestsController {
   constructor(private requestsService: RequestsService) {}
 
   @Post()
-  @UseGuards(EmailVerifiedGuard)
+  // DISABLED: @UseGuards(EmailVerifiedGuard) - email verification disabled
   @ApiOperation({ summary: 'Create a new node request' })
   @ApiResponse({ status: 201, description: 'Request created successfully' })
   @ApiResponse({ status: 400, description: 'Validation error' })
-  @ApiResponse({ status: 403, description: 'Email verification required' })
   async create(@Request() req, @Body() createRequestDto: CreateRequestDto) {
     const request = await this.requestsService.create(req.user.id, createRequestDto);
     return this.transformRequest(request);

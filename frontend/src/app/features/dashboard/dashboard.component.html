@@ -67,21 +67,21 @@
         <!-- Checklist Items -->
         <div class="space-y-3">
           <div class="flex items-center gap-3">
-            <span class="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm"></span>
+            <span class="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm">✓</span>
             <span class="text-[var(--gcore-text)] line-through opacity-60">Create your account</span>
           </div>
           <div class="flex items-center gap-3">
-            <span class="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm"></span>
+            <span class="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm">✓</span>
             <span class="text-[var(--gcore-text)] line-through opacity-60">Sign in to dashboard</span>
           </div>
           <div class="flex items-center gap-3">
             @if (nodes().length > 0) {
-              <span class="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm"></span>
+              <span class="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm">✓</span>
               <span class="text-[var(--gcore-text)] line-through opacity-60">Request your first node</span>
             } @else {
               <span class="w-6 h-6 rounded-full border-2 border-[var(--gcore-primary)] text-[var(--gcore-primary)] flex items-center justify-center text-sm font-bold">3</span>
               <a routerLink="/nodes/request" class="text-[var(--gcore-primary)] hover:underline font-medium">
-                Request your first node �
+                Request your first node 👉
               </a>
             }
           </div>

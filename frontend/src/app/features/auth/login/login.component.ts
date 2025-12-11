@@ -10,6 +10,7 @@ import { HlmLabel } from '@spartan-ng/helm/label';
 import {
   GoogleOAuthButtonComponent,
   GithubOAuthButtonComponent,
+  TelegramOAuthButtonComponent,
 } from '../../../shared/components';
 
 @Component({
@@ -24,6 +25,7 @@ import {
     HlmLabel,
     GoogleOAuthButtonComponent,
     GithubOAuthButtonComponent,
+    TelegramOAuthButtonComponent,
   ],
   templateUrl: './login.component.html',
 })
@@ -51,6 +53,10 @@ export class LoginComponent implements OnInit {
 
   loginWithGithub(): void {
     this.authService.loginWithGithub();
+  }
+
+  loginWithTelegram(): void {
+    this.authService.loginWithTelegram();
   }
 
   onSubmit(): void {

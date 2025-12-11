@@ -122,7 +122,7 @@ export class AdminAnalyticsService {
       if (totalEarnings > 0) {
         userEarnings.set(user.id, {
           id: user.id,
-          email: user.email,
+          email: user.email || 'No email', // Telegram users may not have email
           name: user.name || undefined,
           earnings: totalEarnings,
         });

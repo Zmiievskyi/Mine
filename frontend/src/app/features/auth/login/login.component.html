@@ -69,6 +69,12 @@
       (clicked)="loginWithGithub()"
     />
 
+    <app-telegram-oauth-button
+      class="mt-3 block"
+      [disabled]="loading()"
+      (clicked)="loginWithTelegram()"
+    />
+
     <p class="mt-6 text-center text-sm text-[var(--gcore-text-muted)]">
       Don't have an account?
       <a routerLink="/auth/register" class="text-[var(--gcore-primary)] hover:underline">

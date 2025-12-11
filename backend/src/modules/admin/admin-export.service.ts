@@ -30,7 +30,7 @@ export class AdminExportService {
     const headers = ['ID', 'Email', 'Name', 'Role', 'Active', 'Node Count', 'Created At'];
     const rows = users.map((user) => [
       user.id,
-      user.email,
+      user.email || 'No email', // Telegram users may not have email
       user.name || '',
       user.role,
       user.isActive ? 'Yes' : 'No',

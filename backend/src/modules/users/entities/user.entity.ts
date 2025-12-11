@@ -19,6 +19,7 @@ export enum AuthProvider {
   LOCAL = 'local',
   GOOGLE = 'google',
   GITHUB = 'github',
+  TELEGRAM = 'telegram',
 }
 
 @Entity('users')
@@ -26,8 +27,8 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
-  email: string;
+  @Column({ type: 'varchar', unique: true, nullable: true })
+  email: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   @Exclude()
@@ -52,13 +53,19 @@ export class User {
   @Column({ type: 'varchar', nullable: true, unique: true })
   githubId: string | null;
 
+  @Column({ type: 'varchar', nullable: true, unique: true, name: 'telegram_id' })
+  telegramId: string | null;
+
+  @Column({ type: 'varchar', nullable: true, name: 'telegram_username' })
+  telegramUsername: string | null;
+
   @Column({ type: 'varchar', nullable: true })
   avatarUrl: string | null;
 
   @Column({ default: true })
   isActive: boolean;
 
-  @Column({ default: false })
+  @Column({ default: true })
   emailVerified: boolean;
 
   @Column({ type: 'varchar', length: 6, nullable: true })

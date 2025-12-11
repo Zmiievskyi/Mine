@@ -7,7 +7,7 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { EmailService } from '../email/email.service';
 import { RegisterDto, LoginDto } from './dto';
-import { UserRole } from '../users/entities/user.entity';
+import { UserRole, AuthProvider } from '../users/entities/user.entity';
 
 jest.mock('bcrypt');
 
@@ -25,7 +25,11 @@ describe('AuthService', () => {
     role: UserRole.USER,
     isActive: true,
     avatarUrl: null,
-    provider: 'local',
+    provider: AuthProvider.LOCAL,
+    googleId: null,
+    githubId: null,
+    telegramId: null,
+    telegramUsername: null,
     emailVerified: false,
     verificationCode: null,
     verificationCodeExpiresAt: null,
@@ -102,7 +106,7 @@ describe('AuthService', () => {
 
       usersService.findByEmail.mockResolvedValue(null);
       (bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword);
-      usersService.create.mockResolvedValue({ ...mockUser, ...registerDto, password: hashedPassword });
+      usersService.create.mockResolvedValue({ ...mockUser, ...registerDto, password: hashedPassword, emailVerified: true });
       jwtService.sign.mockReturnValue(accessToken);
 
       const result = await service.register(registerDto);
@@ -112,10 +116,11 @@ describe('AuthService', () => {
       expect(usersService.create).toHaveBeenCalledWith({
         ...registerDto,
         password: hashedPassword,
-        emailVerified: false,
+        emailVerified: true, // Auto-verified (email verification disabled)
       });
-      expect(usersService.setVerificationCode).toHaveBeenCalled();
-      expect(emailService.sendVerificationEmail).toHaveBeenCalled();
+      // Email verification is disabled - these should NOT be called
+      expect(usersService.setVerificationCode).not.toHaveBeenCalled();
+      expect(emailService.sendVerificationEmail).not.toHaveBeenCalled();
       expect(jwtService.sign).toHaveBeenCalledWith({
         sub: mockUser.id,
         email: registerDto.email,
@@ -129,7 +134,7 @@ describe('AuthService', () => {
           role: mockUser.role,
           avatarUrl: mockUser.avatarUrl,
           provider: mockUser.provider,
-          emailVerified: false,
+          emailVerified: true, // Auto-verified
         },
         accessToken,
       });

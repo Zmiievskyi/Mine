@@ -19,7 +19,7 @@ import {
 } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto, VerifyEmailDto } from './dto';
+import { LoginDto, RegisterDto, VerifyEmailDto, TelegramAuthDto } from './dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleProfile } from './strategies/google.strategy';
 import { GitHubProfile } from './strategies/github.strategy';
@@ -189,5 +189,17 @@ export class AuthController {
         `${frontendUrl}/auth/login?error=${encodeURIComponent(errorMessage)}`,
       );
     }
+  }
+
+  @Post('telegram/verify')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @ApiOperation({ summary: 'Verify Telegram login data and authenticate' })
+  @ApiResponse({
+    status: 200,
+    description: 'Login successful, returns JWT token and user',
+  })
+  @ApiResponse({ status: 401, description: 'Invalid or expired Telegram authentication' })
+  async telegramVerify(@Body() telegramAuthDto: TelegramAuthDto) {
+    return this.authService.telegramLogin(telegramAuthDto);
   }
 }

@@ -5,7 +5,7 @@ import { NotFoundException } from '@nestjs/common';
 import { PricingService } from './pricing.service';
 import { PricingConfig } from './entities/pricing-config.entity';
 import { UpdatePricingDto } from './dto';
-import { User, UserRole } from '../users/entities/user.entity';
+import { User, UserRole, AuthProvider } from '../users/entities/user.entity';
 
 describe('PricingService', () => {
   let service: PricingService;
@@ -17,9 +17,18 @@ describe('PricingService', () => {
     password: 'hashedPassword',
     name: 'Admin User',
     role: UserRole.ADMIN,
+    provider: AuthProvider.LOCAL,
+    googleId: null,
+    githubId: null,
+    telegramId: null,
+    telegramUsername: null,
     isActive: true,
     avatarUrl: null,
-    provider: 'local',
+    emailVerified: true,
+    verificationCode: null,
+    verificationCodeExpiresAt: null,
+    verificationAttempts: 0,
+    verificationLockedUntil: null,
     nodes: [],
     requests: [],
     createdAt: new Date(),
