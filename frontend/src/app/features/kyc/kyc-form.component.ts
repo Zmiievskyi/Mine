@@ -6,6 +6,8 @@ import {
   DestroyRef,
   OnInit,
   computed,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -44,6 +46,8 @@ export class KycFormComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+
+  @ViewChild('fileInput') private fileInput!: ElementRef<HTMLInputElement>;
 
   // Form state
   protected readonly loading = signal(false);
@@ -133,6 +137,15 @@ export class KycFormComponent implements OnInit {
       this.selectedFile.set(file);
       this.error.set(null);
       this.uploadFile(file);
+    }
+  }
+
+  protected removeFile(): void {
+    this.selectedFile.set(null);
+    this.uploadedFileUrl.set(null);
+    // Reset file input so same file can be re-selected
+    if (this.fileInput) {
+      this.fileInput.nativeElement.value = '';
     }
   }
 

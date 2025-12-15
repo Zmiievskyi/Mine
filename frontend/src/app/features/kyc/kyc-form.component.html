@@ -267,6 +267,7 @@
               Upload Document (PDF, JPG, PNG - Max 10MB) <span class="text-red-500">*</span>
             </label>
             <input
+              #fileInput
               type="file"
               id="document"
               accept=".pdf,.jpg,.jpeg,.png"
@@ -280,13 +281,20 @@
                 cursor-pointer"
             />
             @if (selectedFileName()) {
-              <p class="text-xs text-gray-600 mt-2">
+              <p class="text-xs text-gray-600 mt-2 flex items-center">
                 Selected: {{ selectedFileName() }}
                 @if (uploading()) {
                   <span class="ml-2 text-[var(--gcore-primary)]">(Uploading...)</span>
                 }
                 @if (uploadedFileUrl() && !uploading()) {
                   <span class="ml-2 text-green-600">✓ Uploaded</span>
+                  <button
+                    type="button"
+                    (click)="removeFile()"
+                    class="ml-2 text-red-500 hover:text-red-700 text-xs underline"
+                  >
+                    Remove
+                  </button>
                 }
               </p>
             }
