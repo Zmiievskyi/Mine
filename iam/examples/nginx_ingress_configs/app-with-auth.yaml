@@ -1,0 +1,177 @@
+# Application with Nginx Ingress External Authentication
+# ======================================================
+# 
+# Пример приложения с полной аутентификацией через Gcore Auth Service.
+# Все endpoints защищены - требуется валидный токен.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app
+  namespace: default
+  labels:
+    app: my-app
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: my-app
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+  namespace: default
+  labels:
+    app: my-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: app
+        image: your-registry/my-app:latest
+        ports:
+        - name: http
+          containerPort: 8080
+        env:
+        # Backend получит эти headers от Ingress
+        - name: TRUST_PROXY_HEADERS
+          value: "true"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+
+---
+# Ingress с аутентификацией через Gcore Auth Service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-app
+  namespace: default
+  annotations:
+    # ============================================
+    # External Authentication Configuration
+    # ============================================
+    
+    # URL Auth Service для валидации токенов
+    # Можно использовать внутренний service или внешний URL
+    nginx.ingress.kubernetes.io/auth-url: "http://gcore-auth-service.default.svc.cluster.local/auth/verify?header_types=apikey,jwt&response_format=json_header"
+    
+    # Headers которые Auth Service вернет и которые будут переданы в backend
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-User-Id, X-Client-Id, X-User-Email, X-User-Type, X-Is-Admin, X-Token-Type, Authorization"
+    
+    # Timeout для auth request (default: 5s)
+    nginx.ingress.kubernetes.io/auth-request-timeout: "10s"
+    
+    # Кеширование результатов валидации (опционально)
+    nginx.ingress.kubernetes.io/auth-cache-key: "$http_authorization"
+    nginx.ingress.kubernetes.io/auth-cache-duration: "200 202 401 5m"
+    
+    # ============================================
+    # Other Ingress Settings
+    # ============================================
+    
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    
+    # Rate limiting (опционально)
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    
+    # CORS (если нужно)
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://your-frontend.com"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Authorization, Content-Type"
+
+spec:
+  ingressClassName: nginx
+  
+  tls:
+  - hosts:
+    - my-app.your-domain.com
+    secretName: my-app-tls
+  
+  rules:
+  - host: my-app.your-domain.com
+    http:
+      paths:
+      # Все пути защищены аутентификацией
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: my-app
+            port:
+              number: 80
+
+---
+# ConfigMap с пример кода для обработки headers в backend
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-app-examples
+  namespace: default
+data:
+  python-example.py: |
+    from flask import Flask, request
+    
+    app = Flask(__name__)
+    
+    @app.route('/api/protected')
+    def protected():
+        # Headers от Auth Service автоматически доступны
+        user_id = request.headers.get('X-User-Id')
+        client_id = request.headers.get('X-Client-Id')
+        email = request.headers.get('X-User-Email')
+        is_admin = request.headers.get('X-Is-Admin') == 'true'
+        
+        return {
+            "message": "Success",
+            "user": {
+                "id": user_id,
+                "client_id": client_id,
+                "email": email,
+                "is_admin": is_admin
+            }
+        }
+  
+  nodejs-example.js: |
+    const express = require('express');
+    const app = express();
+    
+    app.get('/api/protected', (req, res) => {
+      // Headers от Auth Service автоматически доступны
+      const userId = req.headers['x-user-id'];
+      const clientId = req.headers['x-client-id'];
+      const email = req.headers['x-user-email'];
+      const isAdmin = req.headers['x-is-admin'] === 'true';
+      
+      res.json({
+        message: 'Success',
+        user: {
+          id: userId,
+          client_id: clientId,
+          email: email,
+          is_admin: isAdmin
+        }
+      });
+    });
+

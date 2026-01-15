@@ -1,0 +1,215 @@
+# Application with auth-snippet для conditional authentication
+# ==============================================================
+# 
+# Пример использования auth-snippet для исключения определенных путей
+# из аутентификации. Подход с одним Ingress вместо двух.
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-app-conditional-auth
+  namespace: default
+  annotations:
+    # ============================================
+    # External Authentication Configuration
+    # ============================================
+    
+    nginx.ingress.kubernetes.io/auth-url: "http://gcore-auth-service.default.svc.cluster.local/auth/verify?header_types=apikey,jwt&response_format=json_header"
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-User-Id, X-Client-Id, X-User-Email, X-User-Type, X-Is-Admin, Authorization"
+    
+    # ============================================
+    # Auth Snippet для исключения публичных путей
+    # ============================================
+    # 
+    # return 200 означает "пропустить аутентификацию"
+    # НЕ означает "вернуть 200 клиенту"!
+    #
+    nginx.ingress.kubernetes.io/auth-snippet: |
+      # Публичные endpoints - пропустить аутентификацию
+      if ($request_uri = "/health") {
+        return 200;
+      }
+      if ($request_uri = "/metrics") {
+        return 200;
+      }
+      if ($request_uri = "/ready") {
+        return 200;
+      }
+      
+      # Все пути начинающиеся с /public - пропустить
+      if ($request_uri ~* "^/public") {
+        return 200;
+      }
+      
+      # Swagger/OpenAPI документация - пропустить
+      if ($request_uri ~* "^/docs") {
+        return 200;
+      }
+      if ($request_uri ~* "^/swagger") {
+        return 200;
+      }
+      if ($request_uri ~* "^/openapi.json") {
+        return 200;
+      }
+      
+      # Webhooks от внешних систем - пропустить
+      # (они могут использовать другой механизм аутентификации)
+      if ($request_uri ~* "^/webhooks/") {
+        return 200;
+      }
+      
+      # Static assets - пропустить (опционально)
+      if ($request_uri ~* "\.(jpg|jpeg|png|gif|ico|css|js|woff|woff2)$") {
+        return 200;
+      }
+      
+      # Все остальное - требует аутентификации
+      # (ничего не делаем, Nginx продолжит с auth-url)
+
+spec:
+  ingressClassName: nginx
+  
+  rules:
+  - host: my-app.your-domain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: my-app
+            port:
+              number: 80
+
+---
+# Альтернативный вариант: более сложная логика в auth-snippet
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-app-advanced-snippet
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/auth-url: "http://gcore-auth-service.default.svc.cluster.local/auth/verify?header_types=apikey,jwt&response_format=json_header"
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-User-Id, X-Client-Id, X-User-Email, X-User-Type, X-Is-Admin, Authorization"
+    
+    # Более продвинутый auth-snippet с переменными
+    nginx.ingress.kubernetes.io/auth-snippet: |
+      # Создать переменную для отслеживания публичных путей
+      set $is_public 0;
+      
+      # Health checks
+      if ($request_uri ~* "^/(health|ready|metrics)$") {
+        set $is_public 1;
+      }
+      
+      # Public API v1
+      if ($request_uri ~* "^/api/v1/public") {
+        set $is_public 1;
+      }
+      
+      # Docs
+      if ($request_uri ~* "^/(docs|swagger|openapi)") {
+        set $is_public 1;
+      }
+      
+      # GET requests к определенным endpoints
+      # Например, публичное чтение, но запись требует auth
+      if ($request_method = GET) {
+        if ($request_uri ~* "^/api/v1/posts/[0-9]+$") {
+          set $is_public 1;
+        }
+      }
+      
+      # Пропустить аутентификацию для публичных путей
+      if ($is_public = 1) {
+        return 200;
+      }
+
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: my-app-advanced.your-domain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: my-app
+            port:
+              number: 80
+
+---
+# ConfigMap с документацией по regex patterns
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-snippet-patterns
+  namespace: default
+data:
+  patterns.md: |
+    # Auth Snippet Regex Patterns
+    
+    ## Основные операторы
+    
+    - `=`  - Точное совпадение
+    - `~`  - Regex (case-sensitive)
+    - `~*` - Regex (case-insensitive)
+    - `^`  - Начало строки
+    - `$`  - Конец строки
+    
+    ## Примеры patterns
+    
+    ### Точное совпадение пути
+    ```
+    if ($request_uri = "/health") {
+      return 200;
+    }
+    ```
+    
+    ### Путь начинается с префикса
+    ```
+    if ($request_uri ~* "^/public") {
+      return 200;
+    }
+    ```
+    
+    ### Путь заканчивается на расширение
+    ```
+    if ($request_uri ~* "\.(jpg|png|css|js)$") {
+      return 200;
+    }
+    ```
+    
+    ### Путь содержит подстроку
+    ```
+    if ($request_uri ~* "/admin/") {
+      # Дополнительная проверка для admin путей
+    }
+    ```
+    
+    ### Сложные условия с переменными
+    ```
+    set $auth_required 1;
+    
+    if ($request_uri ~* "^/public") {
+      set $auth_required 0;
+    }
+    
+    if ($request_method = OPTIONS) {
+      set $auth_required 0;
+    }
+    
+    if ($auth_required = 0) {
+      return 200;
+    }
+    ```
+    
+    ## Важные заметки
+    
+    1. `return 200` в auth-snippet означает "пропустить аутентификацию"
+    2. Если ничего не вернуть - Nginx выполнит auth-url запрос
+    3. Regex patterns case-insensitive с ~*
+    4. Можно использовать переменные для сложной логики
+    5. Nginx переменные: $request_uri, $request_method, $http_*
+
