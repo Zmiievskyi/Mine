@@ -64,6 +64,31 @@ export interface ChainStatusResponse {
   };
 }
 
+// Node4 participants endpoint response
+export interface Node4ParticipantsResponse {
+  active_participants: {
+    participants: Array<{
+      index: string; // Gonka address (string, not number)
+      validator_key: string;
+      weight: number;
+      inference_url: string;
+      models: string[];
+      seed: {
+        participant: string;
+        epoch_index: number;
+        signature: string;
+      };
+      ml_nodes: Array<{
+        ml_nodes: Array<{
+          node_id: string;
+          poc_weight: number;
+          timeslot_allocation: boolean[];
+        }>;
+      }>;
+    }>;
+  };
+}
+
 // Public network stats for landing page
 export interface NetworkStats {
   currentEpoch: number;
@@ -98,9 +123,11 @@ export class NodesService {
   private readonly nodeCache: LruCache<HyperfusionNode[]>;
   private readonly fullCache: LruCache<HyperfusionResponse>;
   private readonly chainStatusCache: LruCache<ChainStatusResponse>;
+  private readonly node4ParticipantsCache: LruCache<Node4ParticipantsResponse>;
   private readonly NODES_CACHE_KEY = 'hyperfusion_nodes';
   private readonly FULL_CACHE_KEY = 'hyperfusion_full';
   private readonly CHAIN_STATUS_KEY = 'chain_status';
+  private readonly NODE4_PARTICIPANTS_KEY = 'node4_participants';
 
   constructor(
     private configService: ConfigService,
@@ -112,6 +139,11 @@ export class NodesService {
     this.fullCache = new LruCache<HyperfusionResponse>(10, cacheTtl);
     // Chain status has shorter TTL (20 seconds) for fresher data
     this.chainStatusCache = new LruCache<ChainStatusResponse>(5, 20);
+    // Node4 participants cache with same TTL as other data
+    this.node4ParticipantsCache = new LruCache<Node4ParticipantsResponse>(
+      10,
+      cacheTtl,
+    );
   }
 
   async getUserNodes(userId: string): Promise<NodeWithStats[]> {
@@ -290,6 +322,43 @@ export class NodesService {
     } catch (error) {
       this.logger.warn('Failed to fetch chain status', error);
       return this.chainStatusCache.getStale(this.CHAIN_STATUS_KEY) || null;
+    }
+  }
+
+  // Fetch participants data from node4.gonka.ai
+  private async fetchNode4Participants(): Promise<Node4ParticipantsResponse | null> {
+    const cached = this.node4ParticipantsCache.get(this.NODE4_PARTICIPANTS_KEY);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      const url =
+        this.configService.get<string>('gonka.node4ParticipantsUrl') ??
+        'https://node4.gonka.ai/v1/epochs/current/participants';
+
+      const response = await withRetry(
+        async () => {
+          const res = await axios.get<Node4ParticipantsResponse>(url, {
+            timeout: 8000,
+          });
+          return res;
+        },
+        {
+          maxRetries: this.configService.get<number>('retry.maxRetries') ?? 3,
+          baseDelayMs: this.configService.get<number>('retry.baseDelayMs') ?? 1000,
+          maxDelayMs: this.configService.get<number>('retry.maxDelayMs') ?? 5000,
+        },
+        this.logger,
+        'Node4 participants fetch',
+      );
+
+      const data = response.data;
+      this.node4ParticipantsCache.set(this.NODE4_PARTICIPANTS_KEY, data);
+      return data;
+    } catch (error) {
+      this.logger.warn('Failed to fetch node4 participants data', error);
+      return this.node4ParticipantsCache.getStale(this.NODE4_PARTICIPANTS_KEY) || null;
     }
   }
 

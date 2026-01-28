@@ -14,4 +14,7 @@ export default registerAs('gonka', () => ({
     process.env.GONKA_FRESH_BLOCK_AGE_SECONDS || '120',
     10,
   ),
+  node4ParticipantsUrl:
+    process.env.NODE4_PARTICIPANTS_URL ||
+    'https://node4.gonka.ai/v1/epochs/current/participants',
 }));
