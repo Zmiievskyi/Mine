@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.directive';
 
 /**
@@ -9,12 +8,11 @@ import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.
  * - Animated badge
  * - Hero headline
  * - Subtitle
- * - CTA button to registration
  */
 @Component({
   selector: 'app-hero-section',
   standalone: true,
-  imports: [RouterModule, ScrollRevealDirective],
+  imports: [ScrollRevealDirective],
   template: `
     <section id="home" class="pt-24 pb-16 md:pt-32 md:pb-24">
       <div class="mx-auto w-full max-w-screen-xl px-4 md:px-12 lg:px-20">
@@ -46,16 +44,6 @@ import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.
             Rent enterprise-grade GPUs to mine cryptocurrency on our network.
             Pay in fiat currency and earn tokens that power the future of AI inference.
           </p>
-
-          <!-- CTA Button -->
-          <a appScrollReveal [revealDelay]="300" routerLink="/auth/register"
-             class="group relative inline-flex items-center gap-2 h-10 px-6 text-sm font-semibold rounded-lg bg-white/80 text-zinc-900 hover:bg-white/70 transition-all overflow-hidden">
-            <span class="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
-            <span class="relative">Start mining</span>
-            <svg class="relative w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-            </svg>
-          </a>
         </div>
       </div>
     </section>

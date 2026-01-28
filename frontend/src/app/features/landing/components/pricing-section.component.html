@@ -40,15 +40,11 @@
                     <span class="text-muted-foreground text-sm"> /GPU/hour</span>
                   </div>
                   @if (item.specs?.pricePerMonth) {
-                    <span class="text-sm text-muted-foreground mt-1">${{ item.specs.pricePerMonth | number:'1.0-0' }}/month</span>
+                    <span class="text-sm text-muted-foreground mt-1">${{ item.specs?.pricePerMonth | number:'1.0-0' }}/month</span>
                   }
                 </div>
               }
             </div>
-            <a routerLink="/auth/register"
-               class="w-full inline-flex items-center justify-center h-10 px-4 text-sm font-medium rounded-lg border border-border bg-transparent text-foreground hover:bg-white/5 transition-colors">
-              Get Started
-            </a>
           </div>
         }
       </div>
