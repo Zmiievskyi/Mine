@@ -57,6 +57,7 @@ services:
       GONKA_API_NODES: ${GONKA_API_NODES:-http://node1.gonka.ai:8000,http://node2.gonka.ai:8000,http://node3.gonka.ai:8000}
       GONKA_CACHE_TTL: ${GONKA_CACHE_TTL:-120}
       GONKA_CHAIN_RPC_URL: ${GONKA_CHAIN_RPC_URL:-https://node4.gonka.ai/chain-rpc/status}
+      GONKA_FRESH_BLOCK_AGE_SECONDS: ${GONKA_FRESH_BLOCK_AGE_SECONDS:-120}
       NODE4_PARTICIPANTS_URL: ${NODE4_PARTICIPANTS_URL:-https://node4.gonka.ai/v1/epochs/current/participants}
       # OAuth
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
