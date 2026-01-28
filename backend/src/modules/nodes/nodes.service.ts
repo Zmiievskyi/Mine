@@ -277,9 +277,11 @@ export class NodesService {
 
       // Count total GPUs from nested ml_nodes structure
       const totalGpus = participants.reduce((sum, p) => {
+        if (!p.ml_nodes) return sum;
         return (
           sum +
           p.ml_nodes.reduce((gpuSum, mlNodeGroup) => {
+            if (!mlNodeGroup?.ml_nodes) return gpuSum;
             return gpuSum + mlNodeGroup.ml_nodes.length;
           }, 0)
         );
@@ -346,7 +348,7 @@ export class NodesService {
     // FALLBACK: If node4 fails, use Hyperfusion data (previous behavior)
     this.logger.warn('Node4 data unavailable, falling back to Hyperfusion only');
 
-    if (!hyperfusionData) {
+    if (!hyperfusionData || !hyperfusionData.participants) {
       this.logger.error('Both node4 and Hyperfusion data unavailable');
       return this.getEmptyNetworkStats();
     }
