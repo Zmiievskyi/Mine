@@ -1,6 +1,5 @@
 import { Component, OnInit, inject, signal, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../core/services/auth.service';
+import { RouterModule } from '@angular/router';
 import { NodesService } from '../../core/services/nodes.service';
 import { NetworkStats } from '../../core/models/node.model';
 import { createAutoRefresh } from '../../shared/utils';
@@ -27,7 +26,6 @@ import { LandingFooterComponent } from './components/landing-footer.component';
  * - Call-to-action for registration
  *
  * Uses dark theme matching minegnk.com design
- * Redirects authenticated users to dashboard
  */
 @Component({
   selector: 'app-landing',
@@ -48,9 +46,7 @@ import { LandingFooterComponent } from './components/landing-footer.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LandingComponent implements OnInit {
-  private readonly authService = inject(AuthService);
   private readonly nodesService = inject(NodesService);
-  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   // Navigation state
@@ -70,12 +66,6 @@ export class LandingComponent implements OnInit {
   ];
 
   public ngOnInit(): void {
-    // Redirect authenticated users to dashboard
-    if (this.authService.isAuthenticated) {
-      this.router.navigate(['/dashboard']);
-      return;
-    }
-
     // Load network stats with auto-refresh every 60 seconds
     this.loadNetworkStats();
   }

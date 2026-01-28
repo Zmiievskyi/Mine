@@ -1,6 +1,10 @@
 import { Routes } from '@angular/router';
-import { authGuard } from '../../core/guards/auth.guard';
 
+/**
+ * NOTE: These routes are currently DISABLED.
+ * All /auth/* paths redirect to landing page (/) in app.routes.ts.
+ * This file is kept for future re-enablement of auth functionality.
+ */
 export const AUTH_ROUTES: Routes = [
   {
     path: '',
@@ -33,7 +37,7 @@ export const AUTH_ROUTES: Routes = [
   },
   {
     path: 'verify-email',
-    canActivate: [authGuard],
+    // canActivate: [authGuard], // Disabled - routes redirect to landing
     loadComponent: () =>
       import('./verify-email/verify-email.component').then(
         (m) => m.VerifyEmailComponent

@@ -41,6 +41,9 @@ cd frontend && npm install && cd ..
 
 # Install backend dependencies
 cd backend && npm install && cd ..
+
+# Python dependencies for pricing management
+pip3 install psycopg2-binary python-dotenv
 ```
 
 ### 2. Database Setup
@@ -100,6 +103,7 @@ Frontend runs on http://localhost:4200
 ```
 /MineGNK
 ├── frontend/               # Angular 21 + Tailwind CSS v4
+│   ├── nginx.conf          # IP restrictions for admin endpoints
 │   └── src/app/
 │       ├── core/           # Services, guards, interceptors, models
 │       ├── features/       # Landing, auth, dashboard, nodes, requests, admin
@@ -115,6 +119,9 @@ Frontend runs on http://localhost:4200
 │           ├── requests/   # Node request handling
 │           ├── admin/      # Admin panel APIs
 │           └── health/     # Health checks
+├── scripts/                # Management scripts
+│   ├── pricing-view.py     # View current GPU prices
+│   └── pricing-update.py   # Update GPU prices
 ├── docs/                   # Documentation
 │   ├── PRD.md              # Product Requirements
 │   ├── API_RESEARCH.md     # External API documentation
@@ -147,6 +154,17 @@ npm run migration:run    # Apply database migrations
 npm run migration:show   # Check migration status
 ```
 
+### Pricing Management
+
+```bash
+# View current GPU prices
+python3 scripts/pricing-view.py
+
+# Update GPU price
+python3 scripts/pricing-update.py A100 2.50      # Set A100 to $2.50/hour
+python3 scripts/pricing-update.py H200 contact   # Set H200 to "Contact Sales"
+```
+
 ## API Endpoints
 
 ### Authentication
@@ -172,7 +190,9 @@ npm run migration:show   # Check migration status
 | GET | `/api/requests/my` | User's requests |
 | DELETE | `/api/requests/:id` | Cancel pending request |
 
-### Admin (requires admin role)
+### Admin (requires admin role, IP-restricted)
+**Note**: Admin endpoints are IP-restricted (149.50.174.62) via nginx.conf. Pricing management is handled via Python scripts.
+
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/admin/dashboard` | Admin stats |
@@ -232,6 +252,8 @@ HYPERFUSION_TRACKER_URL=https://tracker.gonka.hyperfusion.io
 - Request management (approve/reject/complete)
 - User management (toggle role, activate/deactivate)
 - Node assignment to users
+- **Access**: IP-restricted (149.50.174.62) via nginx
+- **Pricing**: Managed via Python scripts (see Pricing Management section)
 
 ## Security Features
 
