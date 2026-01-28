@@ -3495,3 +3495,72 @@ Added "Rent GPU" buttons throughout the landing page that open a HubSpot form mo
 - [x] 7.29 HubSpot Form Integration - **COMPLETE** (2026-01-28)
 
 ---
+
+## Session 40: HubSpot Form GPU Pre-selection Fix (2026-01-28)
+
+### Overview
+Fixed the HubSpot form GPU pre-selection to work like Gcore's implementation. Previously clicking "Rent GPU" on a pricing card would open the modal but not pre-select the GPU in the dropdown. Now it works correctly by using URL query parameters that HubSpot reads automatically.
+
+### Completed Tasks
+- [x] Fixed GPU pre-selection in HubSpot form using URL params approach (2026-01-28)
+- [x] Fixed modal white edge visible at top corners (2026-01-28)
+- [x] Fixed tooltip overlapping on network stats cards (2026-01-28)
+
+### HubSpot GPU Pre-selection Fix
+
+**Problem**: HubSpot form renders in a cross-origin iframe, so we couldn't programmatically set the dropdown value using JavaScript.
+
+**Solution**: Gcore uses URL query parameters to pre-populate their form. HubSpot automatically reads these parameters when the form loads.
+
+**Implementation** (`hubspot-form-modal.component.ts`):
+1. When modal opens, add URL params using `history.replaceState()`
+2. HubSpot form reads params when it initializes
+3. When modal closes, restore original URL
+
+```typescript
+// URL params added: ?form_gonka_preffered_configuration=8 x A100&form_gonka_servers_number=1
+private addUrlParams(): void {
+  const gpuValue = this.getHubSpotGpuValue(this.gpuType());
+  const url = new URL(window.location.href);
+  url.searchParams.set('form_gonka_preffered_configuration', gpuValue);
+  url.searchParams.set('form_gonka_servers_number', '1');
+  window.history.replaceState({}, '', url.toString());
+}
+```
+
+**GPU Value Mapping**:
+| Our Format | HubSpot Format |
+|------------|----------------|
+| 8x A100 Server | 8 x A100 |
+| 8x H100 Server | 8 x H100 |
+| 8x H200 Server | 8 x H200 |
+| 8x B200 Server | 8 x B200 |
+
+Note: Gcore's HubSpot field name has a typo: `form_gonka_preffered_configuration` (double 'f' in "preffered")
+
+### Modal CSS Fix
+
+**Problem**: White edge visible at top corners of modal due to white `bg-white` on outer container showing through rounded corners.
+
+**Solution**: Changed outer modal container from `bg-white` to `bg-[#18181b]` to match the dark header.
+
+### Network Stats Tooltip Fix
+
+**Problem**: Tooltips on hover were being overlapped by adjacent stat cards.
+
+**Solution**: Added `relative` positioning and `hover:z-10` to each stat card, so when hovered the card elevates above its neighbors.
+
+```html
+<div class="relative rounded-xl ... hover:z-10">
+```
+
+### Files Modified
+- `frontend/src/app/features/landing/components/hubspot-form-modal.component.ts`
+- `frontend/src/app/features/landing/components/network-stats.component.html`
+
+### 403 Errors Note
+HubSpot may show 403 errors in console for tracking resources when form is embedded on localhost or non-whitelisted domains. The form still works correctly - these are for analytics/tracking only. To resolve:
+1. Go to HubSpot → Settings → Marketing → Forms
+2. Add allowed domains (localhost for dev, production domain for prod)
+
+---
