@@ -5,62 +5,70 @@
       <span class="inline-flex items-center justify-center rounded-full border border-[#FF4C00]/50 bg-transparent px-4 py-1.5 text-sm font-medium text-white mb-4">
         Simple Pricing
       </span>
-      <h2 class="text-2xl md:text-3xl font-bold mb-4">Choose your GPU mining package</h2>
+      <h2 class="text-2xl md:text-3xl font-bold mb-4">Choose your 8x GPU server package</h2>
       <p class="text-muted-foreground max-w-2xl mx-auto">
-        All packages include access to our mining network and token earning capabilities. No setup fees or hidden costs.
+        All packages include managed infrastructure, 24/7 monitoring, and month-to-month contracts. No setup fees or long-term commitment.
       </p>
     </div>
 
     <!-- Pricing Cards -->
     @if (!loading()) {
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         @for (item of pricing(); track item.gpuType; let i = $index) {
-          <div appScrollReveal [revealDelay]="i * 100" class="rounded-xl border border-border bg-card/30 p-6 flex flex-col">
+          <div appScrollReveal [revealDelay]="i * 75" class="rounded-xl border border-border bg-card/30 p-6 flex flex-col">
             <div class="mb-6">
-              <h3 class="text-xl font-bold text-foreground mb-2">{{ item.gpuType }}</h3>
-              <p class="text-sm text-muted-foreground">{{ item.specs?.description || 'High-performance GPU' }}</p>
+              <h3 class="text-xl font-bold text-foreground mb-2">{{ item.specs?.name || item.gpuType }}</h3>
+              <p class="text-sm text-muted-foreground">{{ item.specs?.description || 'High-performance GPU server' }}</p>
             </div>
             <ul class="space-y-3 mb-6 flex-1">
               @for (feature of item.specs?.features || []; track feature) {
                 <li class="flex items-center gap-2 text-sm text-muted-foreground">
-                  <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 flex-shrink-0 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                   </svg>
                   {{ feature }}
                 </li>
               }
-              <li class="flex items-center gap-2 text-sm text-[#FF4C00]">
-                <svg class="w-4 h-4 text-[#FF4C00]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-                Full managed service included
-              </li>
             </ul>
             <div class="mb-6">
               @if (item.isContactSales || item.pricePerHour === null) {
                 <span class="text-xl font-bold text-foreground">Custom pricing</span>
               } @else {
-                <span class="text-3xl font-bold text-foreground">&#8364;{{ item.pricePerHour | number:'1.2-2' }}</span>
-                <span class="text-muted-foreground">/ hour</span>
+                <div class="flex flex-col">
+                  <div>
+                    <span class="text-3xl font-bold text-foreground">${{ item.pricePerHour | number:'1.2-2' }}</span>
+                    <span class="text-muted-foreground text-sm"> /GPU/hour</span>
+                  </div>
+                  @if (item.specs?.pricePerMonth) {
+                    <span class="text-sm text-muted-foreground mt-1">${{ item.specs.pricePerMonth | number:'1.0-0' }}/month</span>
+                  }
+                </div>
               }
             </div>
             <a routerLink="/auth/register"
                class="w-full inline-flex items-center justify-center h-10 px-4 text-sm font-medium rounded-lg border border-border bg-transparent text-foreground hover:bg-white/5 transition-colors">
-              Start Mining
+              Get Started
             </a>
           </div>
         }
       </div>
+
+      <!-- Volume Discount Note -->
+      <div appScrollReveal [revealDelay]="400" class="mt-8 text-center">
+        <p class="text-sm text-muted-foreground">
+          <span class="text-[#FF4C00] font-medium">Volume discounts available</span> from 10+ servers. Contact us for custom pricing.
+        </p>
+      </div>
     } @else {
       <!-- Loading skeleton -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        @for (i of [1, 2, 3]; track i) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        @for (i of [1, 2, 3, 4]; track i) {
           <div class="rounded-xl border border-border bg-card/30 p-6 animate-pulse">
-            <div class="h-6 bg-gray-700 rounded w-1/3 mb-4"></div>
-            <div class="h-4 bg-gray-700 rounded w-2/3 mb-6"></div>
+            <div class="h-6 bg-gray-700 rounded w-1/2 mb-4"></div>
+            <div class="h-4 bg-gray-700 rounded w-3/4 mb-6"></div>
             <div class="space-y-3 mb-6">
               @for (j of [1, 2, 3, 4, 5]; track j) {
-                <div class="h-4 bg-gray-700 rounded w-3/4"></div>
+                <div class="h-4 bg-gray-700 rounded w-full"></div>
               }
             </div>
             <div class="h-8 bg-gray-700 rounded w-1/2 mb-6"></div>
@@ -69,8 +77,5 @@
         }
       </div>
     }
-
-    <!-- No credit card note -->
-
   </div>
 </section>

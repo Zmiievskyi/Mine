@@ -10,8 +10,9 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { PricingConfig, UpdatePricingDto } from '../../../core/models/admin.model';
 import { handleApiError, extractErrorMessage } from '../../../shared/utils';
 import {
-  MIN_HOURLY_PRICE_EUR,
-  MAX_HOURLY_PRICE_EUR,
+  MIN_HOURLY_PRICE_USD,
+  MAX_HOURLY_PRICE_USD,
+  CURRENCY,
 } from '../../../core/constants/pricing.constants';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInput } from '@spartan-ng/helm/input';
@@ -102,8 +103,8 @@ export class AdminPricingComponent implements OnInit {
 
     if (!form.isContactSales && form.pricePerHour) {
       const price = parseFloat(form.pricePerHour);
-      if (isNaN(price) || price < MIN_HOURLY_PRICE_EUR || price > MAX_HOURLY_PRICE_EUR) {
-        this.notification.error(`Price must be between ${MIN_HOURLY_PRICE_EUR} and ${MAX_HOURLY_PRICE_EUR}`);
+      if (isNaN(price) || price < MIN_HOURLY_PRICE_USD || price > MAX_HOURLY_PRICE_USD) {
+        this.notification.error(`Price must be between ${MIN_HOURLY_PRICE_USD} and ${MAX_HOURLY_PRICE_USD}`);
         return;
       }
       dto.pricePerHour = price;
@@ -134,6 +135,6 @@ export class AdminPricingComponent implements OnInit {
     if (config.isContactSales || config.pricePerHour === null) {
       return 'Contact Sales';
     }
-    return `€${config.pricePerHour.toFixed(2)}/hr`;
+    return `${CURRENCY}${config.pricePerHour.toFixed(2)}/hr`;
   }
 }

@@ -5,67 +5,97 @@
       <span class="inline-flex items-center justify-center rounded-full border border-[#FF4C00]/50 bg-transparent px-4 py-1.5 text-sm font-medium text-white mb-4">
         How it works
       </span>
-      <h2 class="text-2xl md:text-3xl font-bold mb-4">Start mining in 3 steps</h2>
+      <h2 class="text-2xl md:text-3xl font-bold mb-4">From request to mining in 7 steps</h2>
       <p class="text-muted-foreground max-w-2xl mx-auto">
-        We handle the infrastructure while you focus on earning tokens.
+        We handle the infrastructure while you focus on earning tokens. Month-to-month contracts with no long-term commitment.
       </p>
     </div>
 
-    <!-- Steps -->
-    <div class="space-y-8 max-w-3xl mx-auto">
+    <!-- Steps Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
       <!-- Step 1 -->
-      <div appScrollReveal [revealDelay]="0" class="flex gap-6 items-start">
-        <div class="flex-shrink-0 w-12 h-12 rounded-xl border border-border bg-card/50 flex items-center justify-center">
-          <svg class="w-6 h-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-          </svg>
+      <div appScrollReveal [revealDelay]="0" class="rounded-xl border border-border bg-card/30 p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-[#FF4C00]/10 border border-[#FF4C00]/30 flex items-center justify-center text-sm font-bold text-[#FF4C00]">1</span>
+          <h3 class="text-lg font-semibold text-foreground">Submit Request</h3>
         </div>
-        <div class="flex-1">
-          <div class="inline-flex items-center gap-3 mb-2">
-            <span class="text-xs font-bold text-accent bg-accent/10 px-2 py-0.5 rounded">1</span>
-            <h3 class="text-lg font-semibold text-foreground">Complete KYC Verification</h3>
-          </div>
-          <p class="text-muted-foreground text-sm">
-            Submit your form and go through our KYC procedure to verify your identity and ensure compliance with regulations.
-          </p>
-        </div>
+        <p class="text-muted-foreground text-sm">
+          Choose your GPU model, preferred region, and contract duration. We'll check availability and prepare your quote.
+        </p>
       </div>
 
       <!-- Step 2 -->
-      <div appScrollReveal [revealDelay]="100" class="flex gap-6 items-start">
-        <div class="flex-shrink-0 w-12 h-12 rounded-xl border border-border bg-card/50 flex items-center justify-center">
-          <svg class="w-6 h-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-          </svg>
+      <div appScrollReveal [revealDelay]="50" class="rounded-xl border border-border bg-card/30 p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-[#FF4C00]/10 border border-[#FF4C00]/30 flex items-center justify-center text-sm font-bold text-[#FF4C00]">2</span>
+          <h3 class="text-lg font-semibold text-foreground">Complete KYC</h3>
         </div>
-        <div class="flex-1">
-          <div class="inline-flex items-center gap-3 mb-2">
-            <span class="text-xs font-bold text-accent bg-accent/10 px-2 py-0.5 rounded">2</span>
-            <h3 class="text-lg font-semibold text-foreground">Sign Contract and Pay</h3>
-          </div>
-          <p class="text-muted-foreground text-sm">
-            Review and sign your mining contract, then make the payment for your first month to secure your GPU allocation.
-          </p>
-        </div>
+        <p class="text-muted-foreground text-sm">
+          Pass KYC verification. We provide a clear checklist of required documentation to streamline the process.
+        </p>
       </div>
 
       <!-- Step 3 -->
-      <div appScrollReveal [revealDelay]="200" class="flex gap-6 items-start">
-        <div class="flex-shrink-0 w-12 h-12 rounded-xl border border-border bg-card/50 flex items-center justify-center">
-          <svg class="w-6 h-6 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-          </svg>
+      <div appScrollReveal [revealDelay]="100" class="rounded-xl border border-border bg-card/30 p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-[#FF4C00]/10 border border-[#FF4C00]/30 flex items-center justify-center text-sm font-bold text-[#FF4C00]">3</span>
+          <h3 class="text-lg font-semibold text-foreground">Review Quote</h3>
         </div>
-        <div class="flex-1">
-          <div class="inline-flex items-center gap-3 mb-2">
-            <span class="text-xs font-bold text-accent bg-accent/10 px-2 py-0.5 rounded">3</span>
-            <h3 class="text-lg font-semibold text-foreground">Start Mining and Earn</h3>
-          </div>
-          <p class="text-muted-foreground text-sm">
-            We set up your GPUs and provide access to mining statistics. Start receiving daily payouts to your GNK token wallet.
-          </p>
-        </div>
+        <p class="text-muted-foreground text-sm">
+          Confirm availability and fit before committing. Review your configuration and pricing details.
+        </p>
       </div>
+
+      <!-- Step 4 -->
+      <div appScrollReveal [revealDelay]="150" class="rounded-xl border border-border bg-card/30 p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-[#FF4C00]/10 border border-[#FF4C00]/30 flex items-center justify-center text-sm font-bold text-[#FF4C00]">4</span>
+          <h3 class="text-lg font-semibold text-foreground">Sign & Pay</h3>
+        </div>
+        <p class="text-muted-foreground text-sm">
+          Sign a 1-month contract and pay for the first month upfront. Payment is required before server assignment.
+        </p>
+      </div>
+
+      <!-- Step 5 -->
+      <div appScrollReveal [revealDelay]="200" class="rounded-xl border border-border bg-card/30 p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-[#FF4C00]/10 border border-[#FF4C00]/30 flex items-center justify-center text-sm font-bold text-[#FF4C00]">5</span>
+          <h3 class="text-lg font-semibold text-foreground">Provisioning</h3>
+        </div>
+        <p class="text-muted-foreground text-sm">
+          We handle server assignment, software installation, and wallet connection. Provisioning completes within days.
+        </p>
+      </div>
+
+      <!-- Step 6 -->
+      <div appScrollReveal [revealDelay]="250" class="rounded-xl border border-border bg-card/30 p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-[#FF4C00]/10 border border-[#FF4C00]/30 flex items-center justify-center text-sm font-bold text-[#FF4C00]">6</span>
+          <h3 class="text-lg font-semibold text-foreground">Operate & Monitor</h3>
+        </div>
+        <p class="text-muted-foreground text-sm">
+          Your GPUs start mining. We provide 24/7 infrastructure monitoring and respond to any issues automatically.
+        </p>
+      </div>
+
+      <!-- Step 7 - Full width on mobile, centered on larger screens -->
+      <div appScrollReveal [revealDelay]="300" class="rounded-xl border border-border bg-card/30 p-6 md:col-span-2 lg:col-span-1 lg:col-start-2">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="flex-shrink-0 w-8 h-8 rounded-lg bg-[#FF4C00]/10 border border-[#FF4C00]/30 flex items-center justify-center text-sm font-bold text-[#FF4C00]">7</span>
+          <h3 class="text-lg font-semibold text-foreground">Billing & Renewal</h3>
+        </div>
+        <p class="text-muted-foreground text-sm">
+          Monthly invoices at calendar month end. Renew by paying no later than 10 days before contract end. Downtime credits applied automatically.
+        </p>
+      </div>
+    </div>
+
+    <!-- Billing Note -->
+    <div appScrollReveal [revealDelay]="350" class="mt-8 text-center">
+      <p class="text-sm text-muted-foreground">
+        <span class="text-[#FF4C00]">Note:</span> Infrastructure downtime credits apply to infrastructure issues only and do not cover missed network rewards.
+      </p>
     </div>
   </div>
 </section>
