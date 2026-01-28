@@ -21,8 +21,6 @@ RUN npx tsc ormconfig.ts --outDir dist --esModuleInterop --module commonjs --res
 # Stage 2: Production
 FROM node:22-alpine AS production
 
-WORKDIR /app
-
 # Install postgresql-client for pg_isready in entrypoint
 RUN apk add --no-cache postgresql-client
 
@@ -30,24 +28,26 @@ RUN apk add --no-cache postgresql-client
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001 -G nodejs
 
-# Copy package files
-COPY package*.json ./
+WORKDIR /app
+
+# Set ownership of workdir
+RUN chown nestjs:nodejs /app
+
+# Switch to non-root user BEFORE npm ci
+USER nestjs
+
+# Copy package files (owned by nestjs)
+COPY --chown=nestjs:nodejs package*.json ./
 
 # Install production dependencies (typeorm CLI needed for migrations)
 RUN npm ci --only=production && npm cache clean --force
 
-# Copy built application from builder
-COPY --from=builder /app/dist ./dist
+# Copy built application from builder (owned by nestjs)
+COPY --chown=nestjs:nodejs --from=builder /app/dist ./dist
 
-# Copy entrypoint script
-COPY docker-entrypoint.sh ./
+# Copy entrypoint script (owned by nestjs)
+COPY --chown=nestjs:nodejs docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
-
-# Change ownership to non-root user
-RUN chown -R nestjs:nodejs /app
-
-# Switch to non-root user
-USER nestjs
 
 # Expose port
 EXPOSE 3000

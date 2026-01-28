@@ -45,6 +45,19 @@
                 </div>
               }
             </div>
+
+            <!-- Rent GPU Button -->
+            <button
+              type="button"
+              class="w-full py-3 px-4 bg-[#FF4C00] hover:bg-[#e64500] text-white font-semibold text-sm rounded-lg transition-colors duration-200"
+              (click)="openModal(item.specs?.name || item.gpuType)"
+            >
+              @if (item.isContactSales || item.pricePerHour === null) {
+                Contact Sales
+              } @else {
+                Rent GPU
+              }
+            </button>
           </div>
         }
       </div>
@@ -75,3 +88,11 @@
     }
   </div>
 </section>
+
+<!-- HubSpot Form Modal -->
+<app-hubspot-form-modal
+  [isOpen]="isModalOpen()"
+  [gpuType]="selectedGpuType()"
+  (close)="closeModal()"
+  (formSubmitted)="onFormSubmitted()"
+/>

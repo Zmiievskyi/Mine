@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.directive';
+import { HubspotFormModalComponent } from './hubspot-form-modal.component';
 
 /**
  * Hero section component for landing page
@@ -8,11 +9,13 @@ import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.
  * - Animated badge
  * - Hero headline
  * - Subtitle
+ * - Primary CTA button
  */
 @Component({
   selector: 'app-hero-section',
   standalone: true,
-  imports: [ScrollRevealDirective],
+  imports: [ScrollRevealDirective, HubspotFormModalComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section id="home" class="pt-24 pb-16 md:pt-32 md:pb-24">
       <div class="mx-auto w-full max-w-screen-xl px-4 md:px-12 lg:px-20">
@@ -44,9 +47,45 @@ import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.
             Rent enterprise-grade GPUs to mine cryptocurrency on our network.
             Pay in fiat currency and earn tokens that power the future of AI inference.
           </p>
+
+          <!-- CTA Button -->
+          <div appScrollReveal [revealDelay]="300">
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 px-8 py-4 bg-[#FF4C00] hover:bg-[#e64500] text-white font-semibold text-lg rounded-lg transition-colors duration-200 shadow-lg shadow-[#FF4C00]/25"
+              (click)="openModal()"
+            >
+              Rent GPU
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </section>
-  `
+
+    <!-- HubSpot Form Modal -->
+    <app-hubspot-form-modal
+      [isOpen]="isModalOpen()"
+      (close)="closeModal()"
+      (formSubmitted)="onFormSubmitted()"
+    />
+  `,
 })
-export class HeroSectionComponent {}
+export class HeroSectionComponent {
+  protected readonly isModalOpen = signal(false);
+
+  protected openModal(): void {
+    this.isModalOpen.set(true);
+  }
+
+  protected closeModal(): void {
+    this.isModalOpen.set(false);
+  }
+
+  protected onFormSubmitted(): void {
+    // Optionally close modal after a delay or show success message
+    setTimeout(() => this.closeModal(), 3000);
+  }
+}

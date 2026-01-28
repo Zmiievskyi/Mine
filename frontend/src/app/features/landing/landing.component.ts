@@ -12,6 +12,7 @@ import { ManagedServicesSectionComponent } from './components/managed-services-s
 import { PricingSectionComponent } from './components/pricing-section.component';
 import { FaqSectionComponent } from './components/faq-section.component';
 import { LandingFooterComponent } from './components/landing-footer.component';
+import { HubspotFormModalComponent } from './components/hubspot-form-modal.component';
 
 /**
  * Landing page component for MineGNK
@@ -39,7 +40,8 @@ import { LandingFooterComponent } from './components/landing-footer.component';
     ManagedServicesSectionComponent,
     PricingSectionComponent,
     FaqSectionComponent,
-    LandingFooterComponent
+    LandingFooterComponent,
+    HubspotFormModalComponent,
   ],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.scss',
@@ -56,6 +58,9 @@ export class LandingComponent implements OnInit {
   protected readonly networkStats = signal<NetworkStats | null>(null);
   protected readonly statsLoading = signal(true);
   protected readonly statsError = signal<string | null>(null);
+
+  // HubSpot form modal state
+  protected readonly isRentModalOpen = signal(false);
 
   // Navigation links
   protected readonly navLinks = [
@@ -105,5 +110,27 @@ export class LandingComponent implements OnInit {
       element.scrollIntoView({ behavior: 'smooth' });
       this.isMobileMenuOpen = false;
     }
+  }
+
+  /**
+   * Open the rent GPU modal from header
+   */
+  protected openRentModal(): void {
+    this.isRentModalOpen.set(true);
+    this.isMobileMenuOpen = false;
+  }
+
+  /**
+   * Close the rent GPU modal
+   */
+  protected closeRentModal(): void {
+    this.isRentModalOpen.set(false);
+  }
+
+  /**
+   * Handle form submission
+   */
+  protected onRentFormSubmitted(): void {
+    setTimeout(() => this.closeRentModal(), 3000);
   }
 }

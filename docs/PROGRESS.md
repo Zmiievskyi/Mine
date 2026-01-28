@@ -1,6 +1,6 @@
 # MineGNK Progress Tracker
 
-**Last Updated**: 2025-01-28 (Session 37)
+**Last Updated**: 2026-01-28 (Session 39)
 
 ---
 
@@ -51,7 +51,7 @@
 | 2025-12-08 | Skip Hashiro for MVP | No public API, would require scraping |
 | 2025-12-08 | Hyperfusion as primary data source | Has earnings, health, all needed fields |
 | 2025-12-08 | Start with API spike before building UI | Reduce risk - validate data first |
-| 2025-12-08 | Use Angular 18 + Tailwind CSS (minimal) for frontend | Modern stack, easy to restyle later |
+| 2025-12-08 | Use Angular 21 + Tailwind CSS (minimal) for frontend | Modern stack, easy to restyle later |
 | 2025-12-08 | Logic-first approach: skeleton + auth before styling | Waiting for Gcore UI Kit access |
 | 2025-12-08 | Work in `feature/frontend-skeleton` branch | Safe experimentation, easy rollback |
 | 2025-12-08 | TypeORM synchronize for dev, manual migrations for prod | Fast iteration during development |
@@ -155,7 +155,7 @@ None currently.
 When Gcore UI Kit access is granted, apply styles on top.
 
 ### Completed
-- [x] Create Angular 18 project with routing (2025-12-08)
+- [x] Create Angular 21 project with routing (2025-12-08)
 - [x] Setup Tailwind CSS v4 (minimal, for layout only) (2025-12-08)
 - [x] Project structure (core, features, shared, layout) (2025-12-08)
 - [x] Auth module (JWT service, guards, interceptors) (2025-12-08)
@@ -191,7 +191,7 @@ When Gcore UI Kit access is granted, apply styles on top.
 - **Validated both APIs work and provide needed data**
 
 ### Afternoon - Frontend Skeleton
-- Created Angular 18 project (`frontend/`)
+- Created Angular 21 project (`frontend/`)
 - Set up project structure:
   - `core/guards/` - authGuard, guestGuard, adminGuard
   - `core/interceptors/` - JWT auth interceptor
@@ -232,7 +232,7 @@ When Gcore UI Kit access is granted, apply styles on top.
 | Metric | Value |
 |--------|-------|
 | Frontend TS files | 50 |
-| Frontend components | 21 |
+| Frontend components | 41 |
 | Frontend pages | 13 (login, register, dashboard, nodes list, node detail, admin dashboard/requests/users/nodes/analytics, requests, oauth-callback, landing) |
 | Frontend services | 8 (auth, nodes, admin, requests, notification, storage, index) |
 | Frontend guards | 1 file (auth.guard.ts with authGuard, guestGuard, adminGuard) |
@@ -240,10 +240,10 @@ When Gcore UI Kit access is granted, apply styles on top.
 | Backend modules | 8 (auth, users, nodes, requests, admin, pricing, uploads, health) |
 | Backend TS files | 75 (excl. tests) |
 | Backend configs | 12 (app, database, jwt, gonka, google, github, telegram, s3, retry, throttler, index) |
-| API endpoints | 40 |
-| Database tables | 6 (users, user_nodes, node_requests, nodes, node_stats_cache, earnings_history) |
-| Migration files | 5 |
-| Tests passing | 38 (auth: 10, nodes: 12, admin: 16) ✓ |
+| API endpoints | 45 |
+| Database tables | 5 (users, user_nodes, node_requests, refresh_tokens, pricing_config) |
+| Migration files | 8 |
+| Tests passing | 60 ✓ |
 | Auth strategies | 3 (JWT, Google OAuth, GitHub OAuth) |
 | Spartan UI components | 15 helm libraries (badge, button, card, dialog, form-field, icon, input, label, radio-group, select, sonner, table, tabs, textarea, utils) |
 | Docker files | 4 (docker-compose.yml, docker-compose.prod.yml, backend/Dockerfile, frontend/Dockerfile) |
@@ -1715,7 +1715,7 @@ const queryBuilder = this.usersRepository
 - Strong bcrypt password hashing (12 rounds) ✓
 - TypeORM parameterized queries (no SQL injection) ✓
 - Rate limiting on auth endpoints ✓
-- Modern Angular 18 patterns with signals ✓
+- Modern Angular 21 patterns with signals ✓
 - 38 tests covering critical services ✓
 
 ### Decisions Made
@@ -2597,7 +2597,7 @@ TELEGRAM_BOT_ID=123456789
 | Auth strategies | 3 (JWT, Google, GitHub) | 4 (+Telegram) |
 | OAuth providers | 2 (Google, GitHub) | 3 (+Telegram) |
 | API endpoints | 36 | 37 (+1 telegram/verify) |
-| Frontend components | 21 | 23 (+TelegramButton, TelegramCallback) |
+| Frontend components | 41 | 23 (+TelegramButton, TelegramCallback) |
 
 ### Phase 7 Progress Update
 - [x] 7.1 Error Handling & Fallbacks - **COMPLETE**
@@ -3421,5 +3421,77 @@ Refactored data sources to prioritize node4.gonka.ai and disabled authentication
 ### Phase 7 Progress Update
 - [x] 7.27 node4 as Primary Data Source - **COMPLETE** (2026-01-28)
 - [x] 7.28 Disable Authentication - **COMPLETE** (2026-01-28)
+
+---
+
+## Session 39: HubSpot Form Integration (2026-01-28)
+
+### Overview
+Added "Rent GPU" buttons throughout the landing page that open a HubSpot form modal for GPU rental inquiries, similar to the Gcore Gonka page (https://gcore.com/go/gonka).
+
+### Completed Tasks
+- [x] Created HubspotFormModalComponent for HubSpot form integration (2026-01-28)
+- [x] Added "Rent GPU" button to header (desktop and mobile) (2026-01-28)
+- [x] Added "Rent GPU" button to hero section (2026-01-28)
+- [x] Added "Rent GPU" buttons on each pricing card (2026-01-28)
+- [x] Created environment configuration for HubSpot (sandbox/production) (2026-01-28)
+- [x] Styled modal with white background for readable form (2026-01-28)
+
+### HubSpot Integration Implementation
+
+**Modal Component** (`frontend/src/app/features/landing/components/hubspot-form-modal.component.ts`):
+- Standalone Angular component with OnPush change detection
+- Loads HubSpot Forms API v2.js dynamically
+- White background modal body (HubSpot form renders in iframe with light theme)
+- Modal width: max-w-2xl for proper two-column field layout
+- Shows selected GPU type in header when opened from pricing card
+
+**Environment Configuration**:
+
+| Environment | Portal ID | Form ID | Region |
+|-------------|-----------|---------|--------|
+| Sandbox (dev) | 147554099 | 78fd550b-eec3-4958-bc4d-52c73924b87b | eu1 |
+| Production | 4202168 | 2d618652-614d-45f9-97fb-b9f88a6e8cc1 | eu1 |
+
+**Files Created/Modified**:
+- `frontend/src/app/features/landing/components/hubspot-form-modal.component.ts` - New modal component
+- `frontend/src/environments/environment.ts` - Added hubspot config (sandbox)
+- `frontend/src/environments/environment.prod.ts` - Added hubspot config (production)
+- `frontend/angular.json` - Added file replacements for environments
+- `frontend/src/app/features/landing/landing.component.ts` - Added header Rent GPU button
+- `frontend/src/app/features/landing/landing.component.html` - Added modal instance
+- `frontend/src/app/features/landing/components/hero-section.component.ts` - Added Rent GPU button
+- `frontend/src/app/features/landing/components/pricing-section.component.ts` - Added openRentModal output
+- `frontend/src/app/features/landing/components/pricing-section.component.html` - Added Rent GPU buttons
+
+### UI/UX Decisions
+
+**Button Placement** (matching Gcore Gonka page):
+1. Header navigation (desktop + mobile menu)
+2. Hero section CTA
+3. Each pricing card
+
+**Modal Design**:
+- Dark header (bg-[#18181b]) with "Rent GPUs" title
+- Shows selected GPU type when opened from pricing card
+- White body for HubSpot form (iframe requires light theme)
+- Close button and backdrop click to dismiss
+
+**GPU Pre-selection**:
+- GPU type passed to modal from pricing cards (e.g., "8x B200 Server")
+- Displayed in modal header ("Selected: 8x B200 Server")
+- Cannot auto-select HubSpot dropdown due to cross-origin iframe restriction
+
+### Technical Challenges & Solutions
+
+| Challenge | Solution |
+|-----------|----------|
+| HubSpot forms API not available | Used v2.js with retry logic (30 attempts, 100ms intervals) |
+| Form text barely visible | Changed modal body to white background |
+| Fields stacked instead of side-by-side | Increased modal width from max-w-lg to max-w-2xl |
+| Cannot pre-select GPU dropdown | Iframe is cross-origin; displayed GPU in header instead |
+
+### Phase 7 Progress Update
+- [x] 7.29 HubSpot Form Integration - **COMPLETE** (2026-01-28)
 
 ---

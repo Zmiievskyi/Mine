@@ -63,7 +63,7 @@ Landing Page -> Backend polls node4.gonka.ai + Hyperfusion every 60s
 - **Storage**: Gcore S3-compatible Object Storage (KYC documents)
 - **Auth**: Email/password + Google/GitHub/Telegram OAuth with secure refresh tokens
 - **Security**: Helmet headers, rate limiting (throttler), strong password validation
-- **External APIs**: Gonka (trackers), Gcore (instance specs)
+- **External APIs**: Gonka (trackers), Gcore (instance specs), HubSpot (forms)
 - **Caching**: LRU in-memory cache with TTL (2 min node data, 20 sec chain status)
 
 **For Angular/Frontend patterns, see the `angular` skill** (loaded automatically).
@@ -73,7 +73,7 @@ Landing Page -> Backend polls node4.gonka.ai + Hyperfusion every 60s
 ### Gonka Network (PRIMARY data source)
 - **What**: Decentralized AI network using Proof-of-Work for inference
 - **Token**: GNK (~310,000/day, halving every 4 years)
-- **Supported GPUs**: A100, H100, H200
+- **Supported GPUs**: A100, H100, H200, B200
 
 ### Data Sources
 
@@ -98,8 +98,11 @@ Landing Page -> Backend polls node4.gonka.ai + Hyperfusion every 60s
     src/app/
       core/                 # Services, guards, interceptors, models
       features/             # Landing, auth, dashboard, nodes, requests, admin
+        landing/components/
+          hubspot-form-modal.component.ts  # HubSpot form integration modal
       shared/               # Layout, loading-spinner, directives, utils
     nginx.conf              # IP restrictions for /api/admin/*
+    environments/           # Environment configurations (HubSpot, backend URL)
   backend/                  # NestJS API
     src/
       common/               # Filters, utils, DTOs, services (LRU cache)
@@ -123,6 +126,10 @@ Landing Page -> Backend polls node4.gonka.ai + Hyperfusion every 60s
 - Dark theme, 6 network stats cards (status, epoch, participants, GPUs, models, countdown)
 - Dynamic pricing, auto-refresh every 60s
 - Data from node4.gonka.ai (primary) + Hyperfusion (supplementary)
+- **HubSpot Form Integration**: "Rent GPU" buttons in header, hero, and pricing cards open modal with embedded HubSpot form (EU1 region)
+  - Modal displays selected GPU type in header when opened from pricing card
+  - Iframe-based form integration with white background for light theme
+  - Separate portal/form IDs for sandbox (dev) and production environments
 
 ### Authentication (DISABLED)
 - All auth routes disabled: `/auth/*`
@@ -190,6 +197,8 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`
 
 ## Environment Variables
 
+### Backend (.env)
+
 ```bash
 # Database
 DB_HOST=localhost
@@ -221,6 +230,17 @@ S3_BUCKET=minegnk-kyc-documents
 
 See `backend/.env.example` for full list.
 
+### Frontend (environment.ts / environment.prod.ts)
+
+HubSpot form integration is configured in `frontend/src/environments/`:
+
+| Environment | Portal ID | Form ID | Region |
+|-------------|-----------|---------|--------|
+| Sandbox (dev) | 147554099 | 78fd550b-eec3-4958-bc4d-52c73924b87b | eu1 |
+| Production | 4202168 | 2d618652-614d-45f9-97fb-b9f88a6e8cc1 | eu1 |
+
+**Note:** Production environment currently uses sandbox credentials for testing.
+
 ## Key Decisions
 
 1. **Manual Provisioning**: VM creation by support team, not automated
@@ -233,11 +253,12 @@ See `backend/.env.example` for full list.
 8. **Pricing Management**: Python scripts + Claude Code skill instead of web UI
 9. **Auth Disabled**: Landing page only, all protected routes disabled (as of 2026-01-28)
 10. **node4 as Primary**: node4.gonka.ai/v1/epochs/current/participants for epoch/participant/GPU data
+11. **HubSpot Integration**: External form submission via iframe modal for GPU rental inquiries (replaces internal request system for public users)
 
 ## Testing
 
 ```bash
-cd backend && npm test        # Run tests (52 total)
+cd backend && npm test        # Run tests (60 total)
 cd backend && npm run test:cov  # With coverage
 ```
 
@@ -245,11 +266,11 @@ cd backend && npm run test:cov  # With coverage
 
 | Category | Count |
 |----------|-------|
-| Frontend components | 40 |
+| Frontend components | 41 |
 | Backend modules | 9 |
-| API endpoints | 49 |
-| Database tables | 7 |
-| Tests passing | 52 |
+| API endpoints | 45 |
+| Database tables | 8 |
+| Tests passing | 60 |
 
 ## Health Endpoints
 
@@ -280,7 +301,7 @@ Skills in `.claude/skills/`.
 
 | Skill | Use For |
 |-------|---------|
-| `pricing` | View/update GPU prices via Python scripts |
+| `pricing` | View/update/check GPU prices against Gcore website |
 | `angular` | Angular patterns with Spartan UI |
 | `context7` | Fetch library documentation |
 | `subagent-driven-development` | Task-based parallel development |

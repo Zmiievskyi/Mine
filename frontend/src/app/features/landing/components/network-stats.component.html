@@ -10,8 +10,14 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
       <!-- Network Status -->
-      <div appScrollReveal [revealDelay]="0" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5">
-        <div class="text-sm text-muted-foreground mb-2">Network Status</div>
+      <div appScrollReveal [revealDelay]="0" class="relative rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5 hover:z-10">
+        <div class="text-sm text-muted-foreground mb-2 relative group/status inline-block cursor-help">
+          <span class="border-b border-dashed border-muted-foreground/50">Network Status</span>
+          <div class="absolute left-0 top-full mt-2 w-64 p-3 bg-[#0f172a]/95 text-white text-xs rounded-xl shadow-xl border border-white/10 opacity-0 invisible group-hover/status:opacity-100 group-hover/status:visible transition-all duration-200 z-50 pointer-events-none leading-relaxed">
+            <span class="font-semibold">Live / Syncing / Stale</span> based on public network signals. Use it to decide whether to proceed now or pause and investigate.
+            <div class="absolute -top-1.5 left-4 w-3 h-3 bg-[#0f172a]/95 border-l border-t border-white/10 rotate-45"></div>
+          </div>
+        </div>
         @if (loading()) {
           <div class="text-2xl font-bold text-foreground animate-pulse">--</div>
           <div class="text-sm text-muted-foreground mt-2">Loading...</div>
@@ -25,7 +31,13 @@
               {{ getStatusLabel(stats()!.networkStatus) }}
             </span>
           </div>
-          <div class="text-sm text-muted-foreground mt-2">Block age: {{ formatBlockAge(stats()!.blockAge) }}</div>
+          <div class="text-sm text-muted-foreground mt-2 relative group/blockage inline-block cursor-help">
+            <span class="border-b border-dashed border-muted-foreground/30">Block age: {{ formatBlockAge(stats()!.blockAge) }}</span>
+            <div class="absolute left-0 top-full mt-2 w-64 p-3 bg-[#0f172a]/95 text-white text-xs rounded-xl shadow-xl border border-white/10 opacity-0 invisible group-hover/blockage:opacity-100 group-hover/blockage:visible transition-all duration-200 z-50 pointer-events-none leading-relaxed">
+              Time since the latest block was produced. Fast indicator of stalls or degraded network freshness.
+              <div class="absolute -top-1.5 left-4 w-3 h-3 bg-[#0f172a]/95 border-l border-t border-white/10 rotate-45"></div>
+            </div>
+          </div>
         } @else {
           <div class="text-2xl font-bold text-foreground">--</div>
           <div class="text-sm text-destructive mt-2">Unavailable</div>
@@ -33,14 +45,26 @@
       </div>
 
       <!-- Current Epoch -->
-      <div appScrollReveal [revealDelay]="50" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5">
-        <div class="text-sm text-muted-foreground mb-2">Current Epoch</div>
+      <div appScrollReveal [revealDelay]="50" class="relative rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5 hover:z-10">
+        <div class="text-sm text-muted-foreground mb-2 relative group/epoch inline-block cursor-help">
+          <span class="border-b border-dashed border-muted-foreground/50">Current Epoch</span>
+          <div class="absolute left-0 top-full mt-2 w-64 p-3 bg-[#0f172a]/95 text-white text-xs rounded-xl shadow-xl border border-white/10 opacity-0 invisible group-hover/epoch:opacity-100 group-hover/epoch:visible transition-all duration-200 z-50 pointer-events-none leading-relaxed">
+            Current network epoch (active participation/accounting window). Important for timing actions and interpreting results.
+            <div class="absolute -top-1.5 left-4 w-3 h-3 bg-[#0f172a]/95 border-l border-t border-white/10 rotate-45"></div>
+          </div>
+        </div>
         @if (loading()) {
           <div class="text-2xl font-bold text-foreground animate-pulse">--</div>
           <div class="text-sm text-muted-foreground mt-2">Loading...</div>
         } @else if (stats()) {
           <div class="text-2xl font-bold text-[#FF4C00]">#{{ stats()!.currentEpoch }}</div>
-          <div class="text-sm text-muted-foreground mt-2">Block {{ stats()!.currentBlock | number }}</div>
+          <div class="text-sm text-muted-foreground mt-2 relative group/block inline-block cursor-help">
+            <span class="border-b border-dashed border-muted-foreground/30">Block {{ stats()!.currentBlock | number }}</span>
+            <div class="absolute left-0 top-full mt-2 w-64 p-3 bg-[#0f172a]/95 text-white text-xs rounded-xl shadow-xl border border-white/10 opacity-0 invisible group-hover/block:opacity-100 group-hover/block:visible transition-all duration-200 z-50 pointer-events-none leading-relaxed">
+              Most recent block height. Confirms the chain is progressing and helps sanity-check during incidents.
+              <div class="absolute -top-1.5 left-4 w-3 h-3 bg-[#0f172a]/95 border-l border-t border-white/10 rotate-45"></div>
+            </div>
+          </div>
         } @else {
           <div class="text-2xl font-bold text-foreground">--</div>
           <div class="text-sm text-destructive mt-2">Unavailable</div>
@@ -48,15 +72,25 @@
       </div>
 
       <!-- Participants -->
-      <div appScrollReveal [revealDelay]="100" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5">
-        <div class="text-sm text-muted-foreground mb-2">Participants</div>
+      <div appScrollReveal [revealDelay]="100" class="relative rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5 hover:z-10">
+        <div class="text-sm text-muted-foreground mb-2 relative group/participants inline-block cursor-help">
+          <span class="border-b border-dashed border-muted-foreground/50">Participants</span>
+          <div class="absolute left-0 top-full mt-2 w-64 p-3 bg-[#0f172a]/95 text-white text-xs rounded-xl shadow-xl border border-white/10 opacity-0 invisible group-hover/participants:opacity-100 group-hover/participants:visible transition-all duration-200 z-50 pointer-events-none leading-relaxed">
+            Total number of nodes participating in the current epoch. Shows network scale and decentralization.
+            <div class="absolute -top-1.5 left-4 w-3 h-3 bg-[#0f172a]/95 border-l border-t border-white/10 rotate-45"></div>
+          </div>
+        </div>
         @if (loading()) {
           <div class="text-2xl font-bold text-foreground animate-pulse">--</div>
           <div class="text-sm text-muted-foreground mt-2">Loading...</div>
         } @else if (stats()) {
           <div class="text-2xl font-bold text-foreground">{{ stats()!.totalParticipants }}</div>
-          <div class="text-sm text-muted-foreground mt-2">
-            <span class="text-green-500">{{ stats()!.healthyParticipants }}</span> healthy
+          <div class="text-sm text-muted-foreground mt-2 relative group/healthy inline-block cursor-help">
+            <span class="border-b border-dashed border-muted-foreground/30"><span class="text-green-500">{{ stats()!.healthyParticipants }}</span> healthy</span>
+            <div class="absolute left-0 top-full mt-2 w-64 p-3 bg-[#0f172a]/95 text-white text-xs rounded-xl shadow-xl border border-white/10 opacity-0 invisible group-hover/healthy:opacity-100 group-hover/healthy:visible transition-all duration-200 z-50 pointer-events-none leading-relaxed">
+              Nodes that are actively contributing and earning rewards. Higher ratio indicates better network health.
+              <div class="absolute -top-1.5 left-4 w-3 h-3 bg-[#0f172a]/95 border-l border-t border-white/10 rotate-45"></div>
+            </div>
           </div>
         } @else {
           <div class="text-2xl font-bold text-foreground">--</div>
@@ -65,8 +99,14 @@
       </div>
 
       <!-- Total GPUs -->
-      <div appScrollReveal [revealDelay]="150" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5">
-        <div class="text-sm text-muted-foreground mb-2">Total GPUs</div>
+      <div appScrollReveal [revealDelay]="150" class="relative rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5 hover:z-10">
+        <div class="text-sm text-muted-foreground mb-2 relative group/gpus inline-block cursor-help">
+          <span class="border-b border-dashed border-muted-foreground/50">Total GPUs</span>
+          <div class="absolute left-0 top-full mt-2 w-64 p-3 bg-[#0f172a]/95 text-white text-xs rounded-xl shadow-xl border border-white/10 opacity-0 invisible group-hover/gpus:opacity-100 group-hover/gpus:visible transition-all duration-200 z-50 pointer-events-none leading-relaxed">
+            Total number of GPUs in the network. Indicates overall compute capacity available for AI inference.
+            <div class="absolute -top-1.5 left-4 w-3 h-3 bg-[#0f172a]/95 border-l border-t border-white/10 rotate-45"></div>
+          </div>
+        </div>
         @if (loading()) {
           <div class="text-2xl font-bold text-foreground animate-pulse">--</div>
           <div class="text-sm text-muted-foreground mt-2">Loading...</div>
@@ -80,8 +120,14 @@
       </div>
 
       <!-- Active Models -->
-      <div appScrollReveal [revealDelay]="200" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5">
-        <div class="text-sm text-muted-foreground mb-2">Active Models</div>
+      <div appScrollReveal [revealDelay]="200" class="relative rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5 hover:z-10">
+        <div class="text-sm text-muted-foreground mb-2 relative group/models inline-block cursor-help">
+          <span class="border-b border-dashed border-muted-foreground/50">Active Models</span>
+          <div class="absolute left-0 top-full mt-2 w-64 p-3 bg-[#0f172a]/95 text-white text-xs rounded-xl shadow-xl border border-white/10 opacity-0 invisible group-hover/models:opacity-100 group-hover/models:visible transition-all duration-200 z-50 pointer-events-none leading-relaxed">
+            AI models currently being served by the network. Nodes run these models to process inference requests.
+            <div class="absolute -top-1.5 left-4 w-3 h-3 bg-[#0f172a]/95 border-l border-t border-white/10 rotate-45"></div>
+          </div>
+        </div>
         @if (loading()) {
           <div class="text-2xl font-bold text-foreground animate-pulse">--</div>
           <div class="text-sm text-muted-foreground mt-2">Loading...</div>
@@ -95,8 +141,14 @@
       </div>
 
       <!-- Time to Next Epoch -->
-      <div appScrollReveal [revealDelay]="250" class="rounded-xl border border-[#FF4C00]/50 bg-card/50 backdrop-blur-sm p-5">
-        <div class="text-sm text-muted-foreground mb-2">Next Epoch</div>
+      <div appScrollReveal [revealDelay]="250" class="relative rounded-xl border border-[#FF4C00]/50 bg-card/50 backdrop-blur-sm p-5 hover:z-10">
+        <div class="text-sm text-muted-foreground mb-2 relative group/nextepoch inline-block cursor-help">
+          <span class="border-b border-dashed border-muted-foreground/50">Next Epoch</span>
+          <div class="absolute left-0 top-full mt-2 w-64 p-3 bg-[#0f172a]/95 text-white text-xs rounded-xl shadow-xl border border-white/10 opacity-0 invisible group-hover/nextepoch:opacity-100 group-hover/nextepoch:visible transition-all duration-200 z-50 pointer-events-none leading-relaxed">
+            Time remaining until the next epoch starts. Rewards are distributed at epoch boundaries.
+            <div class="absolute -top-1.5 left-4 w-3 h-3 bg-[#0f172a]/95 border-l border-t border-white/10 rotate-45"></div>
+          </div>
+        </div>
         @if (loading()) {
           <div class="text-2xl font-bold text-foreground animate-pulse">--:--</div>
           <div class="text-sm text-muted-foreground mt-2">Loading...</div>
@@ -104,7 +156,13 @@
           <div class="text-2xl font-bold text-[#FF4C00]">
             {{ stats()!.timeToNextEpoch.hours }}h {{ stats()!.timeToNextEpoch.minutes }}m
           </div>
-          <div class="text-sm text-muted-foreground mt-2">~{{ stats()!.avgBlockTime | number:'1.1-1' }}s/block</div>
+          <div class="text-sm text-muted-foreground mt-2 relative group/avgblock inline-block cursor-help">
+            <span class="border-b border-dashed border-muted-foreground/30">~{{ stats()!.avgBlockTime | number:'1.1-1' }}s/block</span>
+            <div class="absolute left-0 top-full mt-2 w-64 p-3 bg-[#0f172a]/95 text-white text-xs rounded-xl shadow-xl border border-white/10 opacity-0 invisible group-hover/avgblock:opacity-100 group-hover/avgblock:visible transition-all duration-200 z-50 pointer-events-none leading-relaxed">
+              Average time between blocks. Used to estimate countdown to next epoch.
+              <div class="absolute -top-1.5 left-4 w-3 h-3 bg-[#0f172a]/95 border-l border-t border-white/10 rotate-45"></div>
+            </div>
+          </div>
         } @else {
           <div class="text-2xl font-bold text-foreground">--:--</div>
           <div class="text-sm text-destructive mt-2">Unavailable</div>

@@ -28,6 +28,15 @@
           </div>
         </div>
 
+        <!-- Rent GPU Button (Desktop) -->
+        <button
+          type="button"
+          class="hidden md:inline-flex items-center gap-2 px-5 py-2 bg-[#FF4C00] hover:bg-[#e64500] text-white font-semibold text-sm rounded-lg transition-colors duration-200"
+          (click)="openRentModal()"
+        >
+          Rent GPU
+        </button>
+
 
         <!-- Mobile Menu Toggle -->
         <button
@@ -58,6 +67,14 @@
                 {{ link.label }}
               </a>
             }
+            <!-- Rent GPU Button (Mobile) -->
+            <button
+              type="button"
+              class="w-full py-3 px-4 bg-[#FF4C00] hover:bg-[#e64500] text-white font-semibold text-sm rounded-lg transition-colors duration-200 mt-2"
+              (click)="openRentModal()"
+            >
+              Rent GPU
+            </button>
           </div>
         </div>
       }
@@ -91,4 +108,10 @@
   <!-- Footer -->
   <app-landing-footer (sectionClick)="scrollToSection($event)" />
 
+  <!-- HubSpot Form Modal (Header) -->
+  <app-hubspot-form-modal
+    [isOpen]="isRentModalOpen()"
+    (close)="closeRentModal()"
+    (formSubmitted)="onRentFormSubmitted()"
+  />
 </div>
