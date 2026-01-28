@@ -8,70 +8,105 @@
       }
     </p>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <!-- Network Status -->
+      <div appScrollReveal [revealDelay]="0" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5">
+        <div class="text-sm text-muted-foreground mb-2">Network Status</div>
+        @if (loading()) {
+          <div class="text-2xl font-bold text-foreground animate-pulse">--</div>
+          <div class="text-sm text-muted-foreground mt-2">Loading...</div>
+        } @else if (stats()) {
+          <div class="flex items-center gap-2">
+            <span
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-semibold"
+              [class]="getStatusClass(stats()!.networkStatus)"
+            >
+              <span class="w-2 h-2 rounded-full animate-pulse" [class]="getStatusDotClass(stats()!.networkStatus)"></span>
+              {{ getStatusLabel(stats()!.networkStatus) }}
+            </span>
+          </div>
+          <div class="text-sm text-muted-foreground mt-2">Block age: {{ formatBlockAge(stats()!.blockAge) }}</div>
+        } @else {
+          <div class="text-2xl font-bold text-foreground">--</div>
+          <div class="text-sm text-destructive mt-2">Unavailable</div>
+        }
+      </div>
+
       <!-- Current Epoch -->
-      <div appScrollReveal [revealDelay]="0" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-6">
+      <div appScrollReveal [revealDelay]="50" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5">
         <div class="text-sm text-muted-foreground mb-2">Current Epoch</div>
         @if (loading()) {
-          <div class="text-3xl font-bold text-foreground animate-pulse">--</div>
+          <div class="text-2xl font-bold text-foreground animate-pulse">--</div>
           <div class="text-sm text-muted-foreground mt-2">Loading...</div>
         } @else if (stats()) {
-          <div class="text-3xl font-bold text-[#FF4C00]">{{ stats()!.currentEpoch }}</div>
-          <div class="text-sm text-muted-foreground mt-2">Block #{{ stats()!.currentBlock | number }}</div>
+          <div class="text-2xl font-bold text-[#FF4C00]">#{{ stats()!.currentEpoch }}</div>
+          <div class="text-sm text-muted-foreground mt-2">Block {{ stats()!.currentBlock | number }}</div>
         } @else {
-          <div class="text-3xl font-bold text-foreground">--</div>
+          <div class="text-2xl font-bold text-foreground">--</div>
           <div class="text-sm text-destructive mt-2">Unavailable</div>
         }
       </div>
 
-      <!-- Active Participants -->
-      <div appScrollReveal [revealDelay]="100" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-6">
-        <div class="text-sm text-muted-foreground mb-2">Network Nodes</div>
+      <!-- Participants -->
+      <div appScrollReveal [revealDelay]="100" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5">
+        <div class="text-sm text-muted-foreground mb-2">Participants</div>
         @if (loading()) {
-          <div class="text-3xl font-bold text-foreground animate-pulse">--</div>
+          <div class="text-2xl font-bold text-foreground animate-pulse">--</div>
           <div class="text-sm text-muted-foreground mt-2">Loading...</div>
         } @else if (stats()) {
-          <div class="text-3xl font-bold text-foreground">{{ stats()!.totalParticipants }}</div>
+          <div class="text-2xl font-bold text-foreground">{{ stats()!.totalParticipants }}</div>
           <div class="text-sm text-muted-foreground mt-2">
-            <span class="text-green-500">{{ stats()!.healthyParticipants }} healthy</span>
-            @if (stats()!.catchingUp > 0) {
-              <span class="opacity-60"> &bull; {{ stats()!.catchingUp }} catching up</span>
-            }
+            <span class="text-green-500">{{ stats()!.healthyParticipants }}</span> healthy
           </div>
         } @else {
-          <div class="text-3xl font-bold text-foreground">--</div>
+          <div class="text-2xl font-bold text-foreground">--</div>
           <div class="text-sm text-destructive mt-2">Unavailable</div>
         }
       </div>
 
-      <!-- Registered Models -->
-      <div appScrollReveal [revealDelay]="200" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-6">
-        <div class="text-sm text-muted-foreground mb-2">Active Models</div>
+      <!-- Total GPUs -->
+      <div appScrollReveal [revealDelay]="150" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5">
+        <div class="text-sm text-muted-foreground mb-2">Total GPUs</div>
         @if (loading()) {
-          <div class="text-3xl font-bold text-foreground animate-pulse">--</div>
+          <div class="text-2xl font-bold text-foreground animate-pulse">--</div>
           <div class="text-sm text-muted-foreground mt-2">Loading...</div>
         } @else if (stats()) {
-          <div class="text-3xl font-bold text-foreground">{{ stats()!.registeredModels }}</div>
-          <div class="text-sm text-muted-foreground mt-2">AI models running</div>
+          <div class="text-2xl font-bold text-foreground">{{ formatGpuCount(stats()!.totalGpus) }}</div>
+          <div class="text-sm text-muted-foreground mt-2">Compute nodes</div>
         } @else {
-          <div class="text-3xl font-bold text-foreground">--</div>
+          <div class="text-2xl font-bold text-foreground">--</div>
+          <div class="text-sm text-destructive mt-2">Unavailable</div>
+        }
+      </div>
+
+      <!-- Active Models -->
+      <div appScrollReveal [revealDelay]="200" class="rounded-xl border border-border bg-card/50 backdrop-blur-sm p-5">
+        <div class="text-sm text-muted-foreground mb-2">Active Models</div>
+        @if (loading()) {
+          <div class="text-2xl font-bold text-foreground animate-pulse">--</div>
+          <div class="text-sm text-muted-foreground mt-2">Loading...</div>
+        } @else if (stats()) {
+          <div class="text-2xl font-bold text-foreground">{{ stats()!.registeredModels }}</div>
+          <div class="text-sm text-muted-foreground mt-2">AI models</div>
+        } @else {
+          <div class="text-2xl font-bold text-foreground">--</div>
           <div class="text-sm text-destructive mt-2">Unavailable</div>
         }
       </div>
 
       <!-- Time to Next Epoch -->
-      <div appScrollReveal [revealDelay]="300" class="rounded-xl border border-[#FF4C00]/50 bg-card/50 backdrop-blur-sm p-6">
-        <div class="text-sm text-muted-foreground mb-2">Next Epoch In</div>
+      <div appScrollReveal [revealDelay]="250" class="rounded-xl border border-[#FF4C00]/50 bg-card/50 backdrop-blur-sm p-5">
+        <div class="text-sm text-muted-foreground mb-2">Next Epoch</div>
         @if (loading()) {
-          <div class="text-3xl font-bold text-foreground animate-pulse">--:--:--</div>
+          <div class="text-2xl font-bold text-foreground animate-pulse">--:--</div>
           <div class="text-sm text-muted-foreground mt-2">Loading...</div>
         } @else if (stats()) {
-          <div class="text-3xl font-bold text-[#FF4C00]">
+          <div class="text-2xl font-bold text-[#FF4C00]">
             {{ stats()!.timeToNextEpoch.hours }}h {{ stats()!.timeToNextEpoch.minutes }}m
           </div>
-          <div class="text-sm text-muted-foreground mt-2">~{{ stats()!.avgBlockTime | number:'1.1-1' }}s per block</div>
+          <div class="text-sm text-muted-foreground mt-2">~{{ stats()!.avgBlockTime | number:'1.1-1' }}s/block</div>
         } @else {
-          <div class="text-3xl font-bold text-foreground">--:--:--</div>
+          <div class="text-2xl font-bold text-foreground">--:--</div>
           <div class="text-sm text-destructive mt-2">Unavailable</div>
         }
       </div>

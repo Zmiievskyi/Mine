@@ -48,6 +48,20 @@ export interface HyperfusionParticipant {
   node_healthy: boolean;
   missed_rate: number;
   invalidation_rate: number;
+  ml_nodes_map?: Record<string, number>; // GPU node ID -> weight
+}
+
+// Chain RPC status response from node4.gonka.ai
+export interface ChainStatusResponse {
+  jsonrpc: string;
+  id: number;
+  result: {
+    sync_info: {
+      latest_block_height: string;
+      latest_block_time: string;
+      catching_up: boolean;
+    };
+  };
 }
 
 // Public network stats for landing page
@@ -67,6 +81,10 @@ export interface NetworkStats {
   };
   avgBlockTime: number;
   lastUpdated: Date;
+  // New metrics
+  totalGpus: number;
+  networkStatus: 'live' | 'syncing' | 'stale' | 'unknown';
+  blockAge: number; // seconds since last block
 }
 
 export interface NodeWithStats extends UserNode {
@@ -79,8 +97,10 @@ export class NodesService {
   private readonly logger = new Logger(NodesService.name);
   private readonly nodeCache: LruCache<HyperfusionNode[]>;
   private readonly fullCache: LruCache<HyperfusionResponse>;
+  private readonly chainStatusCache: LruCache<ChainStatusResponse>;
   private readonly NODES_CACHE_KEY = 'hyperfusion_nodes';
   private readonly FULL_CACHE_KEY = 'hyperfusion_full';
+  private readonly CHAIN_STATUS_KEY = 'chain_status';
 
   constructor(
     private configService: ConfigService,
@@ -90,6 +110,8 @@ export class NodesService {
     const cacheTtl = this.configService.get<number>('gonka.cacheTtlSeconds') ?? 120;
     this.nodeCache = new LruCache<HyperfusionNode[]>(10, cacheTtl);
     this.fullCache = new LruCache<HyperfusionResponse>(10, cacheTtl);
+    // Chain status has shorter TTL (20 seconds) for fresher data
+    this.chainStatusCache = new LruCache<ChainStatusResponse>(5, 20);
   }
 
   async getUserNodes(userId: string): Promise<NodeWithStats[]> {
@@ -199,7 +221,10 @@ export class NodesService {
 
   // Public network stats for landing page (no auth required)
   async getPublicNetworkStats(): Promise<NetworkStats> {
-    const data = await this.fetchHyperfusionFullData();
+    const [data, chainStatus] = await Promise.all([
+      this.fetchHyperfusionFullData(),
+      this.fetchChainStatus(),
+    ]);
 
     // Count healthy vs catching up (jailed + offline)
     const healthyParticipants = data.participants.filter(
@@ -218,6 +243,17 @@ export class NodesService {
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = Math.floor(totalSeconds % 60);
 
+    // Calculate total GPUs from ml_nodes_map
+    const totalGpus = data.participants.reduce((sum, p) => {
+      if (p.ml_nodes_map) {
+        return sum + Object.keys(p.ml_nodes_map).length;
+      }
+      return sum;
+    }, 0);
+
+    // Calculate block age and network status
+    const { blockAge, networkStatus } = this.calculateNetworkStatus(chainStatus);
+
     return {
       currentEpoch: data.epoch_id,
       currentBlock: data.current_block_height,
@@ -229,7 +265,69 @@ export class NodesService {
       timeToNextEpoch: { hours, minutes, seconds, totalSeconds },
       avgBlockTime: data.avg_block_time,
       lastUpdated: new Date(),
+      totalGpus,
+      networkStatus,
+      blockAge,
     };
+  }
+
+  // Fetch chain status from node4.gonka.ai
+  private async fetchChainStatus(): Promise<ChainStatusResponse | null> {
+    const cached = this.chainStatusCache.get(this.CHAIN_STATUS_KEY);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      const chainRpcUrl =
+        this.configService.get<string>('gonka.chainRpcUrl') ??
+        'https://node4.gonka.ai/chain-rpc/status';
+      const { data } = await axios.get<ChainStatusResponse>(chainRpcUrl, {
+        timeout: 8000,
+      });
+      this.chainStatusCache.set(this.CHAIN_STATUS_KEY, data);
+      return data;
+    } catch (error) {
+      this.logger.warn('Failed to fetch chain status', error);
+      return this.chainStatusCache.getStale(this.CHAIN_STATUS_KEY) || null;
+    }
+  }
+
+  // Calculate network status based on chain status
+  private calculateNetworkStatus(
+    chainStatus: ChainStatusResponse | null,
+  ): { blockAge: number; networkStatus: 'live' | 'syncing' | 'stale' | 'unknown' } {
+    if (!chainStatus?.result?.sync_info) {
+      return { blockAge: 0, networkStatus: 'unknown' };
+    }
+
+    const syncInfo = chainStatus.result.sync_info;
+    const latestBlockTime = new Date(syncInfo.latest_block_time);
+
+    // Validate date is valid
+    if (isNaN(latestBlockTime.getTime())) {
+      this.logger.warn(
+        `Invalid latest_block_time: ${syncInfo.latest_block_time}`,
+      );
+      return { blockAge: 0, networkStatus: 'unknown' };
+    }
+
+    const now = new Date();
+    const blockAge = Math.floor((now.getTime() - latestBlockTime.getTime()) / 1000);
+
+    const freshBlockAgeSeconds =
+      this.configService.get<number>('gonka.freshBlockAgeSeconds') ?? 120;
+
+    let networkStatus: 'live' | 'syncing' | 'stale' | 'unknown';
+    if (syncInfo.catching_up) {
+      networkStatus = 'syncing';
+    } else if (blockAge <= freshBlockAgeSeconds) {
+      networkStatus = 'live';
+    } else {
+      networkStatus = 'stale';
+    }
+
+    return { blockAge: Math.max(0, blockAge), networkStatus };
   }
 
   // Fetch full Hyperfusion response (includes epoch data)

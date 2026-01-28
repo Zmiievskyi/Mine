@@ -60,4 +60,8 @@ export interface NetworkStats {
   };
   avgBlockTime: number;
   lastUpdated: Date;
+  // New metrics
+  totalGpus: number;
+  networkStatus: 'live' | 'syncing' | 'stale' | 'unknown';
+  blockAge: number; // seconds since last block
 }

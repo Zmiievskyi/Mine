@@ -8,4 +8,10 @@ export default registerAs('gonka', () => ({
     'http://node1.gonka.ai:8000,http://node2.gonka.ai:8000,http://node3.gonka.ai:8000'
   ).split(','),
   cacheTtlSeconds: parseInt(process.env.GONKA_CACHE_TTL || '120', 10),
+  chainRpcUrl:
+    process.env.GONKA_CHAIN_RPC_URL || 'https://node4.gonka.ai/chain-rpc/status',
+  freshBlockAgeSeconds: parseInt(
+    process.env.GONKA_FRESH_BLOCK_AGE_SECONDS || '120',
+    10,
+  ),
 }));
