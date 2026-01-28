@@ -305,4 +305,316 @@ describe('NodesService', () => {
       );
     });
   });
+
+  describe('getPublicNetworkStats', () => {
+    beforeEach(async () => {
+      // Clear all mocks and recreate service to clear internal caches
+      jest.clearAllMocks();
+
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          NodesService,
+          {
+            provide: ConfigService,
+            useValue: configService,
+          },
+          {
+            provide: getRepositoryToken(UserNode),
+            useValue: userNodeRepository,
+          },
+        ],
+      }).compile();
+
+      service = module.get<NodesService>(NodesService);
+    });
+
+    const mockNode4Response = {
+      active_participants: {
+        participants: [
+          {
+            index: 'gonka1abc123',
+            validator_key: 'validator1',
+            weight: 1.0,
+            inference_url: 'http://example.com',
+            models: ['llama3', 'gpt-neo'],
+            seed: {
+              participant: 'gonka1abc123',
+              epoch_index: 42,
+              signature: 'sig123',
+            },
+            ml_nodes: [
+              {
+                ml_nodes: [
+                  {
+                    node_id: 'gpu1',
+                    poc_weight: 1.0,
+                    timeslot_allocation: [true, false],
+                  },
+                  {
+                    node_id: 'gpu2',
+                    poc_weight: 1.0,
+                    timeslot_allocation: [true, true],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            index: 'gonka1xyz456',
+            validator_key: 'validator2',
+            weight: 1.0,
+            inference_url: 'http://example2.com',
+            models: ['stable-diffusion'],
+            seed: {
+              participant: 'gonka1xyz456',
+              epoch_index: 42,
+              signature: 'sig456',
+            },
+            ml_nodes: [
+              {
+                ml_nodes: [
+                  {
+                    node_id: 'gpu3',
+                    poc_weight: 1.0,
+                    timeslot_allocation: [true],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    };
+
+    const mockChainStatus = {
+      jsonrpc: '2.0',
+      id: 1,
+      result: {
+        sync_info: {
+          latest_block_height: '1000',
+          latest_block_time: new Date(Date.now() - 30000).toISOString(), // 30 seconds ago
+          catching_up: false,
+        },
+      },
+    };
+
+    const mockHyperfusionResponse = {
+      epoch_id: 42,
+      height: 100,
+      current_block_height: 1000,
+      current_block_timestamp: new Date().toISOString(),
+      avg_block_time: 6,
+      next_poc_start_block: 1500,
+      set_new_validators_block: 1400,
+      is_current: true,
+      cached_at: new Date().toISOString(),
+      total_assigned_rewards_gnk: 1000,
+      participants: [
+        {
+          index: 'gonka1abc123',
+          address: 'gonka1abc123',
+          weight: 1.0,
+          models: ['llama3'],
+          is_jailed: false,
+          node_healthy: true,
+          missed_rate: 0.01,
+          invalidation_rate: 0.02,
+          ml_nodes_map: { gpu1: 1.0, gpu2: 1.0 },
+        },
+        {
+          index: 'gonka1xyz456',
+          address: 'gonka1xyz456',
+          weight: 1.0,
+          models: ['gpt-neo'],
+          is_jailed: false,
+          node_healthy: false,
+          missed_rate: 0.05,
+          invalidation_rate: 0.03,
+          ml_nodes_map: { gpu3: 1.0 },
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      configService.get.mockImplementation((key: string) => {
+        if (key === 'gonka.cacheTtlSeconds') return 120;
+        if (key === 'gonka.chainRpcUrl') return 'https://node4.gonka.ai/chain-rpc/status';
+        if (key === 'gonka.node4ParticipantsUrl') return 'https://node4.gonka.ai/v1/epochs/current/participants';
+        if (key === 'gonka.hyperfusionUrl') return 'https://tracker.gonka.hyperfusion.io';
+        if (key === 'gonka.freshBlockAgeSeconds') return 120;
+        if (key === 'retry.maxRetries') return 3;
+        if (key === 'retry.baseDelayMs') return 1000;
+        if (key === 'retry.maxDelayMs') return 5000;
+        return null;
+      });
+    });
+
+    it('should fetch from all sources and merge data correctly', async () => {
+      (axios.get as jest.Mock)
+        .mockResolvedValueOnce({ data: mockNode4Response }) // node4 participants
+        .mockResolvedValueOnce({ data: mockChainStatus }) // chain status
+        .mockResolvedValueOnce({ data: mockHyperfusionResponse }); // hyperfusion
+
+      const result = await service.getPublicNetworkStats();
+
+      expect(axios.get).toHaveBeenCalledTimes(3);
+      expect(result.currentEpoch).toBe(42); // From node4
+      expect(result.totalParticipants).toBe(2); // From node4
+      expect(result.totalGpus).toBe(3); // From node4 (2 + 1 GPUs)
+      expect(result.uniqueModels).toEqual(['llama3', 'gpt-neo', 'stable-diffusion']); // From node4
+      expect(result.healthyParticipants).toBe(1); // From Hyperfusion
+      expect(result.catchingUp).toBe(1); // From Hyperfusion (2 - 1)
+      expect(result.networkStatus).toBe('live'); // From chain status
+      expect(result.blockAge).toBeGreaterThan(0);
+    });
+
+    it('should handle node4 success with Hyperfusion failure gracefully', async () => {
+      (axios.get as jest.Mock)
+        .mockResolvedValueOnce({ data: mockNode4Response }) // node4 success
+        .mockResolvedValueOnce({ data: mockChainStatus }) // chain status success
+        .mockRejectedValueOnce(new Error('Hyperfusion API error')); // hyperfusion fails
+
+      const result = await service.getPublicNetworkStats();
+
+      expect(result.currentEpoch).toBe(42); // From node4
+      expect(result.totalParticipants).toBe(2); // From node4
+      expect(result.totalGpus).toBe(3); // From node4
+      expect(result.uniqueModels).toEqual(['llama3', 'gpt-neo', 'stable-diffusion']); // From node4
+      expect(result.healthyParticipants).toBe(0); // Hyperfusion data unavailable
+      expect(result.catchingUp).toBe(2); // Falls back to totalParticipants
+      expect(result.timeToNextEpoch.totalSeconds).toBe(0); // No epoch time data
+    });
+
+    it('should fallback to Hyperfusion when node4 fails', async () => {
+      (axios.get as jest.Mock)
+        .mockRejectedValueOnce(new Error('Node4 API error')) // node4 fails
+        .mockResolvedValueOnce({ data: mockChainStatus }) // chain status
+        .mockResolvedValueOnce({ data: mockHyperfusionResponse }); // hyperfusion success
+
+      const result = await service.getPublicNetworkStats();
+
+      expect(result.currentEpoch).toBe(42); // From Hyperfusion
+      expect(result.totalParticipants).toBe(2); // From Hyperfusion
+      expect(result.totalGpus).toBe(3); // From Hyperfusion ml_nodes_map
+      expect(result.healthyParticipants).toBe(1); // From Hyperfusion
+      expect(result.catchingUp).toBe(1); // From Hyperfusion
+    });
+
+    it('should return empty stats when all sources fail', async () => {
+      (axios.get as jest.Mock)
+        .mockRejectedValueOnce(new Error('Node4 error'))
+        .mockRejectedValueOnce(new Error('Chain error'))
+        .mockRejectedValueOnce(new Error('Hyperfusion error'));
+
+      const result = await service.getPublicNetworkStats();
+
+      expect(result.currentEpoch).toBe(0);
+      expect(result.totalParticipants).toBe(0);
+      expect(result.totalGpus).toBe(0);
+      expect(result.healthyParticipants).toBe(0);
+      expect(result.networkStatus).toBe('unknown');
+    });
+
+    it('should cache node4 participants data on subsequent calls', async () => {
+      (axios.get as jest.Mock)
+        .mockResolvedValueOnce({ data: mockNode4Response })
+        .mockResolvedValueOnce({ data: mockChainStatus })
+        .mockResolvedValueOnce({ data: mockHyperfusionResponse });
+
+      // First call
+      await service.getPublicNetworkStats();
+      expect(axios.get).toHaveBeenCalledTimes(3);
+
+      jest.clearAllMocks();
+
+      // Second call - should use cache
+      (axios.get as jest.Mock)
+        .mockResolvedValueOnce({ data: mockChainStatus }) // Only chain status fetched (shorter TTL)
+        .mockResolvedValueOnce({ data: mockHyperfusionResponse }); // Hyperfusion might be cached too
+
+      await service.getPublicNetworkStats();
+
+      // Should not call node4 again due to cache
+      const node4Calls = (axios.get as jest.Mock).mock.calls.filter(call =>
+        call[0]?.includes('v1/epochs/current/participants')
+      );
+      expect(node4Calls.length).toBe(0);
+    });
+
+    it('should use node4 as primary source for epoch and participant data', async () => {
+      (axios.get as jest.Mock).mockImplementation((url: string) => {
+        if (url.includes('v1/epochs/current/participants')) {
+          return Promise.resolve({ data: mockNode4Response });
+        }
+        if (url.includes('chain-rpc/status')) {
+          return Promise.resolve({ data: mockChainStatus });
+        }
+        if (url.includes('/api/v1/inference/current')) {
+          return Promise.resolve({ data: { ...mockHyperfusionResponse, ml_nodes: [mockHyperfusionNode] } });
+        }
+        return Promise.reject(new Error(`Unexpected URL: ${url}`));
+      });
+
+      const result = await service.getPublicNetworkStats();
+
+      // Verify node4 data is used as primary source
+      expect(result.currentEpoch).toBe(42); // From node4 seed.epoch_index
+      expect(result.totalParticipants).toBe(2); // From node4 participants.length
+      expect(result.totalGpus).toBe(3); // From node4 ml_nodes count (2 + 1)
+      expect(result.registeredModels).toBeGreaterThan(0); // Has models
+    });
+
+    it('should calculate network status as stale when block age exceeds threshold', async () => {
+      const staleChainStatus = {
+        ...mockChainStatus,
+        result: {
+          sync_info: {
+            ...mockChainStatus.result.sync_info,
+            latest_block_time: new Date(Date.now() - 150000).toISOString(), // 150 seconds ago
+          },
+        },
+      };
+
+      (axios.get as jest.Mock).mockImplementation((url: string) => {
+        if (url.includes('v1/epochs/current/participants')) {
+          return Promise.resolve({ data: mockNode4Response });
+        }
+        if (url.includes('chain-rpc/status')) {
+          return Promise.resolve({ data: staleChainStatus });
+        }
+        if (url.includes('/api/v1/inference/current')) {
+          return Promise.resolve({ data: { ...mockHyperfusionResponse, ml_nodes: [mockHyperfusionNode] } });
+        }
+        return Promise.reject(new Error(`Unexpected URL: ${url}`));
+      });
+
+      const result = await service.getPublicNetworkStats();
+
+      expect(result.networkStatus).toBe('stale');
+      expect(result.blockAge).toBeGreaterThan(120);
+    });
+
+    it('should calculate time to next epoch from Hyperfusion data', async () => {
+      (axios.get as jest.Mock).mockImplementation((url: string) => {
+        if (url.includes('v1/epochs/current/participants')) {
+          return Promise.resolve({ data: mockNode4Response });
+        }
+        if (url.includes('chain-rpc/status')) {
+          return Promise.resolve({ data: mockChainStatus });
+        }
+        if (url.includes('/api/v1/inference/current')) {
+          return Promise.resolve({ data: { ...mockHyperfusionResponse, ml_nodes: [mockHyperfusionNode] } });
+        }
+        return Promise.reject(new Error(`Unexpected URL: ${url}`));
+      });
+
+      const result = await service.getPublicNetworkStats();
+
+      // blocksRemaining = 1500 - 1000 = 500
+      // totalSeconds = 500 * 6 = 3000
+      expect(result.timeToNextEpoch.totalSeconds).toBe(3000);
+      expect(result.timeToNextEpoch.hours).toBe(0);
+      expect(result.timeToNextEpoch.minutes).toBe(50);
+    });
+  });
 });
