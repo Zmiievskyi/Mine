@@ -253,10 +253,105 @@ export class NodesService {
 
   // Public network stats for landing page (no auth required)
   async getPublicNetworkStats(): Promise<NetworkStats> {
-    const [data, chainStatus] = await Promise.all([
-      this.fetchHyperfusionFullData(),
+    // Fetch all data sources in parallel with resilience
+    const [node4Result, chainResult, hyperfusionResult] = await Promise.allSettled([
+      this.fetchNode4Participants(),
       this.fetchChainStatus(),
+      this.fetchHyperfusionFullData(),
     ]);
+
+    const node4Data = node4Result.status === 'fulfilled' ? node4Result.value : null;
+    const chainStatus = chainResult.status === 'fulfilled' ? chainResult.value : null;
+    const hyperfusionData = hyperfusionResult.status === 'fulfilled' ? hyperfusionResult.value : null;
+
+    // If node4 data is available, use it as PRIMARY source
+    if (node4Data?.active_participants?.participants) {
+      const participants = node4Data.active_participants.participants;
+
+      // PRIMARY data from node4
+      const epochId =
+        participants.length > 0
+          ? participants[0].seed.epoch_index
+          : hyperfusionData?.epoch_id ?? 0;
+      const totalParticipants = participants.length;
+
+      // Count total GPUs from nested ml_nodes structure
+      const totalGpus = participants.reduce((sum, p) => {
+        return (
+          sum +
+          p.ml_nodes.reduce((gpuSum, mlNodeGroup) => {
+            return gpuSum + mlNodeGroup.ml_nodes.length;
+          }, 0)
+        );
+      }, 0);
+
+      // Get unique models across all participants
+      const allModels = participants.flatMap((p) => p.models);
+      const uniqueModels = [...new Set(allModels)];
+
+      // Calculate block age and network status
+      const { blockAge, networkStatus } = this.calculateNetworkStatus(chainStatus);
+
+      // SUPPLEMENTARY data from Hyperfusion
+      let healthyParticipants = 0;
+      let catchingUp = totalParticipants;
+      let timeToNextEpoch = { hours: 0, minutes: 0, seconds: 0, totalSeconds: 0 };
+      let avgBlockTime = 6; // default
+      let currentBlock = 0;
+
+      if (hyperfusionData?.participants) {
+        // Count healthy participants from Hyperfusion
+        healthyParticipants = hyperfusionData.participants.filter(
+          (p) => p.node_healthy && !p.is_jailed,
+        ).length;
+        catchingUp = Math.max(0, totalParticipants - healthyParticipants);
+
+        // Calculate time to next epoch from Hyperfusion
+        const blocksRemaining =
+          hyperfusionData.next_poc_start_block -
+          hyperfusionData.current_block_height;
+        const totalSeconds = Math.max(
+          0,
+          blocksRemaining * hyperfusionData.avg_block_time,
+        );
+        timeToNextEpoch = {
+          hours: Math.floor(totalSeconds / 3600),
+          minutes: Math.floor((totalSeconds % 3600) / 60),
+          seconds: Math.floor(totalSeconds % 60),
+          totalSeconds,
+        };
+        avgBlockTime = hyperfusionData.avg_block_time;
+        currentBlock = hyperfusionData.current_block_height;
+      } else {
+        this.logger.warn('Hyperfusion data unavailable, using node4 data only');
+      }
+
+      return {
+        currentEpoch: epochId,
+        currentBlock,
+        totalParticipants,
+        healthyParticipants,
+        catchingUp,
+        registeredModels: uniqueModels.length,
+        uniqueModels,
+        timeToNextEpoch,
+        avgBlockTime,
+        lastUpdated: new Date(),
+        totalGpus,
+        networkStatus,
+        blockAge,
+      };
+    }
+
+    // FALLBACK: If node4 fails, use Hyperfusion data (previous behavior)
+    this.logger.warn('Node4 data unavailable, falling back to Hyperfusion only');
+
+    if (!hyperfusionData) {
+      this.logger.error('Both node4 and Hyperfusion data unavailable');
+      return this.getEmptyNetworkStats();
+    }
+
+    const data = hyperfusionData;
 
     // Count healthy vs catching up (jailed + offline)
     const healthyParticipants = data.participants.filter(
@@ -454,6 +549,24 @@ export class NodesService {
       cached_at: new Date().toISOString(),
       total_assigned_rewards_gnk: null,
       participants: [],
+    };
+  }
+
+  private getEmptyNetworkStats(): NetworkStats {
+    return {
+      currentEpoch: 0,
+      currentBlock: 0,
+      totalParticipants: 0,
+      healthyParticipants: 0,
+      catchingUp: 0,
+      registeredModels: 0,
+      uniqueModels: [],
+      timeToNextEpoch: { hours: 0, minutes: 0, seconds: 0, totalSeconds: 0 },
+      avgBlockTime: 6,
+      lastUpdated: new Date(),
+      totalGpus: 0,
+      networkStatus: 'unknown',
+      blockAge: 0,
     };
   }
 }
