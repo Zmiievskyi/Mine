@@ -4,12 +4,13 @@ import { RouterModule } from '@angular/router';
 import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.directive';
 import { NodesService } from '../../../core/services/nodes.service';
 import { PublicPricing } from '../../../core/models/admin.model';
-import { GPU_PRICING, GpuPricing } from '../../../core/constants/pricing.constants';
+import { GPU_PRICING, GpuPricing, calculateMonthlyPrice } from '../../../core/constants/pricing.constants';
 import { HubspotFormModalComponent } from './hubspot-form-modal.component';
 
 interface PricingItem {
   gpuType: string;
   pricePerHour: number | null;
+  pricePerMonth: number | null;
   isContactSales: boolean;
   specs: GpuPricing | undefined;
 }
@@ -41,6 +42,7 @@ export class PricingSectionComponent implements OnInit {
             data.map((item) => ({
               gpuType: item.gpuType,
               pricePerHour: item.pricePerHour,
+              pricePerMonth: calculateMonthlyPrice(item.pricePerHour),
               isContactSales: item.isContactSales,
               specs: this.getGpuSpecs(item.gpuType),
             }))
@@ -62,6 +64,7 @@ export class PricingSectionComponent implements OnInit {
       GPU_PRICING.map((g) => ({
         gpuType: g.id,
         pricePerHour: g.pricePerHour,
+        pricePerMonth: calculateMonthlyPrice(g.pricePerHour),
         isContactSales: g.pricePerHour === null,
         specs: g,
       }))

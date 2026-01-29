@@ -39,8 +39,8 @@
                     <span class="text-3xl font-bold text-foreground">${{ item.pricePerHour | number:'1.2-2' }}</span>
                     <span class="text-muted-foreground text-sm"> /GPU/hour</span>
                   </div>
-                  @if (item.specs?.pricePerMonth) {
-                    <span class="text-sm text-muted-foreground mt-1">${{ item.specs?.pricePerMonth | number:'1.0-0' }}/month</span>
+                  @if (item.pricePerMonth) {
+                    <span class="text-sm text-muted-foreground mt-1">${{ item.pricePerMonth | number:'1.0-0' }}/month</span>
                   }
                 </div>
               }

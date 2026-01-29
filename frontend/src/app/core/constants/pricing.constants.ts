@@ -26,7 +26,6 @@ export interface GpuPricing {
   name: string;
   vram: string;
   pricePerHour: number | null;  // USD, null = contact sales
-  pricePerMonth: number | null; // USD, based on gnk.revops.it.com pricing
   available: boolean;
   description?: string;
   features: string[];
@@ -35,6 +34,16 @@ export interface GpuPricing {
 
 export const CURRENCY = '$';
 export const HOURS_PER_MONTH = 730; // Average month (365/12 * 24)
+export const GPUS_PER_SERVER = 8;
+
+/**
+ * Calculate monthly price for 8x GPU server
+ * Formula: hourlyPrice × 8 GPUs × 730 hours/month
+ */
+export function calculateMonthlyPrice(hourlyPrice: number | null): number | null {
+  if (hourlyPrice === null) return null;
+  return Math.round(hourlyPrice * GPUS_PER_SERVER * HOURS_PER_MONTH);
+}
 
 /**
  * GPU pricing data - 8x GPU server configurations
@@ -47,7 +56,6 @@ export const GPU_PRICING: GpuPricing[] = [
     name: '8x A100 Server',
     vram: '80 GB',
     pricePerHour: 0.99,
-    pricePerMonth: 5782,
     available: true,
     description: 'Enterprise GPU for AI inference workloads',
     features: [
@@ -63,8 +71,7 @@ export const GPU_PRICING: GpuPricing[] = [
     id: 'H100',
     name: '8x H100 Server',
     vram: '80 GB',
-    pricePerHour: 1.70,
-    pricePerMonth: 9928,
+    pricePerHour: 1.80,
     available: true,
     description: 'High-performance Hopper GPU for demanding workloads',
     features: [
@@ -80,8 +87,7 @@ export const GPU_PRICING: GpuPricing[] = [
     id: 'H200',
     name: '8x H200 Server',
     vram: '141 GB',
-    pricePerHour: 2.30,
-    pricePerMonth: 13432,
+    pricePerHour: 2.40,
     available: true,
     description: 'Latest Hopper with expanded HBM3e memory',
     features: [
@@ -98,7 +104,6 @@ export const GPU_PRICING: GpuPricing[] = [
     name: '8x B200 Server',
     vram: '192 GB',
     pricePerHour: 3.50,
-    pricePerMonth: 17640,
     available: true,
     description: 'Next-gen Blackwell architecture for maximum performance',
     features: [
