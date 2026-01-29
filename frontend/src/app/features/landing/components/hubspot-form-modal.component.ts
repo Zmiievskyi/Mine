@@ -57,11 +57,11 @@ interface JQueryElement {
         (click)="onBackdropClick($event)"
       >
         <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 z-[100] bg-black/70 backdrop-blur-sm"></div>
 
         <!-- Modal -->
         <div
-          class="relative w-full max-w-2xl bg-[#18181b] rounded-2xl shadow-2xl overflow-hidden"
+          class="relative z-[101] w-full max-w-2xl bg-[#18181b] rounded-2xl shadow-2xl overflow-hidden"
           (click)="$event.stopPropagation()"
         >
           <!-- Header -->
