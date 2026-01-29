@@ -53,15 +53,12 @@ interface JQueryElement {
   template: `
     @if (isOpen()) {
       <div
-        class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90"
         (click)="onBackdropClick($event)"
       >
-        <!-- Backdrop -->
-        <div class="absolute inset-0 z-[100] bg-black/70 backdrop-blur-sm"></div>
-
         <!-- Modal -->
         <div
-          class="relative z-[101] w-full max-w-2xl bg-[#18181b] rounded-2xl shadow-2xl overflow-hidden"
+          class="relative w-full max-w-2xl bg-[#18181b] rounded-2xl shadow-2xl overflow-hidden"
           (click)="$event.stopPropagation()"
         >
           <!-- Header -->

@@ -3663,3 +3663,9 @@ getMonthlyPrice(gpuType: GpuType): number {
 - [x] 7.31 Modal Z-Index Fix - **COMPLETE** (2026-01-29)
 
 ---
+
+### Modal Z-Index Fix (Additional)
+- Simplified modal structure: merged backdrop into outer container
+- Removed `z-10` from footer (was the root cause of stacking issue)
+- Modal uses `z-[100]` with `bg-black/90` backdrop
+- Footer no longer creates competing stacking context
