@@ -254,6 +254,7 @@ HubSpot form integration is configured in `frontend/src/environments/`:
 9. **Auth Disabled**: Landing page only, all protected routes disabled (as of 2026-01-28)
 10. **node4 as Primary**: node4.gonka.ai/v1/epochs/current/participants for epoch/participant/GPU data
 11. **HubSpot Integration**: External form submission via iframe modal for GPU rental inquiries (replaces internal request system for public users)
+12. **Dynamic Pricing**: Monthly prices calculated from hourly rates (hourly × 8 GPUs × 730 hours/month) to prevent drift when prices are updated via scripts
 
 ## Testing
 

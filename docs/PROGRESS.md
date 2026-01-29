@@ -3564,3 +3564,102 @@ HubSpot may show 403 errors in console for tracking resources when form is embed
 2. Add allowed domains (localhost for dev, production domain for prod)
 
 ---
+
+## Session 41: Dynamic Pricing Calculation & Modal Z-Index Fix (2026-01-29)
+
+### Overview
+Implemented dynamic monthly pricing calculation to prevent hardcoded values from getting out of sync with hourly rates. Fixed modal z-index issue where footer was visible through the modal backdrop when scrolling.
+
+### Completed Tasks
+- [x] Implemented dynamic monthly pricing calculation (2026-01-29)
+- [x] Fixed modal z-index layering issue (2026-01-29)
+
+### 1. Dynamic Monthly Pricing Calculation
+
+**Problem**: Monthly prices were hardcoded in `pricing.constants.ts` and could get out of sync with hourly rates when prices were updated via the pricing management scripts.
+
+**Solution**:
+- Added `GPUS_PER_SERVER = 8` constant
+- Added `calculateMonthlyPrice(hourlyPrice)` helper function using formula: `hourly × 8 GPUs × 730 hours/month`
+- Removed hardcoded `pricePerMonth` from `GpuPricing` interface
+- Removed hardcoded monthly values from `GPU_PRICING` data
+- Updated `pricing-section.component.ts` to calculate monthly prices dynamically
+
+**Before** (hardcoded):
+```typescript
+export const GPU_PRICING: Record<GpuType, GpuPricing> = {
+  [GpuType.A100]: {
+    type: GpuType.A100,
+    pricePerHour: 0.99,
+    pricePerMonth: 5782, // ❌ Hardcoded, can drift
+    ...
+  }
+}
+```
+
+**After** (dynamic):
+```typescript
+export const GPUS_PER_SERVER = 8;
+export const calculateMonthlyPrice = (hourlyPrice: number): number => {
+  const HOURS_PER_MONTH = 730;
+  return Math.round(hourlyPrice * GPUS_PER_SERVER * HOURS_PER_MONTH);
+};
+
+// In component:
+getMonthlyPrice(gpuType: GpuType): number {
+  const pricing = GPU_PRICING[gpuType];
+  return calculateMonthlyPrice(pricing.pricePerHour);
+}
+```
+
+**Current Prices** (calculated from hourly rates):
+
+| GPU | Hourly | Calculated Monthly |
+|-----|--------|-------------------|
+| A100 | $0.99 | $5,782 |
+| H100 | $1.80 | $10,512 |
+| H200 | $2.40 | $14,016 |
+| B200 | $3.50 | $20,440 |
+
+**Files Modified**:
+- `frontend/src/app/core/constants/pricing.constants.ts` - Added constants and helper, removed hardcoded monthly prices
+- `frontend/src/app/features/landing/components/pricing-section.component.ts` - Calculate monthly from hourly
+- `frontend/src/app/features/landing/components/pricing-section.component.html` - Use calculated value via `getMonthlyPrice()`
+
+### 2. Modal Z-Index Fix
+
+**Problem**: When scrolling down with the HubSpot modal open, the footer was visible through the modal backdrop, breaking the visual layering.
+
+**Solution**: Added explicit z-index values to ensure proper layering:
+- Modal backdrop: `z-[100]`
+- Modal content: `z-[101]`
+
+**Before**:
+```html
+<div class="fixed inset-0 bg-black bg-opacity-50">
+  <div class="...">Modal Content</div>
+</div>
+```
+
+**After**:
+```html
+<div class="fixed inset-0 bg-black bg-opacity-50 z-[100]">
+  <div class="... z-[101]">Modal Content</div>
+</div>
+```
+
+**File Modified**:
+- `frontend/src/app/features/landing/components/hubspot-form-modal.component.ts`
+
+### Benefits
+
+1. **Maintainability**: Single source of truth for pricing (hourly rates in database)
+2. **Consistency**: Monthly prices always calculated from hourly rates
+3. **Automation**: Pricing scripts update hourly rates → monthly auto-updates
+4. **UI Polish**: Modal now properly overlays all content when scrolling
+
+### Phase 7 Progress Update
+- [x] 7.30 Dynamic Pricing Calculation - **COMPLETE** (2026-01-29)
+- [x] 7.31 Modal Z-Index Fix - **COMPLETE** (2026-01-29)
+
+---
