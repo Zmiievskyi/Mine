@@ -56,7 +56,7 @@ export function HeroSection() {
               <div className="mt-8">
                 <button
                   type="button"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-[#FF4C00] hover:bg-[#e64500] text-white font-semibold text-lg rounded-lg transition-colors duration-200 shadow-lg shadow-[#FF4C00]/25"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white font-semibold text-lg rounded-lg transition-colors duration-200 shadow-lg shadow-accent/25"
                   onClick={() => openModal()}
                 >
                   {t('cta')}
@@ -82,7 +82,7 @@ export function HeroSection() {
           <ScrollReveal delay={150} className="lg:col-span-3">
             <aside className="rounded-2xl border border-border bg-zinc-900/40 p-6 md:p-8">
               {/* Kicker */}
-              <div className="text-sm font-semibold uppercase tracking-wide text-[#FF4C00] mb-3">
+              <div className="text-sm font-semibold uppercase tracking-wide text-accent mb-3">
                 {t('panel.kicker')}
               </div>
 
@@ -102,7 +102,7 @@ export function HeroSection() {
 
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">
-                    <span className="mt-1.5 w-2 h-2 rounded-full bg-[#FF4C00] flex-shrink-0" />
+                    <span className="mt-1.5 w-2 h-2 rounded-full bg-accent flex-shrink-0" />
                     <p className="text-muted-foreground">
                       <strong className="text-foreground">
                         {t('panel.pains.silence.title')}
@@ -111,7 +111,7 @@ export function HeroSection() {
                     </p>
                   </li>
                   <li className="border-t border-dashed border-border/50 pt-4 flex items-start gap-3">
-                    <span className="mt-1.5 w-2 h-2 rounded-full bg-[#FF4C00] flex-shrink-0" />
+                    <span className="mt-1.5 w-2 h-2 rounded-full bg-accent flex-shrink-0" />
                     <p className="text-muted-foreground">
                       <strong className="text-foreground">
                         {t('panel.pains.opaque.title')}
@@ -120,7 +120,7 @@ export function HeroSection() {
                     </p>
                   </li>
                   <li className="border-t border-dashed border-border/50 pt-4 flex items-start gap-3">
-                    <span className="mt-1.5 w-2 h-2 rounded-full bg-[#FF4C00] flex-shrink-0" />
+                    <span className="mt-1.5 w-2 h-2 rounded-full bg-accent flex-shrink-0" />
                     <p className="text-muted-foreground">
                       <strong className="text-foreground">
                         {t('panel.pains.blind.title')}

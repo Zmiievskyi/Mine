@@ -39,36 +39,240 @@
     "faq": "FAQ"
   },
   "features": {
-    "badge": "Why mine with us",
-    "title": "Simple onboarding, powerful results",
-    "subtitle": "Mining as a service: pay in fiat, use enterprise GPUs, earn AI-focused tokens.",
-    "fiat": {
-      "title": "Pay in Fiat Currency",
-      "description": "No wallets or exchanges needed. Onboard fast and start mining immediately."
+    "badge": "What we offer",
+    "title": "Mining infrastructure that reduces your risk",
+    "subtitle": "We handle the infrastructure so you can focus on earning. Clear pricing, predictable operations, and accountable uptime.",
+    "items": [
+      {
+        "title": "Understand the economics fast",
+        "description": "Clear packages and pricing upfront. Know exactly what you're paying for before you commit."
+      },
+      {
+        "title": "Reduce risk before paying",
+        "description": "Confirm quote and availability before payment. No surprises after you sign."
+      },
+      {
+        "title": "Launch without surprises",
+        "description": "Predictable path to go-live. We handle provisioning end-to-end within days."
+      },
+      {
+        "title": "Operate with clarity",
+        "description": "Visible statuses and updates in one place. Know what's happening with your nodes at all times."
+      },
+      {
+        "title": "GPU Services SLA",
+        "description": "Accountable uptime with compensation if breached. Your infrastructure reliability is our responsibility."
+      },
+      {
+        "title": "Scale when needed",
+        "description": "Add capacity under the same rules. Volume discounts available from 10+ servers."
+      }
+    ]
+  },
+  "forWho": {
+    "badge": "Who it's for",
+    "title": "Built for serious operators",
+    "subtitle": "Whether you're running a large-scale operation or managing pools, we've built the infrastructure to match your needs.",
+    "operators": {
+      "title": "For Large-Scale Operators",
+      "description": "Enterprise-ready infrastructure for serious mining operations.",
+      "points": [
+        "Procurement-ready flow with KYC, contract, and invoicing",
+        "Lower launch risk with clear reliability terms",
+        "Maintain finance control with transparent billing"
+      ]
     },
-    "enterprise": {
-      "title": "Enterprise-grade GPUs",
-      "description": "Access dedicated, high-performance GPUs for reliable, efficient mining."
-    },
-    "aiTokens": {
-      "title": "AI-Focused Tokens",
-      "description": "Earn tokens designed for AI inference workloads across the Gonka network."
+    "pools": {
+      "title": "For Pools and Resellers",
+      "description": "Consistent infrastructure you can build a business on.",
+      "points": [
+        "Faster incident response with clear updates",
+        "Reduce operational blind spots with monitoring",
+        "Fleet consistency with repeatable process"
+      ]
     }
   },
+  "stats": {
+    "title": "Gonka Network Stats",
+    "subtitle": "Network overview",
+    "networkStatus": {
+      "label": "Network Status",
+      "tooltip": "Live / Syncing / Stale based on public network signals.",
+      "live": "Live",
+      "active": "Active"
+    },
+    "currentEpoch": {
+      "label": "Current Epoch",
+      "tooltip": "Current network epoch (active participation/accounting window).",
+      "description": "Mining epoch"
+    },
+    "participants": {
+      "label": "Participants",
+      "tooltip": "Total number of nodes participating in the network.",
+      "healthy": "healthy"
+    },
+    "totalGpus": {
+      "label": "Total GPUs",
+      "tooltip": "Total GPUs in the network providing AI inference capacity.",
+      "description": "Compute nodes"
+    },
+    "activeModels": {
+      "label": "Active Models",
+      "tooltip": "AI models currently being served by the network.",
+      "description": "AI models"
+    },
+    "nextEpoch": {
+      "label": "Next Epoch",
+      "tooltip": "Rewards are distributed at epoch boundaries.",
+      "description": "Epoch cycle"
+    }
+  },
+  "howItWorks": {
+    "badge": "How it works",
+    "title": "From request to mining in 7 steps",
+    "subtitle": "We handle the infrastructure while you focus on earning tokens. Month-to-month contracts with no long-term commitment.",
+    "steps": [
+      {
+        "title": "Submit Request",
+        "description": "Choose your GPU model, preferred region, and contract duration. We'll check availability and prepare your quote."
+      },
+      {
+        "title": "Complete KYC",
+        "description": "After KYC verification is done. We provide a clear checklist of required documentation to streamline the process."
+      },
+      {
+        "title": "Review Quote",
+        "description": "Confirm availability and fit before committing. Review your configuration and pricing details."
+      },
+      {
+        "title": "Sign & Pay",
+        "description": "Sign a 1-month contract and pay for the first month upfront. Payment is required before server assignment."
+      },
+      {
+        "title": "Provisioning",
+        "description": "We handle server assignment, software installation, and wallet connection. Provisioning completes within days."
+      },
+      {
+        "title": "Operate & Monitor",
+        "description": "Your GPUs start mining. We provide 24/7 infrastructure monitoring and respond to any issues automatically."
+      },
+      {
+        "title": "Billing & Renewal",
+        "description": "Monthly invoices at calendar month end. Renew by paying no later than 10 days before contract end. Downtime credits applied automatically."
+      }
+    ],
+    "note": "Infrastructure downtime credits apply to infrastructure issues only and do not cover missed network rewards.",
+    "noteLabel": "Note:"
+  },
+  "managedServices": {
+    "badge": "Fully Managed",
+    "title": "We handle the technical complexity",
+    "subtitle": "Focus on earning while we manage the infrastructure. Our team takes care of everything from setup to maintenance.",
+    "services": [
+      {
+        "title": "Software Deployment",
+        "description": "Gonka software installed and configured"
+      },
+      {
+        "title": "Storage Setup",
+        "description": "RAID arrays for databases and AI models"
+      },
+      {
+        "title": "Model Deployment",
+        "description": "AI models deployed and updated automatically"
+      },
+      {
+        "title": "Cluster Management",
+        "description": "Nodes connected and debugged"
+      },
+      {
+        "title": "Cluster Monitoring",
+        "description": "24/7 health tracking and alerts"
+      },
+      {
+        "title": "GPU Monitoring",
+        "description": "Real-time GPU status and performance"
+      },
+      {
+        "title": "Updates & Patches",
+        "description": "New Gonka versions, patches, and hotfixes applied automatically"
+      }
+    ]
+  },
   "pricing": {
-    "title": "GPU Pricing",
-    "subtitle": "Choose the GPU that fits your mining needs",
+    "badge": "Simple Pricing",
+    "title": "Choose your 8x GPU server package",
+    "subtitle": "All packages include managed infrastructure, 24/7 monitoring, and month-to-month contracts. No setup fees or long-term commitment.",
     "perMonth": "/month",
-    "perHour": "/hour",
-    "rentNow": "Rent Now"
+    "perHour": "/GPU/hour",
+    "rentNow": "Rent GPU",
+    "contactSales": "Contact Sales",
+    "customPricing": "Custom pricing",
+    "volumeDiscount": "Volume discounts available",
+    "volumeDiscountNote": "from 10+ servers. Contact us for custom pricing."
   },
   "faq": {
-    "title": "Frequently Asked Questions",
-    "subtitle": "Everything you need to know about GPU mining with MineGNK"
+    "badge": "Frequently Asked Questions",
+    "title": "What people ask about MineGNK",
+    "items": [
+      {
+        "question": "What is mining as a service?",
+        "answer": "We provision and manage enterprise-grade GPU servers for you. You pay in fiat and earn GNK tokens while we handle all infrastructure — from capacity check and allocation to go-live."
+      },
+      {
+        "question": "How long does provisioning take?",
+        "answer": "Provisioning typically completes within days after KYC verification and contract signing. We handle server assignment, software installation, and wallet connection end-to-end."
+      },
+      {
+        "question": "How does billing work?",
+        "answer": "Payment for the first month is required before server assignment. Monthly invoices are issued at calendar month end. Renew by paying no later than 10 days before contract end."
+      },
+      {
+        "question": "Can I scale my mining operation?",
+        "answer": "Yes. Upgrade is available anytime (subject to capacity). Downgrade is available once per month. Volume discounts are available from 10+ servers."
+      },
+      {
+        "question": "What support do you provide?",
+        "answer": "We offer 24/7 infrastructure monitoring with business hours support (CET timezone) for infrastructure issues. Network software updates are applied within 24 hours of release."
+      },
+      {
+        "question": "What happens if there's downtime?",
+        "answer": "Infrastructure-caused downtime receives credits applied to your next payment or refunded. Note: credits apply to infrastructure downtime only and do not cover missed network rewards."
+      },
+      {
+        "question": "What makes Gonka tokens special?",
+        "answer": "GNK is designed for AI inference workloads in the Gonka network. Rewards are aligned with real compute supply and demand, making it a sustainable token economy."
+      }
+    ]
+  },
+  "modal": {
+    "title": "Rent GPUs",
+    "selected": "Selected:"
   },
   "footer": {
-    "copyright": "© 2025 MineGNK. All rights reserved.",
-    "privacy": "Privacy Policy",
-    "terms": "Terms of Service"
+    "brand": {
+      "name": "Mine",
+      "highlight": "GNK",
+      "description": "Professional GPU mining infrastructure for the Gonka network. Earn GNK tokens with enterprise-grade hosting and monitoring."
+    },
+    "product": {
+      "title": "Product",
+      "features": "Features",
+      "pricing": "Pricing"
+    },
+    "resources": {
+      "title": "Resources",
+      "howItWorks": "How It Works",
+      "faq": "FAQ",
+      "gonkaNetwork": "Gonka Network"
+    },
+    "legal": {
+      "title": "Legal",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "gpuTermsGonka": "GPU Terms for Gonka",
+      "dpa": "Data Processing Agreement"
+    },
+    "copyright": "MineGNK"
   }
 }

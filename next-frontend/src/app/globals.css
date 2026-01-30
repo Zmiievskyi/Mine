@@ -33,8 +33,10 @@
   --foreground: oklch(0.98 0 0);
   --card: oklch(0.10 0 0);
   --border: oklch(1 0 0 / 10%);
+  --muted: oklch(0.18 0 0);
   --muted-foreground: oklch(0.55 0 0);
   --accent: #FF4C00;
+  --accent-hover: #e64500;
 }
 
 html {

@@ -1,12 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { useHubspot } from '@/lib/contexts/HubspotContext';
 
-export function Header() {
+interface HeaderProps {
+  onSectionClick?: (sectionId: string) => void;
+}
+
+export function Header({ onSectionClick }: HeaderProps) {
   const t = useTranslations();
   const { openModal } = useHubspot();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -18,18 +22,22 @@ export function Header() {
     { label: t('nav.faq'), href: '#faq' },
   ];
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.querySelector(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setIsMobileMenuOpen(false);
+  const scrollToSection = useCallback((sectionId: string) => {
+    if (onSectionClick) {
+      onSectionClick(sectionId);
+    } else {
+      const element = document.querySelector(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
-  };
+    setIsMobileMenuOpen(false);
+  }, [onSectionClick]);
 
-  const handleRentClick = () => {
+  const handleRentClick = useCallback(() => {
     openModal();
     setIsMobileMenuOpen(false);
-  };
+  }, [openModal]);
 
   return (
     <header className="sticky top-0 inset-x-0 h-14 w-full z-50">
@@ -64,7 +72,7 @@ export function Header() {
             <LanguageSwitcher />
             <button
               type="button"
-              className="inline-flex items-center gap-2 px-5 py-2 bg-[#FF4C00] hover:bg-[#e64500] text-white font-semibold text-sm rounded-lg transition-colors duration-200"
+              className="inline-flex items-center gap-2 px-5 py-2 bg-accent hover:bg-accent-hover text-white font-semibold text-sm rounded-lg transition-colors duration-200"
               onClick={handleRentClick}
             >
               {t('hero.cta')}
@@ -136,7 +144,7 @@ export function Header() {
               {/* Rent GPU Button (Mobile) */}
               <button
                 type="button"
-                className="w-full py-3 px-4 bg-[#FF4C00] hover:bg-[#e64500] text-white font-semibold text-sm rounded-lg transition-colors duration-200 mt-2"
+                className="w-full py-3 px-4 bg-accent hover:bg-accent-hover text-white font-semibold text-sm rounded-lg transition-colors duration-200 mt-2"
                 onClick={handleRentClick}
               >
                 {t('hero.cta')}

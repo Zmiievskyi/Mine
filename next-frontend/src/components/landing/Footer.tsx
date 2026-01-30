@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 
 interface FooterProps {
@@ -7,6 +8,7 @@ interface FooterProps {
 }
 
 export function Footer({ onSectionClick }: FooterProps) {
+  const t = useTranslations('footer');
   const currentYear = new Date().getFullYear();
 
   const handleClick = (e: React.MouseEvent, sectionId: string) => {
@@ -28,21 +30,20 @@ export function Footer({ onSectionClick }: FooterProps) {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <h3 className="text-lg font-bold mb-4">
-              Mine
+              {t('brand.name')}
               <span className="bg-gradient-to-r from-[#FF4C00] to-[#FF7A45] bg-clip-text text-transparent">
-                GNK
+                {t('brand.highlight')}
               </span>
             </h3>
             <p className="text-sm text-muted-foreground">
-              Professional GPU mining infrastructure for the Gonka network. Earn
-              GNK tokens with enterprise-grade hosting and monitoring.
+              {t('brand.description')}
             </p>
           </div>
 
           {/* Product */}
           <div>
             <h4 className="text-sm font-semibold text-foreground mb-4">
-              Product
+              {t('product.title')}
             </h4>
             <ul className="space-y-2">
               <li>
@@ -51,7 +52,7 @@ export function Footer({ onSectionClick }: FooterProps) {
                   onClick={(e) => handleClick(e, '#features')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Features
+                  {t('product.features')}
                 </a>
               </li>
               <li>
@@ -60,7 +61,7 @@ export function Footer({ onSectionClick }: FooterProps) {
                   onClick={(e) => handleClick(e, '#pricing')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Pricing
+                  {t('product.pricing')}
                 </a>
               </li>
             </ul>
@@ -69,7 +70,7 @@ export function Footer({ onSectionClick }: FooterProps) {
           {/* Resources */}
           <div>
             <h4 className="text-sm font-semibold text-foreground mb-4">
-              Resources
+              {t('resources.title')}
             </h4>
             <ul className="space-y-2">
               <li>
@@ -78,7 +79,7 @@ export function Footer({ onSectionClick }: FooterProps) {
                   onClick={(e) => handleClick(e, '#how-it-works')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  How It Works
+                  {t('resources.howItWorks')}
                 </a>
               </li>
               <li>
@@ -87,7 +88,7 @@ export function Footer({ onSectionClick }: FooterProps) {
                   onClick={(e) => handleClick(e, '#faq')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  FAQ
+                  {t('resources.faq')}
                 </a>
               </li>
               <li>
@@ -97,7 +98,7 @@ export function Footer({ onSectionClick }: FooterProps) {
                   rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Gonka Network
+                  {t('resources.gonkaNetwork')}
                 </a>
               </li>
             </ul>
@@ -105,7 +106,7 @@ export function Footer({ onSectionClick }: FooterProps) {
 
           {/* Legal */}
           <div>
-            <h4 className="text-sm font-semibold text-foreground mb-4">Legal</h4>
+            <h4 className="text-sm font-semibold text-foreground mb-4">{t('legal.title')}</h4>
             <ul className="space-y-2">
               <li>
                 <a
@@ -114,7 +115,7 @@ export function Footer({ onSectionClick }: FooterProps) {
                   rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Privacy Policy
+                  {t('legal.privacyPolicy')}
                 </a>
               </li>
               <li>
@@ -124,7 +125,7 @@ export function Footer({ onSectionClick }: FooterProps) {
                   rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Terms of Service
+                  {t('legal.termsOfService')}
                 </a>
               </li>
               <li>
@@ -132,7 +133,7 @@ export function Footer({ onSectionClick }: FooterProps) {
                   href="/terms/gonka"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  GPU Terms for Gonka
+                  {t('legal.gpuTermsGonka')}
                 </Link>
               </li>
               <li>
@@ -142,7 +143,7 @@ export function Footer({ onSectionClick }: FooterProps) {
                   rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Data Processing Agreement
+                  {t('legal.dpa')}
                 </a>
               </li>
             </ul>
@@ -152,7 +153,7 @@ export function Footer({ onSectionClick }: FooterProps) {
         {/* Copyright */}
         <div className="pt-8 border-t border-border">
           <p className="text-sm text-muted-foreground text-center">
-            &copy; {currentYear} MineGNK
+            &copy; {currentYear} {t('copyright')}
           </p>
         </div>
       </div>

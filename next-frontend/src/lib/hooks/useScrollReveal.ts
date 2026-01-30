@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 interface UseScrollRevealOptions {
   threshold?: number;
@@ -8,26 +8,41 @@ interface UseScrollRevealOptions {
   delay?: number;
 }
 
+// Check if user prefers reduced motion (SSR-safe)
+function subscribeToPrefersReducedMotion(callback: () => void) {
+  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  mediaQuery.addEventListener('change', callback);
+  return () => mediaQuery.removeEventListener('change', callback);
+}
+
+function getPrefersReducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function getServerPrefersReducedMotion() {
+  return false; // Default to animations enabled on server
+}
+
 export function useScrollReveal<T extends HTMLElement>(
   options: UseScrollRevealOptions = {}
 ) {
   const { threshold = 0.1, rootMargin = '0px', delay = 0 } = options;
   const ref = useRef<T>(null);
-  const [isVisible, setIsVisible] = useState(false);
+
+  const prefersReducedMotion = useSyncExternalStore(
+    subscribeToPrefersReducedMotion,
+    getPrefersReducedMotion,
+    getServerPrefersReducedMotion
+  );
+
+  const [isVisible, setIsVisible] = useState(prefersReducedMotion);
 
   useEffect(() => {
+    // If reduced motion is preferred, element should already be visible
+    if (prefersReducedMotion) return;
+
     const element = ref.current;
     if (!element) return;
-
-    // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)'
-    ).matches;
-
-    if (prefersReducedMotion) {
-      setIsVisible(true);
-      return;
-    }
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -50,7 +65,7 @@ export function useScrollReveal<T extends HTMLElement>(
     return () => {
       observer.disconnect();
     };
-  }, [threshold, rootMargin, delay]);
+  }, [threshold, rootMargin, delay, prefersReducedMotion]);
 
-  return { ref, isVisible };
+  return { ref, isVisible: prefersReducedMotion || isVisible };
 }

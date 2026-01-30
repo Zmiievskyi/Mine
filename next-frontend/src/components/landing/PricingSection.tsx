@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { CheckIcon } from '@/components/icons';
 import { pricing, formatPrice, formatMonthlyPrice } from '@/data/pricing';
@@ -7,6 +8,7 @@ import { useHubspot } from '@/lib/contexts/HubspotContext';
 
 export function PricingSection() {
   const { openModal } = useHubspot();
+  const t = useTranslations('pricing');
 
   return (
     <section id="pricing" className="py-16 md:py-24">
@@ -15,14 +17,13 @@ export function PricingSection() {
         <ScrollReveal>
           <div className="text-center mb-12">
             <span className="inline-flex items-center justify-center rounded-full border border-[#FF4C00]/50 bg-transparent px-4 py-1.5 text-sm font-medium text-white mb-4">
-              Simple Pricing
+              {t('badge')}
             </span>
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              Choose your 8x GPU server package
+              {t('title')}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              All packages include managed infrastructure, 24/7 monitoring, and
-              month-to-month contracts. No setup fees or long-term commitment.
+              {t('subtitle')}
             </p>
           </div>
         </ScrollReveal>
@@ -54,7 +55,7 @@ export function PricingSection() {
                 <div className="mb-6">
                   {item.isContactSales || item.pricePerHour === null ? (
                     <span className="text-xl font-bold text-foreground">
-                      Custom pricing
+                      {t('customPricing')}
                     </span>
                   ) : (
                     <div className="flex flex-col">
@@ -64,12 +65,12 @@ export function PricingSection() {
                         </span>
                         <span className="text-muted-foreground text-sm">
                           {' '}
-                          /GPU/hour
+                          {t('perHour')}
                         </span>
                       </div>
                       {item.pricePerMonth && (
                         <span className="text-sm text-muted-foreground mt-1">
-                          ${formatMonthlyPrice(item.pricePerMonth)}/month
+                          ${formatMonthlyPrice(item.pricePerMonth)}{t('perMonth')}
                         </span>
                       )}
                     </div>
@@ -79,12 +80,12 @@ export function PricingSection() {
                 {/* Rent GPU Button */}
                 <button
                   type="button"
-                  className="w-full py-3 px-4 bg-[#FF4C00] hover:bg-[#e64500] text-white font-semibold text-sm rounded-lg transition-colors duration-200"
+                  className="w-full py-3 px-4 bg-accent hover:bg-accent-hover text-white font-semibold text-sm rounded-lg transition-colors duration-200"
                   onClick={() => openModal(item.name)}
                 >
                   {item.isContactSales || item.pricePerHour === null
-                    ? 'Contact Sales'
-                    : 'Rent GPU'}
+                    ? t('contactSales')
+                    : t('rentNow')}
                 </button>
               </div>
             </ScrollReveal>
@@ -95,10 +96,10 @@ export function PricingSection() {
         <ScrollReveal delay={400}>
           <div className="mt-8 text-center">
             <p className="text-sm text-muted-foreground">
-              <span className="text-[#FF4C00] font-medium">
-                Volume discounts available
+              <span className="text-accent font-medium">
+                {t('volumeDiscount')}
               </span>{' '}
-              from 10+ servers. Contact us for custom pricing.
+              {t('volumeDiscountNote')}
             </p>
           </div>
         </ScrollReveal>

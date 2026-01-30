@@ -31,6 +31,13 @@ export interface JQueryElement {
   change: () => JQueryElement;
 }
 
+// Script loading constants
+const SCRIPT_READY_CHECK_INTERVAL_MS = 100;
+const SCRIPT_READY_MAX_ATTEMPTS = 30; // 3 seconds total timeout
+const GPU_FIELD_RETRY_DELAY_MS = 200;
+const GPU_FIELD_MAX_RETRIES = 10;
+const GPU_FIELD_INITIAL_DELAY_MS = 500;
+
 // Environment config - use sandbox values for development
 export const HUBSPOT_CONFIG = {
   portalId: process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID || '147554099',
@@ -40,26 +47,24 @@ export const HUBSPOT_CONFIG = {
   region: process.env.NEXT_PUBLIC_HUBSPOT_REGION || 'eu1',
 };
 
-/**
- * Maps GPU type string to HubSpot-compatible format
- * @param gpuType - GPU type string (e.g., "A100", "H100")
- * @returns Formatted GPU value (e.g., "8 x A100") or null if invalid
- */
-export function getHubSpotGpuValue(gpuType: string): string | null {
-  const validIds = ['A100', 'H100', 'H200', 'B200'];
-  const upperType = gpuType.toUpperCase();
+// Re-export URL utilities for convenience
+export {
+  getHubSpotGpuValue,
+  addGpuToUrlParams,
+  removeGpuFromUrlParams,
+} from './hubspot-url';
 
-  for (const id of validIds) {
-    if (upperType.includes(id)) {
-      return `8 x ${id}`;
-    }
+export class HubSpotLoadError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'HubSpotLoadError';
   }
-  return null;
 }
 
 /**
  * Loads HubSpot forms script if not already loaded
  * @returns Promise that resolves when script is loaded and API is available
+ * @throws HubSpotLoadError if script fails to load or API is unavailable
  */
 export function loadHubSpotScript(): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -90,18 +95,17 @@ export function loadHubSpotScript(): Promise<void> {
       const checkReady = (attempts = 0): void => {
         if (window.hbspt?.forms) {
           resolve();
-        } else if (attempts < 30) {
-          setTimeout(() => checkReady(attempts + 1), 100);
+        } else if (attempts < SCRIPT_READY_MAX_ATTEMPTS) {
+          setTimeout(() => checkReady(attempts + 1), SCRIPT_READY_CHECK_INTERVAL_MS);
         } else {
-          reject(new Error('HubSpot forms API not available'));
+          reject(new HubSpotLoadError('HubSpot forms API not available after timeout'));
         }
       };
       checkReady();
     };
 
-    script.onerror = (error) => {
-      console.error('Failed to load HubSpot script:', error);
-      reject(error);
+    script.onerror = () => {
+      reject(new HubSpotLoadError('Failed to load HubSpot forms script'));
     };
 
     document.head.appendChild(script);
@@ -121,7 +125,6 @@ export function setGpuFieldValue(
 ): void {
   // Strategy 1: Try known field names
   const fieldNames = [
-    'form_gonka_preffered_configuration',
     'form_gonka_preferred_configuration',
     'preferred_node_configuration',
     'gpu_configuration',
@@ -167,36 +170,10 @@ export function setGpuFieldValue(
       }
     }
 
-    if (attempt < 10) {
-      setTimeout(() => trySetValue(attempt + 1), 200);
+    if (attempt < GPU_FIELD_MAX_RETRIES) {
+      setTimeout(() => trySetValue(attempt + 1), GPU_FIELD_RETRY_DELAY_MS);
     }
   };
 
-  setTimeout(() => trySetValue(), 500);
-}
-
-/**
- * Adds GPU configuration to URL parameters for HubSpot form pre-fill
- * @param gpuType - GPU type to add to URL
- * @returns Original URL before modification (for cleanup)
- */
-export function addGpuToUrlParams(gpuType: string | null): string | null {
-  const gpuValue = gpuType ? getHubSpotGpuValue(gpuType) : null;
-  if (!gpuValue) return null;
-
-  const originalUrl = window.location.href;
-  const url = new URL(window.location.href);
-  url.searchParams.set('form_gonka_preffered_configuration', gpuValue);
-  url.searchParams.set('form_gonka_servers_number', '1');
-  window.history.replaceState({}, '', url.toString());
-  return originalUrl;
-}
-
-/**
- * Removes GPU configuration from URL parameters
- * @param originalUrl - Original URL to restore
- */
-export function removeGpuFromUrlParams(originalUrl: string | null): void {
-  if (!originalUrl) return;
-  window.history.replaceState({}, '', originalUrl);
+  setTimeout(() => trySetValue(), GPU_FIELD_INITIAL_DELAY_MS);
 }
