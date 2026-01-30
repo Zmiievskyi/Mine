@@ -13,37 +13,6 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./features/legal/legal.routes').then((m) => m.LEGAL_ROUTES),
   },
-  // Redirect all protected routes to landing page
-  {
-    path: 'auth',
-    redirectTo: '',
-    pathMatch: 'prefix',
-  },
-  {
-    path: 'dashboard',
-    redirectTo: '',
-    pathMatch: 'prefix',
-  },
-  {
-    path: 'nodes',
-    redirectTo: '',
-    pathMatch: 'prefix',
-  },
-  {
-    path: 'requests',
-    redirectTo: '',
-    pathMatch: 'prefix',
-  },
-  {
-    path: 'kyc',
-    redirectTo: '',
-    pathMatch: 'prefix',
-  },
-  {
-    path: 'admin',
-    redirectTo: '',
-    pathMatch: 'prefix',
-  },
   {
     path: '**',
     redirectTo: '',

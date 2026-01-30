@@ -12,80 +12,61 @@
     </div>
 
     <!-- Pricing Cards -->
-    @if (!loading()) {
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        @for (item of pricing(); track item.gpuType; let i = $index) {
-          <div appScrollReveal [revealDelay]="i * 75" class="rounded-xl border border-border bg-card/30 p-6 flex flex-col">
-            <div class="mb-6">
-              <h3 class="text-xl font-bold text-foreground mb-2">{{ item.specs?.name || item.gpuType }}</h3>
-              <p class="text-sm text-muted-foreground">{{ item.specs?.description || 'High-performance GPU server' }}</p>
-            </div>
-            <ul class="space-y-3 mb-6 flex-1">
-              @for (feature of item.specs?.features || []; track feature) {
-                <li class="flex items-center gap-2 text-sm text-muted-foreground">
-                  <svg class="w-4 h-4 flex-shrink-0 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                  </svg>
-                  {{ feature }}
-                </li>
-              }
-            </ul>
-            <div class="mb-6">
-              @if (item.isContactSales || item.pricePerHour === null) {
-                <span class="text-xl font-bold text-foreground">Custom pricing</span>
-              } @else {
-                <div class="flex flex-col">
-                  <div>
-                    <span class="text-3xl font-bold text-foreground">${{ item.pricePerHour | number:'1.2-2' }}</span>
-                    <span class="text-muted-foreground text-sm"> /GPU/hour</span>
-                  </div>
-                  @if (item.pricePerMonth) {
-                    <span class="text-sm text-muted-foreground mt-1">${{ item.pricePerMonth | number:'1.0-0' }}/month</span>
-                  }
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      @for (item of pricing; track item.name; let i = $index) {
+        <div appScrollReveal [revealDelay]="i * 75" class="rounded-xl border border-border bg-card/30 p-6 flex flex-col">
+          <div class="mb-6">
+            <h3 class="text-xl font-bold text-foreground mb-2">{{ item.name }}</h3>
+            <p class="text-sm text-muted-foreground">{{ item.description }}</p>
+          </div>
+          <ul class="space-y-3 mb-6 flex-1">
+            @for (feature of item.features; track feature) {
+              <li class="flex items-center gap-2 text-sm text-muted-foreground">
+                <svg class="w-4 h-4 flex-shrink-0 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                {{ feature }}
+              </li>
+            }
+          </ul>
+          <div class="mb-6">
+            @if (item.isContactSales || item.pricePerHour === null) {
+              <span class="text-xl font-bold text-foreground">Custom pricing</span>
+            } @else {
+              <div class="flex flex-col">
+                <div>
+                  <span class="text-3xl font-bold text-foreground">${{ item.pricePerHour | number:'1.2-2' }}</span>
+                  <span class="text-muted-foreground text-sm"> /GPU/hour</span>
                 </div>
-              }
-            </div>
-
-            <!-- Rent GPU Button -->
-            <button
-              type="button"
-              class="w-full py-3 px-4 bg-[#FF4C00] hover:bg-[#e64500] text-white font-semibold text-sm rounded-lg transition-colors duration-200"
-              (click)="openModal(item.specs?.name || item.gpuType)"
-            >
-              @if (item.isContactSales || item.pricePerHour === null) {
-                Contact Sales
-              } @else {
-                Rent GPU
-              }
-            </button>
+                @if (item.pricePerMonth) {
+                  <span class="text-sm text-muted-foreground mt-1">${{ item.pricePerMonth | number:'1.0-0' }}/month</span>
+                }
+              </div>
+            }
           </div>
-        }
-      </div>
 
-      <!-- Volume Discount Note -->
-      <div appScrollReveal [revealDelay]="400" class="mt-8 text-center">
-        <p class="text-sm text-muted-foreground">
-          <span class="text-[#FF4C00] font-medium">Volume discounts available</span> from 10+ servers. Contact us for custom pricing.
-        </p>
-      </div>
-    } @else {
-      <!-- Loading skeleton -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        @for (i of [1, 2, 3, 4]; track i) {
-          <div class="rounded-xl border border-border bg-card/30 p-6 animate-pulse">
-            <div class="h-6 bg-gray-700 rounded w-1/2 mb-4"></div>
-            <div class="h-4 bg-gray-700 rounded w-3/4 mb-6"></div>
-            <div class="space-y-3 mb-6">
-              @for (j of [1, 2, 3, 4, 5]; track j) {
-                <div class="h-4 bg-gray-700 rounded w-full"></div>
-              }
-            </div>
-            <div class="h-8 bg-gray-700 rounded w-1/2 mb-6"></div>
-            <div class="h-10 bg-gray-700 rounded"></div>
-          </div>
-        }
-      </div>
-    }
+          <!-- Rent GPU Button -->
+          <button
+            type="button"
+            class="w-full py-3 px-4 bg-[#FF4C00] hover:bg-[#e64500] text-white font-semibold text-sm rounded-lg transition-colors duration-200"
+            (click)="openModal(item.name)"
+          >
+            @if (item.isContactSales || item.pricePerHour === null) {
+              Contact Sales
+            } @else {
+              Rent GPU
+            }
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Volume Discount Note -->
+    <div appScrollReveal [revealDelay]="400" class="mt-8 text-center">
+      <p class="text-sm text-muted-foreground">
+        <span class="text-[#FF4C00] font-medium">Volume discounts available</span> from 10+ servers. Contact us for custom pricing.
+      </p>
+    </div>
   </div>
 </section>
 

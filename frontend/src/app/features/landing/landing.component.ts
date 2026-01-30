@@ -1,9 +1,5 @@
-import { Component, OnInit, inject, signal, DestroyRef, ChangeDetectionStrategy, computed } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy, computed } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { NodesService } from '../../core/services/nodes.service';
-import { NetworkStats } from '../../core/models/node.model';
-import { createAutoRefresh } from '../../shared/utils';
-import { REFRESH_INTERVALS } from '../../core/constants';
 import { I18nService, type SupportedLanguage } from '../../core/i18n';
 import { HeroSectionComponent } from './components/hero-section.component';
 import { NetworkStatsComponent } from './components/network-stats.component';
@@ -18,16 +14,15 @@ import { HubspotFormModalComponent } from './components/hubspot-form-modal.compo
 /**
  * Landing page component for MineGNK
  *
- * Main entry point for guest users showcasing:
+ * Main entry point showcasing:
  * - Hero section with value proposition
- * - Live Gonka network statistics
+ * - Network statistics (static)
  * - Feature highlights for GPU mining
  * - Step-by-step guide
  * - Pricing information
  * - FAQ section
- * - Call-to-action for registration
  *
- * Uses dark theme matching minegnk.com design
+ * Fully static page with HubSpot form for lead capture
  */
 @Component({
   selector: 'app-landing',
@@ -48,9 +43,7 @@ import { HubspotFormModalComponent } from './components/hubspot-form-modal.compo
   styleUrl: './landing.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LandingComponent implements OnInit {
-  private readonly nodesService = inject(NodesService);
-  private readonly destroyRef = inject(DestroyRef);
+export class LandingComponent {
   private readonly i18n = inject(I18nService);
 
   // i18n
@@ -60,11 +53,6 @@ export class LandingComponent implements OnInit {
 
   // Navigation state
   protected isMobileMenuOpen = false;
-
-  // Network stats state
-  protected readonly networkStats = signal<NetworkStats | null>(null);
-  protected readonly statsLoading = signal(true);
-  protected readonly statsError = signal<string | null>(null);
 
   // HubSpot form modal state
   protected readonly isRentModalOpen = signal(false);
@@ -76,30 +64,6 @@ export class LandingComponent implements OnInit {
     { label: this.t().nav.pricing, href: '#pricing' },
     { label: this.t().nav.faq, href: '#faq' }
   ]);
-
-  public ngOnInit(): void {
-    // Load network stats with auto-refresh every 60 seconds
-    this.loadNetworkStats();
-  }
-
-  private loadNetworkStats(): void {
-    createAutoRefresh(
-      REFRESH_INTERVALS.LANDING_STATS,
-      () => this.nodesService.getPublicNetworkStats(),
-      this.destroyRef
-    ).subscribe({
-      next: (stats) => {
-        this.networkStats.set(stats);
-        this.statsLoading.set(false);
-        this.statsError.set(null);
-      },
-      error: (err) => {
-        this.statsLoading.set(false);
-        this.statsError.set('Failed to load network stats');
-        console.error('Network stats error:', err);
-      }
-    });
-  }
 
   /**
    * Toggle mobile menu visibility

@@ -1,79 +1,92 @@
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { ScrollRevealDirective } from '../../../shared/directives/scroll-reveal.directive';
-import { NodesService } from '../../../core/services/nodes.service';
-import { PublicPricing } from '../../../core/models/admin.model';
-import { GPU_PRICING, GpuPricing, calculateMonthlyPrice } from '../../../core/constants/pricing.constants';
 import { HubspotFormModalComponent } from './hubspot-form-modal.component';
 
-interface PricingItem {
-  gpuType: string;
+interface GpuPricing {
+  name: string;
+  description: string;
   pricePerHour: number | null;
   pricePerMonth: number | null;
   isContactSales: boolean;
-  specs: GpuPricing | undefined;
+  features: string[];
 }
 
+/**
+ * Pricing section component with static GPU pricing data.
+ * All pricing is hardcoded for the static landing page.
+ */
 @Component({
   selector: 'app-pricing-section',
   standalone: true,
-  imports: [CommonModule, RouterModule, ScrollRevealDirective, DecimalPipe, HubspotFormModalComponent],
+  imports: [ScrollRevealDirective, DecimalPipe, HubspotFormModalComponent],
   templateUrl: './pricing-section.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PricingSectionComponent implements OnInit {
-  private readonly nodesService = inject(NodesService);
-
-  protected readonly pricing = signal<PricingItem[]>([]);
-  protected readonly loading = signal(true);
+export class PricingSectionComponent {
   protected readonly isModalOpen = signal(false);
   protected readonly selectedGpuType = signal<string | null>(null);
 
-  public ngOnInit(): void {
-    this.loadPricing();
-  }
-
-  private loadPricing(): void {
-    this.nodesService.getPublicPricing().subscribe({
-      next: (data) => {
-        if (data && data.length > 0) {
-          this.pricing.set(
-            data.map((item) => ({
-              gpuType: item.gpuType,
-              pricePerHour: item.pricePerHour,
-              pricePerMonth: calculateMonthlyPrice(item.pricePerHour),
-              isContactSales: item.isContactSales,
-              specs: this.getGpuSpecs(item.gpuType),
-            }))
-          );
-        } else {
-          this.useFallbackPricing();
-        }
-        this.loading.set(false);
-      },
-      error: () => {
-        this.useFallbackPricing();
-        this.loading.set(false);
-      },
-    });
-  }
-
-  private useFallbackPricing(): void {
-    this.pricing.set(
-      GPU_PRICING.map((g) => ({
-        gpuType: g.id,
-        pricePerHour: g.pricePerHour,
-        pricePerMonth: calculateMonthlyPrice(g.pricePerHour),
-        isContactSales: g.pricePerHour === null,
-        specs: g,
-      }))
-    );
-  }
-
-  private getGpuSpecs(gpuType: string): GpuPricing | undefined {
-    return GPU_PRICING.find((g) => g.id === gpuType);
-  }
+  // Hardcoded GPU pricing data
+  // Monthly = hourly × 8 GPUs × 730 hours/month
+  protected readonly pricing: GpuPricing[] = [
+    {
+      name: 'A100',
+      description: 'Entry-level high-performance GPU',
+      pricePerHour: 0.99,
+      pricePerMonth: 5782, // 0.99 × 8 × 730
+      isContactSales: false,
+      features: [
+        '8x NVIDIA A100 80GB',
+        '80GB HBM2e memory per GPU',
+        '2TB NVMe storage',
+        '24/7 monitoring',
+        'Managed infrastructure'
+      ]
+    },
+    {
+      name: 'H100',
+      description: 'Next-gen AI training powerhouse',
+      pricePerHour: 1.80,
+      pricePerMonth: 10512, // 1.80 × 8 × 730
+      isContactSales: false,
+      features: [
+        '8x NVIDIA H100 80GB',
+        '80GB HBM3 memory per GPU',
+        '4TB NVMe storage',
+        '24/7 monitoring',
+        'Managed infrastructure'
+      ]
+    },
+    {
+      name: 'H200',
+      description: 'Maximum memory for large models',
+      pricePerHour: 2.40,
+      pricePerMonth: 14016, // 2.40 × 8 × 730
+      isContactSales: false,
+      features: [
+        '8x NVIDIA H200 141GB',
+        '141GB HBM3e memory per GPU',
+        '8TB NVMe storage',
+        '24/7 monitoring',
+        'Managed infrastructure'
+      ]
+    },
+    {
+      name: 'B200',
+      description: 'Latest Blackwell architecture',
+      pricePerHour: null,
+      pricePerMonth: null,
+      isContactSales: true,
+      features: [
+        '8x NVIDIA B200 192GB',
+        '192GB HBM3e memory per GPU',
+        '8TB NVMe storage',
+        '24/7 monitoring',
+        'Managed infrastructure'
+      ]
+    }
+  ];
 
   protected openModal(gpuType: string): void {
     this.selectedGpuType.set(gpuType);
