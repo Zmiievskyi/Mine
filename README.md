@@ -1,308 +1,96 @@
 # MineGNK
 
-GPU Mining Customer Portal for clients participating in the Gonka network.
+Static landing page for Gcore's GPU mining offering on the Gonka network.
 
 ## Overview
 
-MineGNK is a monitoring portal that allows users to:
-- View their GPU nodes (deployed on Gcore infrastructure)
-- Monitor mining performance and earnings from Gonka network
-- Request new nodes (processed manually by support team)
+MineGNK is a marketing landing page that allows visitors to:
+- Learn about GPU mining as a service
+- View GPU pricing (A100, H100, H200, B200)
+- Submit rental inquiries via HubSpot forms
 
-**Key Principle**: This is a monitoring portal, not a self-service provisioning platform.
+**Key Principle**: Fully static site with no backend. Lead capture via HubSpot.
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | Angular 21, Tailwind CSS v4, Spartan UI |
-| Backend | NestJS 11, TypeORM, Swagger/OpenAPI |
-| Database | PostgreSQL 16 |
-| Auth | JWT (7-day expiry), Google OAuth, GitHub OAuth |
-| External APIs | Hyperfusion tracker (node stats, earnings) |
-
-## Prerequisites
-
-- Node.js 20+
-- npm 10+
-- Docker & Docker Compose
-- PostgreSQL 16 (via Docker)
+| Framework | Next.js 15 (App Router) |
+| Styling | Tailwind CSS v4 |
+| i18n | next-intl (EN/RU) |
+| Forms | HubSpot embedded forms |
+| Deployment | Static export |
 
 ## Quick Start
 
-### 1. Clone and install
-
 ```bash
-git clone <repository-url>
-cd MineGNK
-
-# Install frontend dependencies
-cd frontend && npm install && cd ..
-
-# Install backend dependencies
-cd backend && npm install && cd ..
-
-# Python dependencies for pricing management
-pip3 install psycopg2-binary python-dotenv
+cd next-frontend
+npm install
+npm run dev      # http://localhost:3000
 ```
-
-### 2. Database Setup
-
-**Option A: Local Docker (development)**
-```bash
-docker-compose up -d
-```
-
-This starts PostgreSQL on `localhost:5432` with:
-- Database: `minegnk`
-- User: `minegnk`
-- Password: `minegnk`
-
-**Option B: Gcore Managed PostgreSQL (staging/production)**
-
-Use connection details from Gcore Console and set `DB_SSL=true`.
-
-### 3. Configure environment
-
-```bash
-# Copy example env file
-cp backend/.env.example backend/.env
-
-# Edit with your settings
-```
-
-**Key variables for cloud database:**
-```bash
-DB_HOST=your-db.pg.k1.luxembourg-2.cloud.gcore.dev
-DB_SSL=true  # Required for Gcore managed PostgreSQL
-```
-
-### 4. Start the backend
-
-```bash
-cd backend
-npm run start:dev
-```
-
-Backend runs on http://localhost:3000
-
-- API Documentation: http://localhost:3000/api/docs
-- Health check: http://localhost:3000/api/health
-
-### 5. Start the frontend
-
-```bash
-cd frontend
-npm start
-```
-
-Frontend runs on http://localhost:4200
 
 ## Project Structure
 
 ```
-/MineGNK
-├── frontend/               # Angular 21 + Tailwind CSS v4
-│   ├── nginx.conf          # IP restrictions for admin endpoints
-│   └── src/app/
-│       ├── core/           # Services, guards, interceptors, models
-│       ├── features/       # Landing, auth, dashboard, nodes, requests, admin
-│       └── shared/         # Layout, loading-spinner, directives
-├── backend/                # NestJS API
-│   └── src/
-│       ├── common/         # Filters, utils, DTOs, LRU cache
-│       ├── config/         # App, database, JWT, OAuth configs
-│       └── modules/
-│           ├── auth/       # JWT + Google/GitHub OAuth
-│           ├── users/      # User management
-│           ├── nodes/      # Node monitoring (Gonka trackers)
-│           ├── requests/   # Node request handling
-│           ├── admin/      # Admin panel APIs
-│           └── health/     # Health checks
-├── scripts/                # Management scripts
-│   ├── pricing-view.py     # View current GPU prices
-│   └── pricing-update.py   # Update GPU prices
-├── docs/                   # Documentation
-│   ├── PRD.md              # Product Requirements
-│   ├── API_RESEARCH.md     # External API documentation
-│   └── PROGRESS.md         # Development progress tracker
-└── docker-compose.yml      # PostgreSQL container
+/minegnk
+├── next-frontend/          # Next.js static site
+│   ├── src/
+│   │   ├── app/[locale]/   # i18n routes
+│   │   ├── components/
+│   │   │   ├── landing/    # Page sections
+│   │   │   ├── ui/         # Reusable components
+│   │   │   └── icons/      # SVG icons
+│   │   ├── i18n/           # Internationalization
+│   │   └── lib/hooks/      # Custom hooks
+│   ├── messages/           # Translations (en.json, ru.json)
+│   └── out/                # Static build output
+└── .claude/                # AI agent configs
 ```
 
 ## Available Scripts
 
-### Frontend
-
 ```bash
-cd frontend
+cd next-frontend
 
-npm start          # Start dev server (localhost:4200)
-npm run build      # Production build
-npm test           # Run tests
+npm run dev        # Start dev server (localhost:3000)
+npm run build      # Static export to /out
+npm run start      # Serve production build
 ```
-
-### Backend
-
-```bash
-cd backend
-
-npm run start:dev    # Start with hot reload (localhost:3000)
-npm run start:prod   # Start production build
-npm test             # Run unit tests (38 tests)
-npm run test:cov     # Run tests with coverage
-npm run migration:run    # Apply database migrations
-npm run migration:show   # Check migration status
-```
-
-### Pricing Management
-
-```bash
-# View current GPU prices
-python3 scripts/pricing-view.py
-
-# Update GPU price
-python3 scripts/pricing-update.py A100 2.50      # Set A100 to $2.50/hour
-python3 scripts/pricing-update.py H200 contact   # Set H200 to "Contact Sales"
-```
-
-## API Endpoints
-
-### Authentication
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | Login, returns JWT |
-| GET | `/api/auth/me` | Get current user (protected) |
-| GET | `/api/auth/google` | Initiate Google OAuth |
-| GET | `/api/auth/github` | Initiate GitHub OAuth |
-
-### Nodes
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/nodes` | List user's nodes |
-| GET | `/api/nodes/dashboard` | Dashboard stats |
-| GET | `/api/nodes/:address` | Node details |
-
-### Requests
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/requests` | Create node request |
-| GET | `/api/requests/my` | User's requests |
-| DELETE | `/api/requests/:id` | Cancel pending request |
-
-### Admin (requires admin role, IP-restricted)
-**Note**: Admin endpoints are IP-restricted (149.50.174.62) via nginx.conf. Pricing management is handled via Python scripts.
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/dashboard` | Admin stats |
-| GET | `/api/admin/users` | List all users |
-| POST | `/api/admin/users/:id/nodes` | Assign node to user |
-| PUT | `/api/requests/:id` | Update request status |
-
-### Health
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Full health status |
-| GET | `/api/health/live` | Kubernetes liveness probe |
-| GET | `/api/health/ready` | Kubernetes readiness probe |
 
 ## Environment Variables
 
 ```bash
-# Database
-DATABASE_URL=postgresql://minegnk:minegnk@localhost:5432/minegnk
+# .env.local (development - sandbox)
+NEXT_PUBLIC_HUBSPOT_PORTAL_ID=147554099
+NEXT_PUBLIC_HUBSPOT_FORM_ID=78fd550b-eec3-4958-bc4d-52c73924b87b
+NEXT_PUBLIC_HUBSPOT_REGION=eu1
 
-# JWT (required in production, min 32 chars)
-JWT_SECRET=your-secret-key-minimum-32-characters
-
-# Google OAuth (optional)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback
-
-# GitHub OAuth (optional)
-GITHUB_CLIENT_ID=your-github-client-id
-GITHUB_CLIENT_SECRET=your-github-client-secret
-GITHUB_CALLBACK_URL=http://localhost:3000/api/auth/github/callback
-
-# Frontend URL (for OAuth redirects)
-FRONTEND_URL=http://localhost:4200
-
-# External APIs
-HYPERFUSION_TRACKER_URL=https://tracker.gonka.hyperfusion.io
+# .env.production (production)
+NEXT_PUBLIC_HUBSPOT_PORTAL_ID=4202168
+NEXT_PUBLIC_HUBSPOT_FORM_ID=2d618652-614d-45f9-97fb-b9f88a6e8cc1
+NEXT_PUBLIC_HUBSPOT_REGION=eu1
 ```
 
-## Features
+## Landing Page Sections
 
-### Dashboard
-- Summary cards: Active Nodes, Healthy Nodes, Total Earnings, Avg Uptime
-- Node overview table with top nodes
+1. **Hero** - Value proposition with animated badge
+2. **Network Stats** - Gonka network overview (static data)
+3. **Features** - Why mine with us (3 cards)
+4. **How It Works** - 7-step onboarding process
+5. **Managed Services** - What Gcore handles (8 cards)
+6. **Pricing** - GPU tiers with HubSpot form trigger
+7. **FAQ** - Common questions (7 items)
+8. **Footer** - Links and copyright
 
-### My Nodes
-- List of user's nodes with status, GPU type, earnings
-- Node detail view with 3 tabs: Overview, Metrics, History
+## Deployment
 
-### Request New Node
-- GPU type selection (RTX 3080, 4090, H100, H200)
-- Quantity selector, region dropdown
-- Request tracking with status updates
-
-### Admin Panel
-- Request management (approve/reject/complete)
-- User management (toggle role, activate/deactivate)
-- Node assignment to users
-- **Access**: IP-restricted (149.50.174.62) via nginx
-- **Pricing**: Managed via Python scripts (see Pricing Management section)
-
-## Security Features
-
-- JWT authentication with 7-day expiry
-- Rate limiting (5 req/min on auth endpoints)
-- Helmet security headers
-- Strong password validation (8+ chars, upper+lower+number)
-- Bcrypt hashing (12 rounds)
-- Payload size limits (100kb)
-
-## Testing
+The site is configured for static export:
 
 ```bash
-# Backend tests (38 tests)
-cd backend && npm test
-
-# Test coverage
-cd backend && npm run test:cov
+npm run build    # Generates /out directory
 ```
 
-Test files:
-- `auth.service.spec.ts` - 10 tests
-- `nodes.service.spec.ts` - 12 tests
-- `admin.service.spec.ts` - 16 tests
-
-## Database
-
-### Tables
-- `users` - User accounts with roles
-- `user_nodes` - Links users to Gonka node addresses
-- `node_requests` - GPU provisioning requests
-- `nodes` - Canonical node reference data
-- `node_stats_cache` - Cached tracker data
-- `earnings_history` - Historical earnings
-
-### Migrations
-
-```bash
-cd backend
-
-# Apply migrations
-npm run migration:run
-
-# Check status
-npm run migration:show
-
-# Rollback last migration
-npm run migration:revert
-```
+Deploy the `/out` directory to any static hosting (Vercel, Netlify, S3, etc.).
 
 ## Development
 
@@ -313,19 +101,14 @@ npm run migration:revert
 <type>: <short description>
 
 # Types: feat, fix, refactor, docs, style, test, chore
-# Examples:
-feat: add dashboard earnings chart
-fix: correct earnings calculation
-docs: update API documentation
 ```
 
 ### Code Style
 
 - TypeScript strict mode
-- ESLint + Prettier
-- Angular signals pattern
-- inject() pattern for DI
-- takeUntilDestroyed() for subscriptions
+- React functional components
+- Tailwind CSS utilities
+- oklch color values for dark theme
 
 ## License
 

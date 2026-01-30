@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* Tailwind v4 theme customization - matching Angular .dark-theme exactly */
+@theme {
+  /* Typography - matching minegnk.com style */
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+
+  /* Landing page dark theme colors - matching Angular oklch values */
+  /* oklch(0.06 0 0) ≈ #0f0f0f */
+  --color-background: oklch(0.06 0 0);
+  --color-foreground: oklch(0.98 0 0);
+  /* oklch(0.10 0 0) ≈ #191919 */
+  --color-card: oklch(0.10 0 0);
+  --color-card-foreground: oklch(0.98 0 0);
+  --color-muted: oklch(0.18 0 0);
+  /* oklch(0.55 0 0) ≈ #8c8c8c - darker than #a1a1aa */
+  --color-muted-foreground: oklch(0.55 0 0);
+  /* white at 10% opacity - subtle borders */
+  --color-border: oklch(1 0 0 / 10%);
+  --color-primary: oklch(0.98 0 0);
+  --color-primary-foreground: #18181b;
+  --color-accent: #FF4C00;
+  --color-accent-hover: #e64500;
+  --color-accent-light: #FF7A45;
+}
+
+:root {
+  /* CSS variables for components using var() */
+  --background: oklch(0.06 0 0);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.10 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --muted-foreground: oklch(0.55 0 0);
+  --accent: #FF4C00;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility classes for fonts */
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* Badge spark animation (ball rolling in tube) */
+@keyframes badge-rotate {
+  0% {
+    transform: translate(-50%, -15%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -15%) rotate(360deg);
+  }
+}
+
+.badge-spark {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 9999px;
+  mask: linear-gradient(white, transparent 50%);
+  -webkit-mask: linear-gradient(white, transparent 50%);
+}
+
+.badge-spark::before {
+  content: '';
+  position: absolute;
+  aspect-ratio: 1;
+  width: 200%;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -15%) rotate(0deg);
+  background: conic-gradient(from 0deg, transparent 0 340deg, white 360deg);
+  animation: badge-rotate 3s linear infinite;
+}
+
+.badge-backdrop {
+  position: absolute;
+  inset: 1px;
+  border-radius: 9999px;
+  background-color: rgb(10 10 10);
+  transition: background-color 200ms;
+}
+
+.badge-backdrop:hover,
+.group:hover .badge-backdrop {
+  background-color: rgb(23 23 23);
+}
+
+/* Scroll reveal animations */
+.reveal-hidden {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-hidden,
+  .reveal-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* HubSpot form container styling */
+.hubspot-form-container {
+  min-height: 200px;
+}
+
+.hubspot-form-container input[type='submit'],
+.hubspot-form-container button[type='submit'],
+.hubspot-form-container .hs-button {
+  background: #ff4c00 !important;
+  border-radius: 0.5rem !important;
+}
+
+.hubspot-form-container input[type='submit']:hover,
+.hubspot-form-container button[type='submit']:hover,
+.hubspot-form-container .hs-button:hover {
+  background: #e64500 !important;
+}

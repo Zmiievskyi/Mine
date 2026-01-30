@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **MineGNK** is a **static landing page** for Gcore's GPU mining offering on the Gonka network.
 
-**Key Principle**: Fully static Angular landing page with HubSpot form integration for lead capture. No backend, no API calls.
+**Key Principle**: Fully static Next.js landing page with HubSpot form integration for lead capture. No backend, no API calls.
 
 ## Architecture
 
@@ -18,8 +18,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
          v
 +--------+---------+
 | Frontend         |
-| Angular 21       |
-| Static Landing   |
+| Next.js 15       |
+| Static Export    |
 +------------------+
          |
          v (iframe)
@@ -31,34 +31,41 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Tech Stack
 
-- **Frontend**: Angular 21 with Tailwind CSS v4
+- **Framework**: Next.js 15 with App Router
+- **Styling**: Tailwind CSS v4
+- **i18n**: next-intl (EN/RU)
 - **Forms**: HubSpot embedded forms (EU1 region)
-- **i18n**: Custom i18n service with EN/RU support
-- **Cookies**: ngx-cookieconsent
-
-**For Angular/Frontend patterns, see the `angular` skill** (loaded automatically).
 
 ## Project Structure
 
 ```
 /minegnk
-  frontend/
-    src/app/
-      core/
-        i18n/               # Translations (en.ts, ru.ts)
-        services/           # notification, storage
-      features/
-        landing/            # Main landing page
-          components/       # Hero, pricing, FAQ, etc.
-        legal/              # Terms pages
-      shared/
-        directives/         # scroll-reveal
-        components/         # loading-spinner
-        utils/              # debounce
-    environments/           # HubSpot config
+  next-frontend/
+    src/
+      app/
+        [locale]/           # i18n routes
+          layout.tsx        # Root layout with providers
+          page.tsx          # Landing page
+        globals.css         # Tailwind + custom styles
+      components/
+        landing/            # Landing page sections
+          Header.tsx
+          HeroSection.tsx
+          NetworkStats.tsx
+          FeaturesSection.tsx
+          HowItWorks.tsx
+          ManagedServices.tsx
+          PricingSection.tsx
+          FaqSection.tsx
+          Footer.tsx
+        ui/                 # Reusable UI components
+        icons/              # SVG icons
+      i18n/                 # Internationalization config
+      lib/hooks/            # Custom React hooks
+    messages/               # Translation files (en.json, ru.json)
   .claude/
     agents/                 # AI agents
-    skills/                 # angular, context7
+    skills/                 # nextjs, nextjs-anti-patterns, tailwindcss, context7
   CLAUDE.md
   README.md
 ```
@@ -67,23 +74,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Landing Page
 - **Public Access**: No authentication
-- Dark theme with Tailwind CSS v4
+- Dark theme with Tailwind CSS v4 (oklch colors)
 - Sections: Hero, Stats (static), Features, How It Works, Managed Services, Pricing, FAQ
 - Language switcher (EN/RU)
 - **HubSpot Form Integration**: "Rent GPU" buttons open modal with embedded form
 
 ### Static Data
 All data is hardcoded in components:
-- Network stats (network-stats.component.ts)
-- GPU pricing (pricing-section.component.ts)
+- Network stats (NetworkStats.tsx)
+- GPU pricing (PricingSection.tsx)
 
 ## Development Commands
 
 ```bash
-cd frontend
+cd next-frontend
 npm install
-npm start          # http://localhost:4200
-npm run build      # Production build
+npm run dev        # http://localhost:3000
+npm run build      # Static export to /out
+npm run start      # Serve production build
 ```
 
 ## Git Workflow
@@ -100,7 +108,7 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`
 
 ## Environment Variables
 
-### Frontend (environment.ts / environment.prod.ts)
+### Frontend (.env.local / .env.production)
 
 HubSpot form integration:
 
@@ -112,10 +120,10 @@ HubSpot form integration:
 ## Key Decisions
 
 1. **Fully Static**: No backend, no API calls, all data hardcoded
-2. **HubSpot Integration**: External form for lead capture
-3. **i18n**: Custom service with EN/RU translations
-4. **Tailwind CSS v4**: All styling via utility classes
-5. **Angular 21**: Standalone components, signals, new control flow
+2. **Next.js 15**: App Router with static export
+3. **HubSpot Integration**: External form for lead capture
+4. **i18n**: next-intl with EN/RU translations
+5. **Tailwind CSS v4**: All styling via utility classes with oklch colors
 
 ## Local AI Agents & Skills
 
@@ -124,8 +132,7 @@ HubSpot form integration:
 | Agent | Use For |
 |-------|---------|
 | `code-review-agent` | Code quality, security |
-| `refactor-agent` | Split files, extract templates |
-| `angular-frontend-agent` | Angular components |
+| `refactor-agent` | Split files, extract components |
 | `testing-agent` | Unit tests |
 | `project-doc-agent` | Documentation updates |
 
@@ -133,5 +140,7 @@ HubSpot form integration:
 
 | Skill | Use For |
 |-------|---------|
-| `angular` | Angular patterns |
 | `context7` | Fetch library documentation |
+| `nextjs` | Next.js 15+ App Router patterns, Server/Client Components |
+| `nextjs-anti-patterns` | Detect/fix common Next.js mistakes |
+| `tailwindcss` | Tailwind CSS v4 styling, responsive design, dark mode |

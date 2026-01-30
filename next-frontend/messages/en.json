@@ -1,0 +1,74 @@
+{
+  "hero": {
+    "badge": "GPU Mining as a Service",
+    "title": "Mine",
+    "titleHighlight": "Gonka",
+    "titleSuffix": "on managed GPU infrastructure",
+    "subtitle": "Rent enterprise-grade GPUs to mine cryptocurrency on our network with clear billing and predictable operations. For operators and pools who care about node stability, transparent payment terms, and scaling without surprises.",
+    "cta": "Rent GPU",
+    "features": {
+      "fiat": "Pay in fiat currency",
+      "enterprise": "Enterprise-grade GPUs",
+      "monitoring": "Real-time monitoring",
+      "support": "24/7 dedicated support"
+    },
+    "panel": {
+      "kicker": "What you get at go-live",
+      "description": "Statuses are visible in one place, risks are highlighted in advance, and payment/renewal terms and responsibilities are fixed upfront.",
+      "painsTitle": "Three pains we remove",
+      "pains": {
+        "silence": {
+          "title": "Silence in critical moments:",
+          "description": "alerts and clear incident updates."
+        },
+        "opaque": {
+          "title": "Transparent pricing:",
+          "description": "clear billing and transaction history."
+        },
+        "blind": {
+          "title": "\"Buying blind\" risk:",
+          "description": "SLA and process clarity."
+        }
+      }
+    }
+  },
+  "nav": {
+    "features": "What we offer",
+    "howItWorks": "How It Works",
+    "pricing": "Pricing",
+    "faq": "FAQ"
+  },
+  "features": {
+    "badge": "Why mine with us",
+    "title": "Simple onboarding, powerful results",
+    "subtitle": "Mining as a service: pay in fiat, use enterprise GPUs, earn AI-focused tokens.",
+    "fiat": {
+      "title": "Pay in Fiat Currency",
+      "description": "No wallets or exchanges needed. Onboard fast and start mining immediately."
+    },
+    "enterprise": {
+      "title": "Enterprise-grade GPUs",
+      "description": "Access dedicated, high-performance GPUs for reliable, efficient mining."
+    },
+    "aiTokens": {
+      "title": "AI-Focused Tokens",
+      "description": "Earn tokens designed for AI inference workloads across the Gonka network."
+    }
+  },
+  "pricing": {
+    "title": "GPU Pricing",
+    "subtitle": "Choose the GPU that fits your mining needs",
+    "perMonth": "/month",
+    "perHour": "/hour",
+    "rentNow": "Rent Now"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about GPU mining with MineGNK"
+  },
+  "footer": {
+    "copyright": "© 2025 MineGNK. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service"
+  }
+}
