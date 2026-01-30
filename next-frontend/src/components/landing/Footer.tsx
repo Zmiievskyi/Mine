@@ -3,7 +3,6 @@ import { Link } from '@/i18n/navigation';
 
 export async function Footer() {
   const t = await getTranslations('footer');
-  const currentYear = new Date().getFullYear();
 
   return (
     <footer className="relative border-t border-border py-12">
@@ -135,12 +134,6 @@ export async function Footer() {
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="pt-8 border-t border-border">
-          <p className="text-sm text-muted-foreground text-center">
-            &copy; {currentYear} {t('copyright')}
-          </p>
-        </div>
       </div>
     </footer>
   );

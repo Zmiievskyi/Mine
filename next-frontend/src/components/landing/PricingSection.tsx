@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
-import { CheckIcon } from '@/components/icons';
 import { pricing, formatPrice, formatMonthlyPrice } from '@/data/pricing';
 import { useHubspot } from '@/lib/contexts/HubspotContext';
 
@@ -106,30 +105,8 @@ export function PricingSection() {
                     )}
                   </div>
 
-                  {/* Features List */}
-                  <ul className="relative z-10 space-y-3 mb-6 flex-1">
-                    {item.features.map((feature) => (
-                      <li
-                        key={feature}
-                        className="flex items-start gap-2.5 group/item"
-                      >
-                        <span
-                          className="
-                            flex-shrink-0 w-5 h-5 rounded-full
-                            bg-accent/10 group-hover:bg-accent/20
-                            flex items-center justify-center mt-0.5
-                            transition-all duration-300
-                            group-hover/item:scale-110
-                          "
-                        >
-                          <CheckIcon className="w-3 h-3 text-accent" />
-                        </span>
-                        <span className="text-sm text-muted-foreground group-hover/item:text-foreground transition-colors duration-300">
-                          {feature}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                  {/* Spacer */}
+                  <div className="flex-1" />
 
                   {/* CTA Button */}
                   <button

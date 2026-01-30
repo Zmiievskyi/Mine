@@ -48,8 +48,6 @@ export function HeroSection() {
                 {t('titleSuffix')}
               </h1>
 
-              {/* Subtitle */}
-              <p className="text-muted-foreground text-lg">{t('subtitle')}</p>
             </div>
 
             {/* CTA Buttons */}
@@ -89,21 +87,8 @@ export function HeroSection() {
           {/* Right Column: What you get panel */}
           <ScrollReveal delay={150} className="lg:col-span-3">
             <aside className="rounded-2xl border border-border bg-zinc-900/40 p-6 md:p-8">
-              {/* Kicker */}
-              <div className="text-sm font-semibold uppercase tracking-wide text-accent mb-3">
-                {t('panel.kicker')}
-              </div>
-
-              {/* Description */}
-              <p className="text-muted-foreground text-base leading-relaxed mb-6">
-                {t('panel.description')}
-              </p>
-
-              {/* Divider */}
-              <div className="h-px bg-border mb-6" />
-
               {/* Three pains card */}
-              <div className="rounded-xl border border-border bg-zinc-900/60 p-5 md:p-6">
+              <div>
                 <h3 className="text-xl font-semibold text-foreground mb-5">
                   {t('panel.painsTitle')}
                 </h3>

@@ -3,7 +3,6 @@ import { GridBackground } from '@/components/ui/GridBackground';
 import { LandingPageClient } from '@/components/landing/LandingPageClient';
 import { Header } from '@/components/landing/Header';
 import { HeroSection } from '@/components/landing/HeroSection';
-import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { ForWho } from '@/components/landing/ForWho';
 import { ServiceAddon } from '@/components/landing/ServiceAddon';
 import { PricingSection } from '@/components/landing/PricingSection';
@@ -37,8 +36,6 @@ export default async function LandingPage({ params }: PageProps) {
         <Header />
         <main className="relative z-10">
           <HeroSection />
-          {/* Server Components rendered inside client boundary work fine */}
-          <FeaturesSection />
           <ForWho />
           <ServiceAddon />
           <PricingSection />
