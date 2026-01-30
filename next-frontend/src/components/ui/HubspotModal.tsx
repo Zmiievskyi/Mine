@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 // HubSpot embed configuration
 const HUBSPOT_CONFIG = {
@@ -64,13 +64,16 @@ export function HubspotModal({
   gpuType,
 }: HubspotModalProps) {
   const t = useTranslations('modal');
+  const locale = useLocale();
   const formContainerRef = useRef<HTMLDivElement>(null);
   const [loadState, setLoadState] = useState<LoadState>('idle');
+  const [formKey, setFormKey] = useState(0); // Force re-render of form container
   const scriptLoadedRef = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const observerRef = useRef<MutationObserver | null>(null);
   const originalUrlRef = useRef<string | null>(null);
   const currentGpuRef = useRef<string | null>(null);
+  const currentLocaleRef = useRef<string>(locale);
 
   // Cleanup function for timeout and observer
   const cleanup = useCallback(() => {
@@ -174,18 +177,44 @@ export function HubspotModal({
       return;
     }
 
+    // Check if GPU or locale changed
+    const gpuChanged = currentGpuRef.current !== (gpuType || null);
+    const localeChanged = currentLocaleRef.current !== locale;
+
     // Add GPU to URL params for pre-fill
     originalUrlRef.current = addGpuToUrlParams(gpuType || null);
     currentGpuRef.current = gpuType || null;
+    currentLocaleRef.current = locale;
+
+    // Always reload form if locale changed - reset and trigger re-render
+    if (localeChanged) {
+      // Remove existing HubSpot script to force fresh load
+      const existingScript = document.querySelector(
+        `script[src*="js-${HUBSPOT_CONFIG.region}.hsforms.net/forms/embed/${HUBSPOT_CONFIG.portalId}.js"]`
+      );
+      if (existingScript) {
+        existingScript.remove();
+      }
+      scriptLoadedRef.current = false;
+      cleanup();
+      // Reset state and trigger re-render - next render will load fresh
+      setLoadState('idle');
+      setFormKey(prev => prev + 1);
+      return; // Exit and let next render handle loading with fresh DOM
+    }
 
     const container = formContainerRef.current;
     if (!container) return;
 
     // If form is ready but GPU changed, recreate form
-    if (loadState === 'ready' && currentGpuRef.current !== gpuType) {
+    if (loadState === 'ready' && gpuChanged) {
       setLoadState('loading');
       recreateForm();
       setupFormObserver();
+
+      timeoutRef.current = setTimeout(() => {
+        setLoadState((current) => current === 'loading' ? 'error' : current);
+      }, FORM_LOAD_TIMEOUT_MS);
       return;
     }
 
@@ -207,7 +236,7 @@ export function HubspotModal({
       clearTimeout(mountDelay);
       cleanup();
     };
-  }, [isOpen, gpuType, loadState, loadScript, setupFormObserver, cleanup, recreateForm]);
+  }, [isOpen, gpuType, locale, loadState, loadScript, setupFormObserver, cleanup, recreateForm]);
 
   // Handle Escape key
   useEffect(() => {
@@ -332,6 +361,7 @@ export function HubspotModal({
             </div>
           )}
           <div
+            key={formKey}
             ref={formContainerRef}
             className={`hubspot-form-container min-h-[200px] ${loadState !== 'ready' ? 'opacity-0 h-0 overflow-hidden' : ''}`}
           >

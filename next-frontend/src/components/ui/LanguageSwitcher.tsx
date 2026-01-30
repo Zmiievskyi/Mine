@@ -1,12 +1,13 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from '@/i18n/navigation';
+import { usePathname } from '@/i18n/navigation';
 import type { Locale } from '@/i18n/routing';
 
-const languages: { code: Locale; flag: string; label: string }[] = [
-  { code: 'en', flag: '🇬🇧', label: 'English' },
-  { code: 'ru', flag: '🇷🇺', label: 'Русский' },
+const languages: { code: Locale; short: string; label: string }[] = [
+  { code: 'en', short: 'EN', label: 'English' },
+  { code: 'ru', short: 'RU', label: 'Русский' },
+  { code: 'zh', short: '中文', label: '中文' },
 ];
 
 interface LanguageSwitcherProps {
@@ -15,11 +16,14 @@ interface LanguageSwitcherProps {
 
 export function LanguageSwitcher({ showLabels = false }: LanguageSwitcherProps) {
   const locale = useLocale() as Locale;
-  const router = useRouter();
   const pathname = usePathname();
 
   const switchLocale = (newLocale: Locale) => {
-    router.replace(pathname, { locale: newLocale });
+    if (newLocale === locale) return;
+
+    // Force full page reload to reset HubSpot form state
+    const newPath = newLocale === 'en' ? pathname : `/${newLocale}${pathname}`;
+    window.location.href = newPath;
   };
 
   return (
@@ -29,14 +33,13 @@ export function LanguageSwitcher({ showLabels = false }: LanguageSwitcherProps) 
           key={lang.code}
           type="button"
           onClick={() => switchLocale(lang.code)}
-          className={`px-2 py-1 text-sm rounded transition-colors ${
+          className={`px-2 py-1 text-sm rounded transition-colors hover:text-foreground ${
             locale === lang.code
               ? 'text-foreground font-semibold'
               : 'text-muted-foreground'
-          } ${showLabels ? 'px-3' : ''}`}
+          }`}
         >
-          {lang.flag}
-          {showLabels && ` ${lang.label}`}
+          {showLabels ? lang.label : lang.short}
         </button>
       ))}
     </div>

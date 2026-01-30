@@ -1,0 +1,344 @@
+{
+  "hero": {
+    "badge": "GPU 挖矿服务",
+    "title": "挖矿",
+    "titleHighlight": "Gonka",
+    "titleSuffix": "托管 GPU 基础设施",
+    "subtitle": "租用企业级 GPU 在我们的网络上挖矿加密货币，计费清晰，运营可预测。适合关注节点稳定性、透明付款条款和无意外扩展的运营商和矿池。",
+    "cta": "租用 GPU",
+    "ctaSecondary": "查看价格套餐",
+    "features": {
+      "fiat": "法币支付",
+      "enterprise": "企业级 GPU",
+      "monitoring": "实时监控",
+      "support": "24/7 专属支持"
+    },
+    "panel": {
+      "kicker": "上线即获得",
+      "description": "状态一目了然，风险提前预警，付款/续约条款和责任从一开始就明确。",
+      "painsTitle": "我们消除的三大痛点",
+      "pains": {
+        "silence": {
+          "title": "关键时刻的沉默：",
+          "description": "警报和清晰的事件更新。"
+        },
+        "opaque": {
+          "title": "透明定价：",
+          "description": "清晰的账单和交易历史。"
+        },
+        "blind": {
+          "title": "「盲目购买」风险：",
+          "description": "SLA 和流程清晰。"
+        }
+      }
+    }
+  },
+  "nav": {
+    "features": "服务内容",
+    "pricing": "价格",
+    "efficiency": "效率",
+    "howItWorks": "运作方式",
+    "faq": "常见问题"
+  },
+  "features": {
+    "badge": "服务内容",
+    "title": "降低风险的挖矿基础设施",
+    "subtitle": "我们负责基础设施，您专注于收益。定价清晰、运营可预测、正常运行时间有保障。",
+    "items": [
+      {
+        "title": "快速了解经济效益",
+        "description": "从一开始就提供清晰的套餐和定价。在承诺之前清楚知道您支付的费用。"
+      },
+      {
+        "title": "付款前降低风险",
+        "description": "付款前确认报价和可用性。签约后无意外。"
+      },
+      {
+        "title": "无意外启动",
+        "description": "可预测的上线路径。我们在数天内完成端到端配置。"
+      },
+      {
+        "title": "清晰运营",
+        "description": "状态和更新集中可见。随时了解您节点的情况。"
+      },
+      {
+        "title": "GPU 服务 SLA",
+        "description": "有责任的正常运行时间，违约即补偿。基础设施可靠性是我们的责任。"
+      },
+      {
+        "title": "按需扩展",
+        "description": "在相同规则下增加容量。10+ 服务器可享批量折扣。"
+      }
+    ],
+    "slaFootnote": "* SLA 仅适用于基础设施可用性：网络级停机、错过的奖励或任何「挖矿/参与」结果不在覆盖范围内。"
+  },
+  "forWho": {
+    "badge": "适用对象",
+    "title": "为专业运营商打造",
+    "subtitle": "无论您是运营大规模业务还是管理矿池，我们都构建了满足您需求的基础设施。",
+    "operators": {
+      "title": "大规模运营商",
+      "description": "为专业挖矿运营准备的企业级基础设施。",
+      "points": [
+        "采购流程包含 KYC、合同和发票",
+        "通过明确的可靠性条款降低启动风险",
+        "通过透明账单保持财务控制"
+      ]
+    },
+    "pools": {
+      "title": "矿池和转售商",
+      "description": "可靠的基础设施，助您构建业务。",
+      "points": [
+        "通过清晰更新加快事件响应",
+        "通过监控减少运营盲区",
+        "通过可重复流程保持集群一致性"
+      ]
+    }
+  },
+  "stats": {
+    "title": "Gonka 网络统计",
+    "subtitle": "网络概览",
+    "networkStatus": {
+      "label": "网络状态",
+      "tooltip": "基于公共网络信号的 Live / 同步中 / 过期状态。",
+      "live": "在线",
+      "active": "活跃"
+    },
+    "currentEpoch": {
+      "label": "当前纪元",
+      "tooltip": "当前网络纪元（活跃参与/记账窗口）。",
+      "description": "挖矿纪元"
+    },
+    "participants": {
+      "label": "参与者",
+      "tooltip": "参与网络的节点总数。",
+      "healthy": "健康"
+    },
+    "totalGpus": {
+      "label": "GPU 总数",
+      "tooltip": "网络中提供 AI 推理能力的 GPU 总数。",
+      "description": "计算节点"
+    },
+    "activeModels": {
+      "label": "活跃模型",
+      "tooltip": "网络当前服务的 AI 模型。",
+      "description": "AI 模型"
+    },
+    "nextEpoch": {
+      "label": "下一纪元",
+      "tooltip": "奖励在纪元边界分发。",
+      "description": "纪元周期"
+    }
+  },
+  "howItWorks": {
+    "badge": "运作方式",
+    "title": "从请求到挖矿只需 7 步",
+    "subtitle": "我们负责基础设施，您专注于赚取代币。按月合同，无需长期承诺。",
+    "steps": [
+      {
+        "title": "提交请求",
+        "description": "选择您的 GPU 型号、首选区域和合同期限。我们将检查可用性并准备报价。"
+      },
+      {
+        "title": "完成 KYC",
+        "description": "KYC 验证完成后。我们提供清晰的文件清单以简化流程。"
+      },
+      {
+        "title": "审核报价",
+        "description": "在承诺之前确认可用性和适配性。审核您的配置和定价详情。"
+      },
+      {
+        "title": "签约付款",
+        "description": "签订 1 个月合同并预付第一个月费用。付款后分配服务器。"
+      },
+      {
+        "title": "配置",
+        "description": "我们负责服务器分配、软件安装和钱包连接。配置在数天内完成。"
+      },
+      {
+        "title": "运营和监控",
+        "description": "您的 GPU 开始挖矿。我们提供 24/7 基础设施监控并自动响应任何问题。"
+      },
+      {
+        "title": "账单和续约",
+        "description": "月底开具月度发票。在合同到期前 10 天付款续约。停机补偿自动应用。调整按合同条款处理。"
+      }
+    ],
+    "note": "基础设施停机补偿仅适用于基础设施问题，不涵盖错过的网络奖励。",
+    "noteLabel": "注意：",
+    "cta": "请求 GPU"
+  },
+  "serviceAddon": {
+    "sectionTitle": "让我们处理技术工作",
+    "title": "托管服务附加项",
+    "badge": "附加服务",
+    "items": [
+      {
+        "title": "无需手动启动",
+        "description": "我们处理操作系统 + RAID、驱动程序和初始调优。"
+      },
+      {
+        "title": "无需「配置猜测」",
+        "description": "我们按指示部署您的技术栈。"
+      },
+      {
+        "title": "无盲区",
+        "description": "我们 24/7 监控基础设施信号（节点连接、GPU 利用率和温度）。"
+      },
+      {
+        "title": "清晰的支持渠道",
+        "description": "工作时间支持（CET 时区），提供更新和后续步骤。"
+      },
+      {
+        "title": "停机补偿",
+        "description": "托管服务附加项下可用（仅限基础设施停机）。"
+      }
+    ],
+    "note": "注意：监控/健康范围应与实际可用的工具相匹配。"
+  },
+  "managedServices": {
+    "badge": "全托管",
+    "title": "我们处理技术复杂性",
+    "subtitle": "专注于收益，我们管理基础设施。我们的团队从设置到维护全程负责。",
+    "services": [
+      {
+        "title": "软件部署",
+        "description": "Gonka 软件已安装和配置"
+      },
+      {
+        "title": "存储设置",
+        "description": "用于数据库和 AI 模型的 RAID 阵列"
+      },
+      {
+        "title": "模型部署",
+        "description": "AI 模型自动部署和更新"
+      },
+      {
+        "title": "集群管理",
+        "description": "节点已连接和调试"
+      },
+      {
+        "title": "集群监控",
+        "description": "24/7 健康跟踪和警报"
+      },
+      {
+        "title": "GPU 监控",
+        "description": "实时 GPU 状态和性能"
+      },
+      {
+        "title": "更新和补丁",
+        "description": "新的 Gonka 版本、补丁和修复程序自动应用"
+      }
+    ]
+  },
+  "pricing": {
+    "badge": "简单定价",
+    "title": "选择您的 8x GPU 服务器套餐",
+    "subtitle": "所有套餐包含托管基础设施、24/7 监控和按月合同。无设置费用或长期承诺。",
+    "perMonth": "/月",
+    "perHour": "/GPU/小时",
+    "perGpuHour": "每 GPU/小时",
+    "contractType": "按月合同",
+    "rentNow": "请求 GPU",
+    "contactSales": "联系销售",
+    "customPricing": "定制价格",
+    "volumeDiscount": "批量折扣可用",
+    "volumeDiscountNote": "10+ 服务器起。联系我们获取定制价格。"
+  },
+  "efficiency": {
+    "badge": "效率",
+    "title": "比较 GPU 效率",
+    "subtitle": "更高的效率意味着每美元获得更多权重。选择能最大化回报的 GPU。",
+    "formulaTitle": "效率公式",
+    "formulaEfficiency": "效率",
+    "formulaNumerator": "每 GPU 权重",
+    "formulaDenominator": "$ / GPU / 小时",
+    "formulaHint": "效率越高 = 每美元获得更多权重",
+    "bestValue": "最佳性价比",
+    "weightLabel": "权重",
+    "efficiencyUnit": "权重/$",
+    "disclaimer": "权重基于当前网络数据，可能会变化。效率计算使用列出的小时费率。",
+    "loading": "加载网络数据...",
+    "epochFallback": "使用缓存数据",
+    "epochLabel": "纪元",
+    "lastUpdated": "更新时间"
+  },
+  "faq": {
+    "badge": "常见问题",
+    "title": "关于 MineGNK 的常见问题",
+    "items": [
+      {
+        "question": "我多快可以开始参与？",
+        "answer": "KYC 验证和合同签署后，配置通常在数天内完成。我们端到端处理服务器分配、软件安装和钱包连接。"
+      },
+      {
+        "question": "我可以在承诺预算之前确认基础设施适配性吗？",
+        "answer": "可以。您可以在付款前确认报价和可用性。我们提供清晰的文件清单以简化流程。签约后无意外。"
+      },
+      {
+        "question": "服务器宕机会怎样？",
+        "answer": "我们有 GPU 服务 SLA，提供清晰、有责任的正常运行时间保证。基础设施导致的停机将获得信用，应用于下次付款或退款。注意：信用仅适用于基础设施停机，不涵盖错过的网络奖励。"
+      },
+      {
+        "question": "计费如何运作？",
+        "answer": "按月合同。首月付款在服务器分配前完成。月底开具月度发票。在合同到期前 10 天付款续约。"
+      },
+      {
+        "question": "我可以扩容或缩容吗？",
+        "answer": "随时可以升级（视容量情况）。每月可以降级一次。10+ 服务器可享批量折扣。"
+      },
+      {
+        "question": "你们提供折扣吗？",
+        "answer": "订购多台服务器可以讨论批量折扣。10+ 服务器请联系我们获取定制价格。"
+      },
+      {
+        "question": "有什么支持？",
+        "answer": "工作时间提供基础设施问题支持（CET 时区）。我们提供 24/7 基础设施监控，有清晰的更新和后续步骤。网络软件更新在发布后 24 小时内应用。"
+      }
+    ]
+  },
+  "modal": {
+    "title": "租用 GPU",
+    "selected": "已选择：",
+    "loading": "加载表单...",
+    "error": {
+      "title": "无法加载表单",
+      "description": "表单无法加载。请检查您的连接并重试。",
+      "retry": "重试"
+    }
+  },
+  "errors": {
+    "somethingWentWrong": "出错了",
+    "unexpectedError": "我们遇到了意外错误。请重试。",
+    "tryAgain": "重试",
+    "pageNotFound": "页面未找到",
+    "pageNotFoundDescription": "您查找的页面不存在或已移动。",
+    "backToHome": "返回首页"
+  },
+  "footer": {
+    "brand": {
+      "name": "Mine",
+      "highlight": "GNK",
+      "description": "Gonka 网络的专业 GPU 挖矿基础设施。使用企业级托管和监控赚取 GNK 代币。"
+    },
+    "product": {
+      "title": "产品",
+      "features": "功能",
+      "pricing": "价格"
+    },
+    "resources": {
+      "title": "资源",
+      "howItWorks": "运作方式",
+      "faq": "常见问题",
+      "gonkaNetwork": "Gonka 网络"
+    },
+    "legal": {
+      "title": "法律",
+      "privacyPolicy": "隐私政策",
+      "termsOfService": "服务条款",
+      "gpuTermsGonka": "Gonka GPU 条款",
+      "dpa": "数据处理协议"
+    },
+    "copyright": "MineGNK"
+  }
+}
