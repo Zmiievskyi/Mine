@@ -27,7 +27,7 @@ export default async function LandingPage({ params }: PageProps) {
   setRequestLocale(locale);
 
   return (
-    <div className="min-h-screen bg-background text-foreground antialiased overflow-x-hidden">
+    <div className="snap-container bg-background text-foreground antialiased overflow-x-hidden">
       {/* Grid Pattern Background */}
       <GridBackground />
 
@@ -35,19 +35,37 @@ export default async function LandingPage({ params }: PageProps) {
       <LandingPageClient>
         <Header />
         <main className="relative z-10">
-          <HeroSection />
-          <ForWho />
-          <ServiceAddon />
-          <PricingSection />
-          <EfficiencySection />
-          <HowItWorks />
-          <ManagedServices />
-          <FaqSection />
+          <section className="snap-section">
+            <HeroSection />
+          </section>
+          <section className="snap-section">
+            <ForWho />
+          </section>
+          <section className="snap-section">
+            <ServiceAddon />
+          </section>
+          <section className="snap-section">
+            <PricingSection />
+          </section>
+          <section className="snap-section">
+            <EfficiencySection />
+          </section>
+          <section className="snap-section">
+            <HowItWorks />
+          </section>
+          <section className="snap-section">
+            <ManagedServices />
+          </section>
+          <section className="snap-section">
+            <FaqSection />
+          </section>
         </main>
       </LandingPageClient>
 
       {/* Footer as Server Component (no HubspotContext needed) */}
-      <Footer />
+      <section className="snap-section">
+        <Footer />
+      </section>
     </div>
   );
 }

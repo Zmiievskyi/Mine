@@ -163,6 +163,21 @@ body {
   }
 }
 
+/* Scroll snap for sections */
+.snap-container {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
+}
+
+.snap-section {
+  scroll-snap-align: start;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 /* HubSpot form container styling */
 .hubspot-form-container {
   min-height: 200px;
