@@ -10,14 +10,52 @@ const HUBSPOT_CONFIG = {
   region: 'eu1',
 };
 
-const FORM_LOAD_TIMEOUT_MS = 10000; // 10 seconds timeout for form loading
+const FORM_LOAD_TIMEOUT_MS = 10000;
 
-type LoadState = 'loading' | 'ready' | 'error';
+type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
 interface HubspotModalProps {
   isOpen: boolean;
   onClose: () => void;
   gpuType?: string | null;
+}
+
+/**
+ * Maps GPU type string to HubSpot-compatible format
+ */
+function getHubSpotGpuValue(gpuType: string): string | null {
+  const validIds = ['A100', 'H100', 'H200', 'B200'];
+  const upperType = gpuType.toUpperCase();
+
+  for (const id of validIds) {
+    if (upperType.includes(id)) {
+      return `8 x ${id}`;
+    }
+  }
+  return null;
+}
+
+/**
+ * Adds GPU configuration to URL parameters for HubSpot form pre-fill
+ */
+function addGpuToUrlParams(gpuType: string | null): string | null {
+  const gpuValue = gpuType ? getHubSpotGpuValue(gpuType) : null;
+  if (!gpuValue) return null;
+
+  const originalUrl = window.location.href;
+  const url = new URL(window.location.href);
+  url.searchParams.set('form_gonka_preffered_configuration', gpuValue);
+  url.searchParams.set('form_gonka_servers_number', '1');
+  window.history.replaceState({}, '', url.toString());
+  return originalUrl;
+}
+
+/**
+ * Removes GPU configuration from URL parameters
+ */
+function removeGpuFromUrlParams(originalUrl: string | null): void {
+  if (!originalUrl) return;
+  window.history.replaceState({}, '', originalUrl);
 }
 
 export function HubspotModal({
@@ -27,10 +65,12 @@ export function HubspotModal({
 }: HubspotModalProps) {
   const t = useTranslations('modal');
   const formContainerRef = useRef<HTMLDivElement>(null);
-  const [loadState, setLoadState] = useState<LoadState>('loading');
+  const [loadState, setLoadState] = useState<LoadState>('idle');
   const scriptLoadedRef = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const observerRef = useRef<MutationObserver | null>(null);
+  const originalUrlRef = useRef<string | null>(null);
+  const currentGpuRef = useRef<string | null>(null);
 
   // Cleanup function for timeout and observer
   const cleanup = useCallback(() => {
@@ -49,7 +89,6 @@ export function HubspotModal({
     if (!formContainerRef.current || observerRef.current) return;
 
     observerRef.current = new MutationObserver(() => {
-      // Check if form elements have been added (HubSpot creates an iframe or form)
       const formElement = formContainerRef.current?.querySelector('form, iframe');
       if (formElement) {
         cleanup();
@@ -64,7 +103,6 @@ export function HubspotModal({
   }, [cleanup]);
 
   const loadScript = useCallback(() => {
-    // Check if script already exists
     const existingScript = document.querySelector(
       `script[src*="js-${HUBSPOT_CONFIG.region}.hsforms.net/forms/embed/${HUBSPOT_CONFIG.portalId}.js"]`
     );
@@ -87,36 +125,79 @@ export function HubspotModal({
     document.head.appendChild(script);
   }, [cleanup]);
 
-  // Retry loading the form
+  // Recreate form with new GPU type
+  const recreateForm = useCallback(() => {
+    if (!formContainerRef.current) return;
+
+    // Clear existing form
+    const formFrame = formContainerRef.current.querySelector('.hs-form-frame');
+    if (formFrame) {
+      formFrame.remove();
+    }
+
+    // Create new form frame
+    const newFrame = document.createElement('div');
+    newFrame.className = 'hs-form-frame';
+    newFrame.setAttribute('data-region', HUBSPOT_CONFIG.region);
+    newFrame.setAttribute('data-form-id', HUBSPOT_CONFIG.formId);
+    newFrame.setAttribute('data-portal-id', HUBSPOT_CONFIG.portalId);
+    formContainerRef.current.appendChild(newFrame);
+
+    // Trigger HubSpot to process the new element
+    if (scriptLoadedRef.current && window.HubSpotForms) {
+      window.HubSpotForms.reload();
+    }
+  }, []);
+
   const handleRetry = useCallback(() => {
     setLoadState('loading');
 
-    // Setup timeout for retry
     timeoutRef.current = setTimeout(() => {
       setLoadState('error');
     }, FORM_LOAD_TIMEOUT_MS);
 
-    // Setup observer
     setupFormObserver();
 
-    // Try loading the script again if needed
     if (!scriptLoadedRef.current) {
       loadScript();
+    } else {
+      recreateForm();
     }
-  }, [loadScript, setupFormObserver]);
+  }, [loadScript, setupFormObserver, recreateForm]);
 
-  // Load script and setup observer when modal opens
+  // Handle URL params and form loading when modal opens
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      // Clean up URL params when modal closes
+      removeGpuFromUrlParams(originalUrlRef.current);
+      originalUrlRef.current = null;
+      return;
+    }
+
+    // Add GPU to URL params for pre-fill
+    originalUrlRef.current = addGpuToUrlParams(gpuType || null);
+    currentGpuRef.current = gpuType || null;
+
+    const container = formContainerRef.current;
+    if (!container) return;
+
+    // If form is ready but GPU changed, recreate form
+    if (loadState === 'ready' && currentGpuRef.current !== gpuType) {
+      setLoadState('loading');
+      recreateForm();
+      setupFormObserver();
+      return;
+    }
+
+    // If form already ready with same GPU, skip
+    if (loadState === 'ready') return;
 
     setLoadState('loading');
 
-    // Setup timeout for form loading
     timeoutRef.current = setTimeout(() => {
       setLoadState((current) => current === 'loading' ? 'error' : current);
     }, FORM_LOAD_TIMEOUT_MS);
 
-    // Small delay to ensure the container is mounted
     const mountDelay = setTimeout(() => {
       setupFormObserver();
       loadScript();
@@ -126,9 +207,9 @@ export function HubspotModal({
       clearTimeout(mountDelay);
       cleanup();
     };
-  }, [isOpen, loadScript, setupFormObserver, cleanup]);
+  }, [isOpen, gpuType, loadState, loadScript, setupFormObserver, cleanup, recreateForm]);
 
-  // Handle Escape key to close modal
+  // Handle Escape key
   useEffect(() => {
     if (!isOpen) return;
 
@@ -142,7 +223,7 @@ export function HubspotModal({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Lock body scroll when modal is open
+  // Lock body scroll
   useEffect(() => {
     if (!isOpen) return;
 
@@ -160,11 +241,11 @@ export function HubspotModal({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90"
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/90 transition-opacity duration-200 ${
+        isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
+      }`}
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
@@ -207,9 +288,9 @@ export function HubspotModal({
           </button>
         </div>
 
-        {/* Form Container - fullscreen on mobile, scrollable on desktop if needed */}
+        {/* Form Container */}
         <div className="flex-1 px-6 py-6 overflow-y-auto bg-white md:rounded-b-2xl">
-          {loadState === 'loading' && (
+          {(loadState === 'loading' || loadState === 'idle') && isOpen && (
             <div className="flex items-center justify-center py-12">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -266,4 +347,13 @@ export function HubspotModal({
       </div>
     </div>
   );
+}
+
+// Declare HubSpot global for TypeScript
+declare global {
+  interface Window {
+    HubSpotForms?: {
+      reload: () => void;
+    };
+  }
 }

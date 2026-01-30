@@ -44,12 +44,14 @@ export function useScrollReveal<T extends HTMLElement>(
     const element = ref.current;
     if (!element) return;
 
+    let timeoutId: NodeJS.Timeout | null = null;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             if (delay > 0) {
-              setTimeout(() => setIsVisible(true), delay);
+              timeoutId = setTimeout(() => setIsVisible(true), delay);
             } else {
               setIsVisible(true);
             }
@@ -64,6 +66,9 @@ export function useScrollReveal<T extends HTMLElement>(
 
     return () => {
       observer.disconnect();
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
   }, [threshold, rootMargin, delay, prefersReducedMotion]);
 
