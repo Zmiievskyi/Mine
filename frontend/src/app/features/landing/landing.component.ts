@@ -1,9 +1,10 @@
-import { Component, OnInit, inject, signal, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, inject, signal, DestroyRef, ChangeDetectionStrategy, computed } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NodesService } from '../../core/services/nodes.service';
 import { NetworkStats } from '../../core/models/node.model';
 import { createAutoRefresh } from '../../shared/utils';
 import { REFRESH_INTERVALS } from '../../core/constants';
+import { I18nService, type SupportedLanguage } from '../../core/i18n';
 import { HeroSectionComponent } from './components/hero-section.component';
 import { NetworkStatsComponent } from './components/network-stats.component';
 import { FeaturesSectionComponent } from './components/features-section.component';
@@ -50,6 +51,12 @@ import { HubspotFormModalComponent } from './components/hubspot-form-modal.compo
 export class LandingComponent implements OnInit {
   private readonly nodesService = inject(NodesService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly i18n = inject(I18nService);
+
+  // i18n
+  protected readonly t = this.i18n.t;
+  protected readonly currentLang = this.i18n.lang;
+  protected readonly availableLanguages = this.i18n.availableLanguages;
 
   // Navigation state
   protected isMobileMenuOpen = false;
@@ -62,13 +69,13 @@ export class LandingComponent implements OnInit {
   // HubSpot form modal state
   protected readonly isRentModalOpen = signal(false);
 
-  // Navigation links
-  protected readonly navLinks = [
-    { label: 'Features', href: '#features' },
-    { label: 'How It Works', href: '#how-it-works' },
-    { label: 'Pricing', href: '#pricing' },
-    { label: 'FAQ', href: '#faq' }
-  ];
+  // Navigation links (reactive based on language)
+  protected readonly navLinks = computed(() => [
+    { label: this.t().nav.features, href: '#features' },
+    { label: this.t().nav.howItWorks, href: '#how-it-works' },
+    { label: this.t().nav.pricing, href: '#pricing' },
+    { label: this.t().nav.faq, href: '#faq' }
+  ]);
 
   public ngOnInit(): void {
     // Load network stats with auto-refresh every 60 seconds
@@ -132,5 +139,12 @@ export class LandingComponent implements OnInit {
    */
   protected onRentFormSubmitted(): void {
     setTimeout(() => this.closeRentModal(), 3000);
+  }
+
+  /**
+   * Switch language
+   */
+  protected switchLanguage(lang: SupportedLanguage): void {
+    this.i18n.setLanguage(lang);
   }
 }

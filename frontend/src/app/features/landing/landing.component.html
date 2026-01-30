@@ -18,7 +18,7 @@
 
           <!-- Desktop Navigation -->
           <div class="hidden md:flex items-center gap-6">
-            @for (link of navLinks; track link.href) {
+            @for (link of navLinks(); track link.href) {
               <a [href]="link.href"
                  (click)="scrollToSection(link.href); $event.preventDefault()"
                  class="text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -28,14 +28,33 @@
           </div>
         </div>
 
-        <!-- Rent GPU Button (Desktop) -->
-        <button
-          type="button"
-          class="hidden md:inline-flex items-center gap-2 px-5 py-2 bg-[#FF4C00] hover:bg-[#e64500] text-white font-semibold text-sm rounded-lg transition-colors duration-200"
-          (click)="openRentModal()"
-        >
-          Rent GPU
-        </button>
+        <!-- Right side: Language Switcher + Rent Button -->
+        <div class="hidden md:flex items-center gap-4">
+          <!-- Language Switcher -->
+          <div class="flex items-center gap-1">
+            @for (lang of availableLanguages; track lang.code) {
+              <button
+                type="button"
+                class="px-2 py-1 text-sm rounded transition-colors"
+                [class.text-foreground]="currentLang() === lang.code"
+                [class.text-muted-foreground]="currentLang() !== lang.code"
+                [class.font-semibold]="currentLang() === lang.code"
+                (click)="switchLanguage(lang.code)"
+              >
+                {{ lang.flag }}
+              </button>
+            }
+          </div>
+
+          <!-- Rent GPU Button -->
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 px-5 py-2 bg-[#FF4C00] hover:bg-[#e64500] text-white font-semibold text-sm rounded-lg transition-colors duration-200"
+            (click)="openRentModal()"
+          >
+            {{ t().hero.cta }}
+          </button>
+        </div>
 
 
         <!-- Mobile Menu Toggle -->
@@ -60,20 +79,37 @@
       @if (isMobileMenuOpen) {
         <div class="md:hidden absolute left-0 right-0 top-14 bg-background border-b border-border p-4">
           <div class="flex flex-col gap-4">
-            @for (link of navLinks; track link.href) {
+            @for (link of navLinks(); track link.href) {
               <a [href]="link.href"
                  (click)="scrollToSection(link.href); $event.preventDefault()"
                  class="text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
                 {{ link.label }}
               </a>
             }
+
+            <!-- Language Switcher (Mobile) -->
+            <div class="flex items-center gap-2 py-2">
+              @for (lang of availableLanguages; track lang.code) {
+                <button
+                  type="button"
+                  class="px-3 py-1 text-sm rounded transition-colors"
+                  [class.bg-muted]="currentLang() === lang.code"
+                  [class.text-foreground]="currentLang() === lang.code"
+                  [class.text-muted-foreground]="currentLang() !== lang.code"
+                  (click)="switchLanguage(lang.code)"
+                >
+                  {{ lang.flag }} {{ lang.label }}
+                </button>
+              }
+            </div>
+
             <!-- Rent GPU Button (Mobile) -->
             <button
               type="button"
               class="w-full py-3 px-4 bg-[#FF4C00] hover:bg-[#e64500] text-white font-semibold text-sm rounded-lg transition-colors duration-200 mt-2"
               (click)="openRentModal()"
             >
-              Rent GPU
+              {{ t().hero.cta }}
             </button>
           </div>
         </div>
