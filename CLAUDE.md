@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
          v
 +--------+---------+
 | Frontend         |
-| Next.js 15       |
+| Next.js 16       |
 | Static Export    |
 +------------------+
          |
@@ -31,7 +31,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 with App Router
+- **Framework**: Next.js 16 with App Router
 - **Styling**: Tailwind CSS v4
 - **i18n**: next-intl (EN/RU)
 - **Forms**: HubSpot embedded forms (EU1 region)
@@ -53,16 +53,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
           HeroSection.tsx
           NetworkStats.tsx
           FeaturesSection.tsx
+          ForWho.tsx
+          EfficiencySection.tsx
           HowItWorks.tsx
           ManagedServices.tsx
+          ServiceAddon.tsx
           PricingSection.tsx
           FaqSection.tsx
           Footer.tsx
+          LandingPageClient.tsx
         ui/                 # Reusable UI components
         icons/              # SVG icons
+      data/                 # Static data
+        pricing.ts
+        efficiency.ts
       i18n/                 # Internationalization config
       lib/hooks/            # Custom React hooks
     messages/               # Translation files (en.json, ru.json)
+    Dockerfile             # Multi-stage build
+    docker-compose.yml     # Port 8000
+    nginx.conf             # Static file serving
   .claude/
     agents/                 # AI agents
     skills/                 # nextjs, nextjs-anti-patterns, tailwindcss, context7
@@ -75,14 +85,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Landing Page
 - **Public Access**: No authentication
 - Dark theme with Tailwind CSS v4 (oklch colors)
-- Sections: Hero, Stats (static), Features, How It Works, Managed Services, Pricing, FAQ
+- Sections: Hero, Stats, Features, For Who, Efficiency, How It Works, Managed Services, Service Addon, Pricing, FAQ
 - Language switcher (EN/RU)
 - **HubSpot Form Integration**: "Rent GPU" buttons open modal with embedded form
 
 ### Static Data
-All data is hardcoded in components:
-- Network stats (NetworkStats.tsx)
-- GPU pricing (PricingSection.tsx)
+All data is in `src/data/` folder:
+- `pricing.ts` - GPU pricing data
+- `efficiency.ts` - Efficiency metrics
 
 ## Development Commands
 
@@ -93,6 +103,17 @@ npm run dev        # http://localhost:3000
 npm run build      # Static export to /out
 npm run start      # Serve production build
 ```
+
+## Docker Deployment
+
+```bash
+cd next-frontend
+docker compose up -d --build   # Build and run on port 8000
+docker compose logs -f         # View logs
+docker compose down            # Stop
+```
+
+Access at **http://localhost:8000**
 
 ## Git Workflow
 
@@ -106,21 +127,23 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`
 - No "Generated with Claude Code" or "Co-Authored-By" lines
 - Keep messages concise
 
-## Environment Variables
+## HubSpot Integration
 
-### Frontend (.env.local / .env.production)
+Embedded form configuration (hardcoded in `HubspotModal.tsx`):
 
-HubSpot form integration:
+| Portal ID | Form ID | Region |
+|-----------|---------|--------|
+| 4202168 | 0d64ead5-78c5-4ccb-84e3-3c088a10b212 | eu1 |
 
-| Environment | Portal ID | Form ID | Region |
-|-------------|-----------|---------|--------|
-| Sandbox (dev) | 147554099 | 78fd550b-eec3-4958-bc4d-52c73924b87b | eu1 |
-| Production | 4202168 | 2d618652-614d-45f9-97fb-b9f88a6e8cc1 | eu1 |
+```html
+<script src="https://js-eu1.hsforms.net/forms/embed/4202168.js" defer></script>
+<div class="hs-form-frame" data-region="eu1" data-form-id="0d64ead5-78c5-4ccb-84e3-3c088a10b212" data-portal-id="4202168"></div>
+```
 
 ## Key Decisions
 
 1. **Fully Static**: No backend, no API calls, all data hardcoded
-2. **Next.js 15**: App Router with static export
+2. **Next.js 16**: App Router with static export
 3. **HubSpot Integration**: External form for lead capture
 4. **i18n**: next-intl with EN/RU translations
 5. **Tailwind CSS v4**: All styling via utility classes with oklch colors
@@ -141,6 +164,6 @@ HubSpot form integration:
 | Skill | Use For |
 |-------|---------|
 | `context7` | Fetch library documentation |
-| `nextjs` | Next.js 15+ App Router patterns, Server/Client Components |
+| `nextjs` | Next.js 16 App Router patterns, Server/Client Components |
 | `nextjs-anti-patterns` | Detect/fix common Next.js mistakes |
 | `tailwindcss` | Tailwind CSS v4 styling, responsive design, dark mode |

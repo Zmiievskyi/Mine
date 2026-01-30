@@ -1,7 +1,4 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
-import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { getTranslations } from 'next-intl/server';
 import { ServerIcon, CpuIcon } from '@/components/icons';
 import { ComponentType, SVGProps } from 'react';
 
@@ -11,24 +8,29 @@ interface AudienceCard {
   points: string[];
 }
 
+function validateStringArray(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((item): item is string => typeof item === 'string');
+}
+
 const audienceIcons: ComponentType<SVGProps<SVGSVGElement>>[] = [
   ServerIcon, // Large-Scale Operators
   CpuIcon,    // Pools and Resellers
 ];
 
-export function ForWho() {
-  const t = useTranslations('forWho');
+export async function ForWho() {
+  const t = await getTranslations('forWho');
 
   const audiences: AudienceCard[] = [
     {
       title: t('operators.title'),
       description: t('operators.description'),
-      points: t.raw('operators.points') as string[],
+      points: validateStringArray(t.raw('operators.points')),
     },
     {
       title: t('pools.title'),
       description: t('pools.description'),
-      points: t.raw('pools.points') as string[],
+      points: validateStringArray(t.raw('pools.points')),
     },
   ];
 
@@ -36,17 +38,15 @@ export function ForWho() {
     <section id="for-who" className="py-16 md:py-24">
       <div className="mx-auto w-full max-w-screen-xl px-4 md:px-12 lg:px-20">
         {/* Section Header */}
-        <ScrollReveal>
-          <div className="text-center mb-12">
-            <span className="inline-flex items-center justify-center rounded-full border border-accent/50 bg-transparent px-4 py-1.5 text-sm font-medium text-white mb-4">
-              {t('badge')}
-            </span>
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">{t('title')}</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              {t('subtitle')}
-            </p>
-          </div>
-        </ScrollReveal>
+        <div className="scroll-reveal text-center mb-12">
+          <span className="inline-flex items-center justify-center rounded-full border border-accent/50 bg-transparent px-4 py-1.5 text-sm font-medium text-white mb-4">
+            {t('badge')}
+          </span>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">{t('title')}</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            {t('subtitle')}
+          </p>
+        </div>
 
         {/* Audience Cards with Glowing Effect */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
@@ -54,7 +54,11 @@ export function ForWho() {
             const Icon = audienceIcons[index];
 
             return (
-              <ScrollReveal key={index} delay={index * 100}>
+              <div
+                key={index}
+                className="scroll-reveal"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
                 {/* Glowing Card Container */}
                 <div className="group relative h-full">
                   {/* Animated glow border */}
@@ -125,6 +129,7 @@ export function ForWho() {
                               "
                             >
                               <svg
+                                aria-hidden="true"
                                 className="w-3 h-3 text-accent transition-transform duration-300 group-hover/item:scale-110"
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -150,7 +155,7 @@ export function ForWho() {
                     <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-tr-xl" />
                   </div>
                 </div>
-              </ScrollReveal>
+              </div>
             );
           })}
         </div>

@@ -5,6 +5,7 @@ type IconProps = SVGProps<SVGSVGElement>;
 export function ServerIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -23,6 +24,7 @@ export function ServerIcon(props: IconProps) {
 export function UploadIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -41,6 +43,7 @@ export function UploadIcon(props: IconProps) {
 export function DatabaseIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -59,6 +62,7 @@ export function DatabaseIcon(props: IconProps) {
 export function MonitorIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -77,6 +81,7 @@ export function MonitorIcon(props: IconProps) {
 export function FilterIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -95,6 +100,7 @@ export function FilterIcon(props: IconProps) {
 export function ChartBarIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -113,6 +119,7 @@ export function ChartBarIcon(props: IconProps) {
 export function CpuIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -131,6 +138,7 @@ export function CpuIcon(props: IconProps) {
 export function RefreshIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -149,6 +157,7 @@ export function RefreshIcon(props: IconProps) {
 export function ShieldCheckIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -167,6 +176,7 @@ export function ShieldCheckIcon(props: IconProps) {
 export function RocketIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -185,6 +195,7 @@ export function RocketIcon(props: IconProps) {
 export function EyeIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -208,6 +219,7 @@ export function EyeIcon(props: IconProps) {
 export function DocumentCheckIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -236,6 +248,7 @@ export function DocumentCheckIcon(props: IconProps) {
 export function ScaleIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"

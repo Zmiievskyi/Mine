@@ -1,21 +1,14 @@
-'use client';
+import { getTranslations } from 'next-intl/server';
+import { validateTitleDescription } from '@/lib/validation';
 
-import { useTranslations } from 'next-intl';
-import { ScrollReveal } from '@/components/ui/ScrollReveal';
-
-interface AddonItem {
-  title: string;
-  description: string;
-}
-
-export function ServiceAddon() {
-  const t = useTranslations('serviceAddon');
-  const items = t.raw('items') as AddonItem[];
+export async function ServiceAddon() {
+  const t = await getTranslations('serviceAddon');
+  const items = validateTitleDescription(t.raw('items'));
 
   return (
     <section className="py-8 md:py-12">
       <div className="mx-auto w-full max-w-screen-xl px-4 md:px-12 lg:px-20">
-        <ScrollReveal>
+        <div className="scroll-reveal">
           {/* Section Title */}
           <h3 className="text-lg md:text-xl font-semibold text-center mb-6 text-muted-foreground">
             {t('sectionTitle')}
@@ -105,7 +98,7 @@ export function ServiceAddon() {
               />
             </div>
           </div>
-        </ScrollReveal>
+        </div>
       </div>
     </section>
   );

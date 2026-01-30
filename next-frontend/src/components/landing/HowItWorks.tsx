@@ -2,15 +2,13 @@
 
 import { useTranslations } from 'next-intl';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
-
-interface Step {
-  title: string;
-  description: string;
-}
+import { validateTitleDescription } from '@/lib/validation';
+import { useHubspot } from '@/lib/contexts/HubspotContext';
 
 export function HowItWorks() {
   const t = useTranslations('howItWorks');
-  const steps = t.raw('steps') as Step[];
+  const { openModal } = useHubspot();
+  const steps = validateTitleDescription(t.raw('steps'));
 
   return (
     <section id="how-it-works" className="py-16 md:py-24">
@@ -157,6 +155,7 @@ export function HowItWorks() {
           <div className="mt-16 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-accent/20 bg-accent/5">
               <svg
+                aria-hidden="true"
                 className="w-4 h-4 text-accent flex-shrink-0"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -173,6 +172,33 @@ export function HowItWorks() {
                 <span className="text-accent font-medium">{t('noteLabel')}</span> {t('note')}
               </p>
             </div>
+          </div>
+        </ScrollReveal>
+
+        {/* CTA Button */}
+        <ScrollReveal delay={500}>
+          <div className="mt-12 text-center">
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white font-semibold text-lg rounded-lg transition-colors duration-200 shadow-lg shadow-accent/25"
+              onClick={() => openModal()}
+            >
+              {t('cta')}
+              <svg
+                aria-hidden="true"
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
+              </svg>
+            </button>
           </div>
         </ScrollReveal>
       </div>

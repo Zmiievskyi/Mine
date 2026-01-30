@@ -3,31 +3,11 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
-
-interface GpuEfficiency {
-  name: string;
-  weight: number;
-  pricePerHour: number;
-  efficiency: number;
-}
-
-/**
- * Static GPU efficiency data (fallback weights from Gonka network)
- * Efficiency = weight / pricePerHour (higher = better value)
- */
-const gpuEfficiencyData: GpuEfficiency[] = [
-  { name: 'A100', weight: 256.498, pricePerHour: 0.99, efficiency: 259.09 },
-  { name: 'H100', weight: 606.046, pricePerHour: 1.80, efficiency: 336.69 },
-  { name: 'H200', weight: 619.000, pricePerHour: 2.40, efficiency: 257.92 },
-  { name: 'B200', weight: 955.921, pricePerHour: 3.50, efficiency: 273.12 },
-];
-
-// Sort by efficiency (highest first) and find best value
-const sortedByEfficiency = [...gpuEfficiencyData].sort(
-  (a, b) => b.efficiency - a.efficiency
-);
-const maxEfficiency = sortedByEfficiency[0]?.efficiency ?? 1;
-const bestValueGpu = sortedByEfficiency[0]?.name;
+import {
+  sortedByEfficiency,
+  maxEfficiency,
+  bestValueGpu,
+} from '@/data/efficiency';
 
 /**
  * Animated counter component that counts up when visible
@@ -36,6 +16,7 @@ function AnimatedNumber({ value, decimals = 2 }: { value: number; decimals?: num
   const [displayValue, setDisplayValue] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const hasAnimated = useRef(false);
+  const animationFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -53,10 +34,12 @@ function AnimatedNumber({ value, decimals = 2 }: { value: number; decimals?: num
             setDisplayValue(value * eased);
 
             if (progress < 1) {
-              requestAnimationFrame(animate);
+              animationFrameRef.current = requestAnimationFrame(animate);
+            } else {
+              animationFrameRef.current = null;
             }
           };
-          requestAnimationFrame(animate);
+          animationFrameRef.current = requestAnimationFrame(animate);
         }
       },
       { threshold: 0.5 }
@@ -66,7 +49,12 @@ function AnimatedNumber({ value, decimals = 2 }: { value: number; decimals?: num
       observer.observe(ref.current);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
   }, [value]);
 
   return (
@@ -167,7 +155,8 @@ export function EfficiencySection() {
                             {gpu.name}
                           </span>
                           <span className="text-sm text-muted-foreground font-mono">
-                            ${gpu.pricePerHour.toFixed(2)}/GPU/hr
+                            {gpu.isEstimated ? '~' : ''}${gpu.pricePerHour.toFixed(2)}/GPU/hr
+                            {gpu.isEstimated && <span className="text-xs ml-1">(est.)</span>}
                           </span>
                         </div>
                         <div className="text-right">

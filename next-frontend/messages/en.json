@@ -6,6 +6,7 @@
     "titleSuffix": "on managed GPU infrastructure",
     "subtitle": "Rent enterprise-grade GPUs to mine cryptocurrency on our network with clear billing and predictable operations. For operators and pools who care about node stability, transparent payment terms, and scaling without surprises.",
     "cta": "Rent GPU",
+    "ctaSecondary": "View pricing packages",
     "features": {
       "fiat": "Pay in fiat currency",
       "enterprise": "Enterprise-grade GPUs",
@@ -68,7 +69,8 @@
         "title": "Scale when needed",
         "description": "Add capacity under the same rules. Volume discounts available from 10+ servers."
       }
-    ]
+    ],
+    "slaFootnote": "* SLA applies to infrastructure availability only: network-level downtime, missed rewards, or any \"mining/participation\" outcomes are not covered."
   },
   "forWho": {
     "badge": "Who it's for",
@@ -159,11 +161,12 @@
       },
       {
         "title": "Billing & Renewal",
-        "description": "Monthly invoices at calendar month end. Renew by paying no later than 10 days before contract end. Downtime credits applied automatically."
+        "description": "Monthly invoices at calendar month end. Renew by paying no later than 10 days before contract end. Downtime credits applied automatically. Adjustments handled according to contract terms."
       }
     ],
     "note": "Infrastructure downtime credits apply to infrastructure issues only and do not cover missed network rewards.",
-    "noteLabel": "Note:"
+    "noteLabel": "Note:",
+    "cta": "Request GPU"
   },
   "serviceAddon": {
     "sectionTitle": "Let us manage the technical work",
@@ -234,7 +237,9 @@
     "subtitle": "All packages include managed infrastructure, 24/7 monitoring, and month-to-month contracts. No setup fees or long-term commitment.",
     "perMonth": "/month",
     "perHour": "/GPU/hour",
-    "rentNow": "Rent GPU",
+    "perGpuHour": "per GPU/hour",
+    "contractType": "Month-to-month contract",
+    "rentNow": "Request GPU",
     "contactSales": "Contact Sales",
     "customPricing": "Custom pricing",
     "volumeDiscount": "Volume discounts available",
@@ -252,45 +257,63 @@
     "bestValue": "Best Value",
     "weightLabel": "Weight",
     "efficiencyUnit": "weight/$",
-    "disclaimer": "Weights are based on current network data and may vary. Efficiency calculations use listed hourly rates."
+    "disclaimer": "Weights are based on current network data and may vary. Efficiency calculations use listed hourly rates.",
+    "loading": "Loading network data...",
+    "epochFallback": "Using cached data",
+    "epochLabel": "Epoch",
+    "lastUpdated": "Updated"
   },
   "faq": {
     "badge": "Frequently Asked Questions",
     "title": "What people ask about MineGNK",
     "items": [
       {
-        "question": "What is mining as a service?",
-        "answer": "We provision and manage enterprise-grade GPU servers for you. You pay in fiat and earn GNK tokens while we handle all infrastructure — from capacity check and allocation to go-live."
-      },
-      {
-        "question": "How long does provisioning take?",
+        "question": "How quickly can I start participating?",
         "answer": "Provisioning typically completes within days after KYC verification and contract signing. We handle server assignment, software installation, and wallet connection end-to-end."
       },
       {
+        "question": "Can I confirm infrastructure fit before committing budget?",
+        "answer": "Yes. You can confirm the quote and availability before payment. We provide a clear checklist of required documentation to streamline the process. No surprises after you sign."
+      },
+      {
+        "question": "What happens if servers are down?",
+        "answer": "We have GPU Services SLA with clear, accountable uptime guarantees. Infrastructure-caused downtime receives credits applied to your next payment or refunded. Note: credits apply to infrastructure downtime only and do not cover missed network rewards."
+      },
+      {
         "question": "How does billing work?",
-        "answer": "Payment for the first month is required before server assignment. Monthly invoices are issued at calendar month end. Renew by paying no later than 10 days before contract end."
+        "answer": "Month-to-month contracts. Payment for the first month is required before server assignment. Monthly invoices are issued at calendar month end. Renew by paying no later than 10 days before contract end."
       },
       {
-        "question": "Can I scale my mining operation?",
-        "answer": "Yes. Upgrade is available anytime (subject to capacity). Downgrade is available once per month. Volume discounts are available from 10+ servers."
+        "question": "Can I scale up or down?",
+        "answer": "Upgrade available anytime (subject to capacity). Downgrade once per month. Volume discounts available from 10+ servers."
       },
       {
-        "question": "What support do you provide?",
-        "answer": "We offer 24/7 infrastructure monitoring with business hours support (CET timezone) for infrastructure issues. Network software updates are applied within 24 hours of release."
+        "question": "Do you offer discounts?",
+        "answer": "Volume discounts can be discussed when ordering multiple servers. Contact us for custom pricing from 10+ servers."
       },
       {
-        "question": "What happens if there's downtime?",
-        "answer": "Infrastructure-caused downtime receives credits applied to your next payment or refunded. Note: credits apply to infrastructure downtime only and do not cover missed network rewards."
-      },
-      {
-        "question": "What makes Gonka tokens special?",
-        "answer": "GNK is designed for AI inference workloads in the Gonka network. Rewards are aligned with real compute supply and demand, making it a sustainable token economy."
+        "question": "What support is available?",
+        "answer": "Business hours support for infrastructure issues (CET timezone). We provide 24/7 infrastructure monitoring with clear updates and next steps. Network software updates are applied within 24 hours of release."
       }
     ]
   },
   "modal": {
     "title": "Rent GPUs",
-    "selected": "Selected:"
+    "selected": "Selected:",
+    "loading": "Loading form...",
+    "error": {
+      "title": "Unable to load form",
+      "description": "The form could not be loaded. Please check your connection and try again.",
+      "retry": "Try again"
+    }
+  },
+  "errors": {
+    "somethingWentWrong": "Something went wrong",
+    "unexpectedError": "We encountered an unexpected error. Please try again.",
+    "tryAgain": "Try again",
+    "pageNotFound": "Page not found",
+    "pageNotFoundDescription": "The page you're looking for doesn't exist or has been moved.",
+    "backToHome": "Back to home"
   },
   "footer": {
     "brand": {

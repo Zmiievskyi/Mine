@@ -15,7 +15,7 @@ MineGNK is a marketing landing page that allows visitors to:
 
 | Layer | Technology |
 |-------|------------|
-| Framework | Next.js 15 (App Router) |
+| Framework | Next.js 16 (App Router) |
 | Styling | Tailwind CSS v4 |
 | i18n | next-intl (EN/RU) |
 | Forms | HubSpot embedded forms |
@@ -57,40 +57,46 @@ npm run build      # Static export to /out
 npm run start      # Serve production build
 ```
 
-## Environment Variables
+## HubSpot Integration
 
-```bash
-# .env.local (development - sandbox)
-NEXT_PUBLIC_HUBSPOT_PORTAL_ID=147554099
-NEXT_PUBLIC_HUBSPOT_FORM_ID=78fd550b-eec3-4958-bc4d-52c73924b87b
-NEXT_PUBLIC_HUBSPOT_REGION=eu1
+Form configuration is hardcoded in `src/components/ui/HubspotModal.tsx`:
 
-# .env.production (production)
-NEXT_PUBLIC_HUBSPOT_PORTAL_ID=4202168
-NEXT_PUBLIC_HUBSPOT_FORM_ID=2d618652-614d-45f9-97fb-b9f88a6e8cc1
-NEXT_PUBLIC_HUBSPOT_REGION=eu1
-```
+| Portal ID | Form ID | Region |
+|-----------|---------|--------|
+| 4202168 | 0d64ead5-78c5-4ccb-84e3-3c088a10b212 | eu1 |
 
 ## Landing Page Sections
 
 1. **Hero** - Value proposition with animated badge
-2. **Network Stats** - Gonka network overview (static data)
-3. **Features** - Why mine with us (3 cards)
-4. **How It Works** - 7-step onboarding process
-5. **Managed Services** - What Gcore handles (8 cards)
-6. **Pricing** - GPU tiers with HubSpot form trigger
-7. **FAQ** - Common questions (7 items)
-8. **Footer** - Links and copyright
+2. **Network Stats** - Gonka network overview
+3. **Efficiency** - GPU efficiency comparison
+4. **For Who** - Target audience
+5. **Features** - Why mine with us
+6. **How It Works** - Onboarding process
+7. **Managed Services** - What Gcore handles
+8. **Pricing** - GPU tiers with HubSpot form trigger
+9. **Service Addon** - Additional services
+10. **FAQ** - Common questions
+11. **Footer** - Links and copyright
 
 ## Deployment
 
-The site is configured for static export:
+### Static Export
 
 ```bash
 npm run build    # Generates /out directory
 ```
 
 Deploy the `/out` directory to any static hosting (Vercel, Netlify, S3, etc.).
+
+### Docker
+
+```bash
+cd next-frontend
+docker compose up -d --build   # Build and run on port 8000
+```
+
+Access at http://localhost:8000
 
 ## Development
 

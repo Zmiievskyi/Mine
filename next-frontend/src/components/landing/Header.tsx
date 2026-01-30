@@ -6,11 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { useHubspot } from '@/lib/contexts/HubspotContext';
 
-interface HeaderProps {
-  onSectionClick?: (sectionId: string) => void;
-}
-
-export function Header({ onSectionClick }: HeaderProps) {
+export function Header() {
   const t = useTranslations();
   const { openModal } = useHubspot();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -24,16 +20,12 @@ export function Header({ onSectionClick }: HeaderProps) {
   ];
 
   const scrollToSection = useCallback((sectionId: string) => {
-    if (onSectionClick) {
-      onSectionClick(sectionId);
-    } else {
-      const element = document.querySelector(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
+    const element = document.querySelector(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
     }
     setIsMobileMenuOpen(false);
-  }, [onSectionClick]);
+  }, []);
 
   const handleRentClick = useCallback(() => {
     openModal();
@@ -89,6 +81,7 @@ export function Header({ onSectionClick }: HeaderProps) {
           >
             {!isMobileMenuOpen ? (
               <svg
+                aria-hidden="true"
                 className="w-6 h-6"
                 fill="none"
                 stroke="currentColor"
@@ -103,6 +96,7 @@ export function Header({ onSectionClick }: HeaderProps) {
               </svg>
             ) : (
               <svg
+                aria-hidden="true"
                 className="w-6 h-6"
                 fill="none"
                 stroke="currentColor"

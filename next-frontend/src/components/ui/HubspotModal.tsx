@@ -2,156 +2,157 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  HUBSPOT_CONFIG,
-  loadHubSpotScript,
-  setGpuFieldValue,
-  getHubSpotGpuValue,
-  addGpuToUrlParams,
-  removeGpuFromUrlParams,
-  HubSpotLoadError,
-  type JQueryForm,
-} from '@/lib/hubspot';
+
+// HubSpot embed configuration
+const HUBSPOT_CONFIG = {
+  portalId: '4202168',
+  formId: '0d64ead5-78c5-4ccb-84e3-3c088a10b212',
+  region: 'eu1',
+};
+
+const FORM_LOAD_TIMEOUT_MS = 10000; // 10 seconds timeout for form loading
+
+type LoadState = 'loading' | 'ready' | 'error';
 
 interface HubspotModalProps {
   isOpen: boolean;
   onClose: () => void;
   gpuType?: string | null;
-  onFormSubmitted?: () => void;
 }
 
 export function HubspotModal({
   isOpen,
   onClose,
   gpuType,
-  onFormSubmitted,
 }: HubspotModalProps) {
   const t = useTranslations('modal');
   const formContainerRef = useRef<HTMLDivElement>(null);
-  const [formLoaded, setFormLoaded] = useState(false);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const originalUrlRef = useRef<string | null>(null);
+  const [loadState, setLoadState] = useState<LoadState>('loading');
+  const scriptLoadedRef = useRef(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const observerRef = useRef<MutationObserver | null>(null);
 
-  const handleAddUrlParams = useCallback(() => {
-    originalUrlRef.current = addGpuToUrlParams(gpuType || null);
-  }, [gpuType]);
-
-  const handleRemoveUrlParams = useCallback(() => {
-    removeGpuFromUrlParams(originalUrlRef.current);
-    originalUrlRef.current = null;
-  }, []);
-
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  const handleRetry = useCallback(() => {
-    setError(null);
-    setScriptLoaded(false);
-  }, []);
-
-  const loadScript = useCallback(async (): Promise<boolean> => {
-    try {
-      await loadHubSpotScript();
-      setScriptLoaded(true);
-      return true;
-    } catch (err) {
-      const message = err instanceof HubSpotLoadError
-        ? err.message
-        : 'Failed to load form. Please try again.';
-      setError(message);
-      setIsLoading(false);
-      return false;
+  // Cleanup function for timeout and observer
+  const cleanup = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+      observerRef.current = null;
     }
   }, []);
 
-  const createForm = useCallback(
-    (container: HTMLElement) => {
-      if (formLoaded || !window.hbspt?.forms) return;
+  // Setup MutationObserver to detect when form loads
+  const setupFormObserver = useCallback(() => {
+    if (!formContainerRef.current || observerRef.current) return;
 
-      const containerId =
-        'hubspot-form-' + Math.random().toString(36).substring(2, 9);
-      container.id = containerId;
+    observerRef.current = new MutationObserver(() => {
+      // Check if form elements have been added (HubSpot creates an iframe or form)
+      const formElement = formContainerRef.current?.querySelector('form, iframe');
+      if (formElement) {
+        cleanup();
+        setLoadState('ready');
+      }
+    });
 
-      const hubspotGpuValue = gpuType ? getHubSpotGpuValue(gpuType) : null;
+    observerRef.current.observe(formContainerRef.current, {
+      childList: true,
+      subtree: true,
+    });
+  }, [cleanup]);
 
-      window.hbspt.forms.create({
-        region: HUBSPOT_CONFIG.region,
-        portalId: HUBSPOT_CONFIG.portalId,
-        formId: HUBSPOT_CONFIG.formId,
-        target: `#${containerId}`,
-        onFormReady: ($form: JQueryForm) => {
-          if (hubspotGpuValue) {
-            setGpuFieldValue(container, $form, hubspotGpuValue);
-          }
-        },
-        onFormSubmitted: () => {
-          onFormSubmitted?.();
-        },
-      });
+  const loadScript = useCallback(() => {
+    // Check if script already exists
+    const existingScript = document.querySelector(
+      `script[src*="js-${HUBSPOT_CONFIG.region}.hsforms.net/forms/embed/${HUBSPOT_CONFIG.portalId}.js"]`
+    );
 
-      setFormLoaded(true);
-    },
-    [formLoaded, gpuType, onFormSubmitted]
-  );
-
-  // Reset error when modal opens
-  useEffect(() => {
-    if (isOpen && error) {
-      const timer = setTimeout(clearError, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, error, clearError]);
-
-  // Main form loading effect
-  useEffect(() => {
-    if (!isOpen) {
-      handleRemoveUrlParams();
+    if (existingScript || scriptLoadedRef.current) {
+      scriptLoadedRef.current = true;
       return;
     }
 
-    handleAddUrlParams();
-    const container = formContainerRef.current;
-    if (!container) return;
-
-    container.innerHTML = '';
-
-    let cancelled = false;
-
-    // Reset and load in the next tick to avoid synchronous setState in effect
-    const initTimer = setTimeout(() => {
-      if (cancelled) return;
-      setFormLoaded(false);
-      setIsLoading(true);
-    }, 0);
-
-    const loadForm = async () => {
-      if (!scriptLoaded) {
-        const success = await loadScript();
-        if (!success || cancelled) return;
-      }
-      if (!cancelled) {
-        createForm(container);
-        setIsLoading(false);
-      }
+    const script = document.createElement('script');
+    script.src = `https://js-${HUBSPOT_CONFIG.region}.hsforms.net/forms/embed/${HUBSPOT_CONFIG.portalId}.js`;
+    script.defer = true;
+    script.onload = () => {
+      scriptLoadedRef.current = true;
     };
+    script.onerror = () => {
+      cleanup();
+      setLoadState('error');
+    };
+    document.head.appendChild(script);
+  }, [cleanup]);
 
-    const loadTimer = setTimeout(loadForm, 50);
+  // Retry loading the form
+  const handleRetry = useCallback(() => {
+    setLoadState('loading');
+
+    // Setup timeout for retry
+    timeoutRef.current = setTimeout(() => {
+      setLoadState('error');
+    }, FORM_LOAD_TIMEOUT_MS);
+
+    // Setup observer
+    setupFormObserver();
+
+    // Try loading the script again if needed
+    if (!scriptLoadedRef.current) {
+      loadScript();
+    }
+  }, [loadScript, setupFormObserver]);
+
+  // Load script and setup observer when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setLoadState('loading');
+
+    // Setup timeout for form loading
+    timeoutRef.current = setTimeout(() => {
+      setLoadState((current) => current === 'loading' ? 'error' : current);
+    }, FORM_LOAD_TIMEOUT_MS);
+
+    // Small delay to ensure the container is mounted
+    const mountDelay = setTimeout(() => {
+      setupFormObserver();
+      loadScript();
+    }, 50);
+
     return () => {
-      cancelled = true;
-      clearTimeout(initTimer);
-      clearTimeout(loadTimer);
+      clearTimeout(mountDelay);
+      cleanup();
     };
-  }, [
-    isOpen,
-    scriptLoaded,
-    loadScript,
-    createForm,
-    handleAddUrlParams,
-    handleRemoveUrlParams,
-  ]);
+  }, [isOpen, loadScript, setupFormObserver, cleanup]);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -163,18 +164,18 @@ export function HubspotModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
       aria-labelledby="hubspot-modal-title"
     >
       <div
-        className="relative w-full max-w-2xl bg-card rounded-2xl shadow-2xl overflow-hidden"
+        className="relative w-full h-full md:h-auto md:max-h-[95vh] md:max-w-2xl md:m-4 bg-card md:rounded-2xl shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card shrink-0 md:rounded-t-2xl">
           <div>
             <h2 id="hubspot-modal-title" className="text-xl font-semibold text-foreground">
               {t('title')}
@@ -190,6 +191,7 @@ export function HubspotModal({
             aria-label="Close modal"
           >
             <svg
+              aria-hidden="true"
               className="w-5 h-5"
               fill="none"
               stroke="currentColor"
@@ -205,34 +207,61 @@ export function HubspotModal({
           </button>
         </div>
 
-        {/* Form Container (white background for HubSpot form) */}
-        <div className="px-6 py-6 max-h-[70vh] overflow-y-auto bg-white">
-          <div aria-live="polite" aria-atomic="true">
-            {isLoading && !formLoaded && !error && (
-              <div className="flex items-center justify-center py-12">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-                  <p className="text-sm text-gray-600">Loading form...</p>
-                </div>
+        {/* Form Container - fullscreen on mobile, scrollable on desktop if needed */}
+        <div className="flex-1 px-6 py-6 overflow-y-auto bg-white md:rounded-b-2xl">
+          {loadState === 'loading' && (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm text-gray-600">{t('loading')}</p>
               </div>
-            )}
-            {error && (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <p className="text-red-600 mb-4">{error}</p>
+            </div>
+          )}
+          {loadState === 'error' && (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center gap-4 text-center">
+                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <svg
+                    aria-hidden="true"
+                    className="w-6 h-6 text-red-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{t('error.title')}</p>
+                  <p className="text-sm text-gray-600 mt-1">{t('error.description')}</p>
+                </div>
                 <button
                   type="button"
-                  className="px-4 py-2 bg-accent hover:bg-accent-hover text-white rounded-lg transition-colors"
                   onClick={handleRetry}
+                  className="px-4 py-2 text-sm font-medium text-white bg-accent hover:bg-accent/90 rounded-lg transition-colors"
                 >
-                  Try Again
+                  {t('error.retry')}
                 </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
           <div
             ref={formContainerRef}
-            className={`hubspot-form-container ${isLoading || error ? 'hidden' : ''}`}
-          />
+            className={`hubspot-form-container min-h-[200px] ${loadState !== 'ready' ? 'opacity-0 h-0 overflow-hidden' : ''}`}
+          >
+            {/* HubSpot declarative form embed */}
+            <div
+              className="hs-form-frame"
+              data-region={HUBSPOT_CONFIG.region}
+              data-form-id={HUBSPOT_CONFIG.formId}
+              data-portal-id={HUBSPOT_CONFIG.portalId}
+            />
+          </div>
         </div>
       </div>
     </div>

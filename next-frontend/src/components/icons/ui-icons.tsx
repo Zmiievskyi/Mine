@@ -5,6 +5,7 @@ type IconProps = SVGProps<SVGSVGElement>;
 export function CheckIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -19,6 +20,7 @@ export function CheckIcon(props: IconProps) {
 export function CreditCardIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -37,6 +39,7 @@ export function CreditCardIcon(props: IconProps) {
 export function HeadsetIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -55,6 +58,7 @@ export function HeadsetIcon(props: IconProps) {
 export function ActivityIcon(props: IconProps) {
   return (
     <svg
+      aria-hidden="true"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"

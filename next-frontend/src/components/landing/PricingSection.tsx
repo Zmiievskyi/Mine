@@ -73,32 +73,35 @@ export function PricingSection() {
                         {item.name}
                       </h3>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-sm text-muted-foreground mt-1 min-h-[2.5rem]">
                       {item.description}
                     </p>
                   </div>
 
                   {/* Price Display */}
                   <div className="relative z-10 mb-5">
-                    {item.isContactSales || item.pricePerHour === null ? (
+                    {item.isContactSales || item.pricePerMonth === null ? (
                       <span className="text-xl font-bold text-foreground">
                         {t('customPricing')}
                       </span>
                     ) : (
                       <div className="flex flex-col">
                         <div className="flex items-baseline gap-1">
-                          <span className="text-3xl font-bold text-white transition-all duration-300 group-hover:text-accent">
-                            ${formatPrice(item.pricePerHour)}
+                          <span className="text-3xl font-bold text-accent">
+                            ${formatMonthlyPrice(item.pricePerMonth)}
                           </span>
                           <span className="text-muted-foreground text-sm">
-                            {t('perHour')}
+                            {t('perMonth')}
                           </span>
                         </div>
-                        {item.pricePerMonth && (
-                          <span className="text-sm text-muted-foreground mt-1">
-                            ${formatMonthlyPrice(item.pricePerMonth)}{t('perMonth')}
-                          </span>
+                        {item.pricePerHour && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            <span className="text-foreground font-medium">${formatPrice(item.pricePerHour)}</span> {t('perGpuHour')}
+                          </p>
                         )}
+                        <p className="text-sm text-muted-foreground">
+                          {t('contractType')}
+                        </p>
                       </div>
                     )}
                   </div>

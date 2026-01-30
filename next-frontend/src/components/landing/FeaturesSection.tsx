@@ -1,7 +1,4 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
-import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { getTranslations } from 'next-intl/server';
 import {
   ChartBarIcon,
   ShieldCheckIcon,
@@ -11,11 +8,7 @@ import {
   ScaleIcon,
 } from '@/components/icons';
 import { ComponentType, SVGProps } from 'react';
-
-interface FeatureItem {
-  title: string;
-  description: string;
-}
+import { validateTitleDescription } from '@/lib/validation';
 
 // Icons for each feature
 const featureIcons: ComponentType<SVGProps<SVGSVGElement>>[] = [
@@ -38,25 +31,23 @@ const gridConfig = [
   { col: 'md:col-span-2', row: '', size: 'large' },      // Card 6: Large
 ];
 
-export function FeaturesSection() {
-  const t = useTranslations('features');
-  const features = t.raw('items') as FeatureItem[];
+export async function FeaturesSection() {
+  const t = await getTranslations('features');
+  const features = validateTitleDescription(t.raw('items'));
 
   return (
     <section id="features" className="py-16 md:py-24">
       <div className="mx-auto w-full max-w-screen-xl px-4 md:px-12 lg:px-20">
         {/* Section Header */}
-        <ScrollReveal>
-          <div className="text-center mb-12">
-            <span className="inline-flex items-center justify-center rounded-full border border-accent/50 bg-transparent px-4 py-1.5 text-sm font-medium text-white mb-4">
-              {t('badge')}
-            </span>
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">{t('title')}</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              {t('subtitle')}
-            </p>
-          </div>
-        </ScrollReveal>
+        <div className="scroll-reveal text-center mb-12">
+          <span className="inline-flex items-center justify-center rounded-full border border-accent/50 bg-transparent px-4 py-1.5 text-sm font-medium text-white mb-4">
+            {t('badge')}
+          </span>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">{t('title')}</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            {t('subtitle')}
+          </p>
+        </div>
 
         {/* Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-5 max-w-5xl mx-auto">
@@ -66,10 +57,10 @@ export function FeaturesSection() {
             const isLarge = config.size === 'large';
 
             return (
-              <ScrollReveal
+              <div
                 key={index}
-                delay={index * 75}
-                className={`${config.col} ${config.row}`}
+                className={`scroll-reveal ${config.col} ${config.row}`}
+                style={{ animationDelay: `${index * 75}ms` }}
               >
                 <div
                   className={`
@@ -140,10 +131,15 @@ export function FeaturesSection() {
                   {/* Corner accent */}
                   <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </div>
-              </ScrollReveal>
+              </div>
             );
           })}
         </div>
+
+        {/* SLA Footnote */}
+        <p className="scroll-reveal mt-8 text-xs text-muted-foreground text-center max-w-3xl mx-auto" style={{ animationDelay: '500ms' }}>
+          {t('slaFootnote')}
+        </p>
       </div>
     </section>
   );

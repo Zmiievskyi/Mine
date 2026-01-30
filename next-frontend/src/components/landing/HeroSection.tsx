@@ -23,6 +23,7 @@ export function HeroSection() {
                   <span>✨</span>
                   {t('badge')}
                   <svg
+                    aria-hidden="true"
                     className="w-4 h-4 ml-1 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5"
                     fill="none"
                     stroke="currentColor"
@@ -51,16 +52,17 @@ export function HeroSection() {
               <p className="text-muted-foreground text-lg">{t('subtitle')}</p>
             </div>
 
-            {/* CTA Button */}
+            {/* CTA Buttons */}
             <ScrollReveal delay={100}>
-              <div className="mt-8">
+              <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 <button
                   type="button"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white font-semibold text-lg rounded-lg transition-colors duration-200 shadow-lg shadow-accent/25"
+                  className="inline-flex items-center justify-center gap-2 min-w-56 px-6 py-4 bg-accent hover:bg-accent-hover text-white font-semibold text-lg rounded-lg transition-colors duration-200 shadow-lg shadow-accent/25"
                   onClick={() => openModal()}
                 >
                   {t('cta')}
                   <svg
+                    aria-hidden="true"
                     className="w-5 h-5"
                     fill="none"
                     stroke="currentColor"
@@ -74,6 +76,12 @@ export function HeroSection() {
                     />
                   </svg>
                 </button>
+                <a
+                  href="#pricing"
+                  className="inline-flex items-center justify-center gap-2 min-w-56 px-6 py-4 border border-border hover:border-accent/50 text-foreground hover:text-white font-semibold text-lg rounded-lg transition-colors duration-200"
+                >
+                  {t('ctaSecondary')}
+                </a>
               </div>
             </ScrollReveal>
           </ScrollReveal>

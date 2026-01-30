@@ -1,20 +1,9 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 
-interface FooterProps {
-  onSectionClick: (sectionId: string) => void;
-}
-
-export function Footer({ onSectionClick }: FooterProps) {
-  const t = useTranslations('footer');
+export async function Footer() {
+  const t = await getTranslations('footer');
   const currentYear = new Date().getFullYear();
-
-  const handleClick = (e: React.MouseEvent, sectionId: string) => {
-    e.preventDefault();
-    onSectionClick(sectionId);
-  };
 
   return (
     <footer className="relative border-t border-border py-12">
@@ -49,7 +38,6 @@ export function Footer({ onSectionClick }: FooterProps) {
               <li>
                 <a
                   href="#features"
-                  onClick={(e) => handleClick(e, '#features')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {t('product.features')}
@@ -58,7 +46,6 @@ export function Footer({ onSectionClick }: FooterProps) {
               <li>
                 <a
                   href="#pricing"
-                  onClick={(e) => handleClick(e, '#pricing')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {t('product.pricing')}
@@ -76,7 +63,6 @@ export function Footer({ onSectionClick }: FooterProps) {
               <li>
                 <a
                   href="#how-it-works"
-                  onClick={(e) => handleClick(e, '#how-it-works')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {t('resources.howItWorks')}
@@ -85,7 +71,6 @@ export function Footer({ onSectionClick }: FooterProps) {
               <li>
                 <a
                   href="#faq"
-                  onClick={(e) => handleClick(e, '#faq')}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {t('resources.faq')}
