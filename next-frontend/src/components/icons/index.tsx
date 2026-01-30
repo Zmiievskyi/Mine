@@ -21,4 +21,9 @@ export {
   ChartBarIcon,
   CpuIcon,
   RefreshIcon,
+  ShieldCheckIcon,
+  RocketIcon,
+  EyeIcon,
+  DocumentCheckIcon,
+  ScaleIcon,
 } from './service-icons';

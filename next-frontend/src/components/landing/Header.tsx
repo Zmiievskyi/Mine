@@ -17,8 +17,9 @@ export function Header({ onSectionClick }: HeaderProps) {
 
   const navLinks = [
     { label: t('nav.features'), href: '#features' },
-    { label: t('nav.howItWorks'), href: '#how-it-works' },
     { label: t('nav.pricing'), href: '#pricing' },
+    { label: t('nav.efficiency'), href: '#efficiency' },
+    { label: t('nav.howItWorks'), href: '#how-it-works' },
     { label: t('nav.faq'), href: '#faq' },
   ];
 

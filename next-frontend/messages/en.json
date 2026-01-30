@@ -34,8 +34,9 @@
   },
   "nav": {
     "features": "What we offer",
-    "howItWorks": "How It Works",
     "pricing": "Pricing",
+    "efficiency": "Efficiency",
+    "howItWorks": "How It Works",
     "faq": "FAQ"
   },
   "features": {
@@ -164,6 +165,34 @@
     "note": "Infrastructure downtime credits apply to infrastructure issues only and do not cover missed network rewards.",
     "noteLabel": "Note:"
   },
+  "serviceAddon": {
+    "sectionTitle": "Let us manage the technical work",
+    "title": "Managed service add-on",
+    "badge": "Additional Service",
+    "items": [
+      {
+        "title": "No manual bring-up",
+        "description": "we handle OS + RAID, drivers, and initial tuning."
+      },
+      {
+        "title": "No \"setup guesswork\"",
+        "description": "we deploy your stack as instructed."
+      },
+      {
+        "title": "No blind spots",
+        "description": "we monitor infrastructure signals 24/7 (node connectivity, GPU utilization & temperature)."
+      },
+      {
+        "title": "Clear support channel",
+        "description": "business hours support (CET) with updates and next steps."
+      },
+      {
+        "title": "Downtime credits",
+        "description": "available under the managed service add-on (infrastructure downtime only)."
+      }
+    ],
+    "note": "Note: monitoring/health scope should match the actually available tooling."
+  },
   "managedServices": {
     "badge": "Fully Managed",
     "title": "We handle the technical complexity",
@@ -210,6 +239,20 @@
     "customPricing": "Custom pricing",
     "volumeDiscount": "Volume discounts available",
     "volumeDiscountNote": "from 10+ servers. Contact us for custom pricing."
+  },
+  "efficiency": {
+    "badge": "Efficiency",
+    "title": "Compare GPU efficiency",
+    "subtitle": "Higher efficiency means more weight per dollar spent. Choose the GPU that maximizes your return.",
+    "formulaTitle": "Efficiency Formula",
+    "formulaEfficiency": "Efficiency",
+    "formulaNumerator": "weight per GPU",
+    "formulaDenominator": "$ / GPU / hour",
+    "formulaHint": "Higher efficiency = more weight per dollar spent",
+    "bestValue": "Best Value",
+    "weightLabel": "Weight",
+    "efficiencyUnit": "weight/$",
+    "disclaimer": "Weights are based on current network data and may vary. Efficiency calculations use listed hourly rates."
   },
   "faq": {
     "badge": "Frequently Asked Questions",

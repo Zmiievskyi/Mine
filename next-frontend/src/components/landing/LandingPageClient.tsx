@@ -5,12 +5,13 @@ import { HubspotProvider, useHubspot } from '@/lib/contexts/HubspotContext';
 import { HubspotModal } from '@/components/ui/HubspotModal';
 import { Header } from '@/components/landing/Header';
 import { HeroSection } from '@/components/landing/HeroSection';
-import { NetworkStats } from '@/components/landing/NetworkStats';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { ForWho } from '@/components/landing/ForWho';
-import { HowItWorks } from '@/components/landing/HowItWorks';
+import { ServiceAddon } from '@/components/landing/ServiceAddon';
 import { ManagedServices } from '@/components/landing/ManagedServices';
 import { PricingSection } from '@/components/landing/PricingSection';
+import { EfficiencySection } from '@/components/landing/EfficiencySection';
+import { HowItWorks } from '@/components/landing/HowItWorks';
 import { FaqSection } from '@/components/landing/FaqSection';
 import { Footer } from '@/components/landing/Footer';
 
@@ -39,13 +40,15 @@ export function LandingPageClient() {
       <Header onSectionClick={scrollToSection} />
 
       <main className="relative z-10">
+        {/* Section order matches static site reference */}
         <HeroSection />
-        <NetworkStats />
         <FeaturesSection />
         <ForWho />
-        <HowItWorks />
+        <ServiceAddon />
         <ManagedServices />
         <PricingSection />
+        <EfficiencySection />
+        <HowItWorks />
         <FaqSection />
       </main>
 
