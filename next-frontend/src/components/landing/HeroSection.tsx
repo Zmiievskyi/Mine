@@ -9,8 +9,8 @@ export function HeroSection() {
   const { openModal } = useHubspot();
 
   return (
-    <section id="home" className="py-16 md:py-32">
-      <div className="mx-auto max-w-xl md:max-w-6xl px-6">
+    <section id="home" className="py-12 sm:py-16 md:py-32">
+      <div className="mx-auto max-w-xl md:max-w-6xl px-4 sm:px-6">
         <div className="grid items-center gap-12 md:grid-cols-2 md:gap-12 lg:grid-cols-5 lg:gap-24">
           {/* Left Column: Text Content */}
           <ScrollReveal className="lg:col-span-2">
@@ -52,10 +52,10 @@ export function HeroSection() {
 
             {/* CTA Buttons */}
             <ScrollReveal delay={100}>
-              <div className="mt-8 flex gap-3">
+              <div className="mt-8 flex flex-col sm:flex-row gap-3">
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center gap-2 w-52 py-2.5 bg-accent hover:bg-accent-hover text-white font-medium text-sm rounded-md transition-colors duration-200 shadow-lg shadow-accent/25"
+                  className="inline-flex items-center justify-center gap-2 w-full sm:w-auto sm:px-8 py-2.5 bg-accent hover:bg-accent-hover text-white font-medium text-sm rounded-md transition-colors duration-200 shadow-lg shadow-accent/25"
                   onClick={() => openModal()}
                 >
                   {t('cta')}
@@ -76,7 +76,7 @@ export function HeroSection() {
                 </button>
                 <a
                   href="#pricing"
-                  className="inline-flex items-center justify-center gap-2 w-52 py-2.5 border border-border hover:border-accent/50 text-foreground hover:text-white font-medium text-sm rounded-md transition-colors duration-200 whitespace-nowrap"
+                  className="inline-flex items-center justify-center gap-2 w-full sm:w-auto sm:px-8 py-2.5 border border-border hover:border-accent/50 text-foreground hover:text-white font-medium text-sm rounded-md transition-colors duration-200"
                 >
                   {t('ctaSecondary')}
                 </a>

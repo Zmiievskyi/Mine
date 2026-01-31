@@ -46,28 +46,12 @@
     "subtitle": "We handle the infrastructure so you can focus on earning. Clear pricing, predictable operations, and accountable uptime.",
     "items": [
       {
-        "title": "Understand the economics fast",
-        "description": "Clear packages and pricing upfront. Know exactly what you're paying for before you commit."
+        "title": "Dedicated GPUs with SLA",
+        "description": "Enterprise-grade GPUs with accountable uptime guarantees. Your infrastructure reliability is our responsibility, with compensation if breached."
       },
       {
-        "title": "Reduce risk before paying",
-        "description": "Confirm quote and availability before payment. No surprises after you sign."
-      },
-      {
-        "title": "Launch without surprises",
-        "description": "Predictable path to go-live. We handle provisioning end-to-end within days."
-      },
-      {
-        "title": "Operate with clarity",
-        "description": "Visible statuses and updates in one place. Know what's happening with your nodes at all times."
-      },
-      {
-        "title": "GPU Services SLA",
-        "description": "Accountable uptime with compensation if breached. Your infrastructure reliability is our responsibility."
-      },
-      {
-        "title": "Scale when needed",
-        "description": "Add capacity under the same rules. Volume discounts available from 10+ servers."
+        "title": "Managed Service",
+        "description": "Installation and updates of Gonka software, 24/7 monitoring, and dashboards. We handle the technical complexity so you can focus on earning."
       }
     ],
     "slaFootnote": "* SLA applies to infrastructure availability only: network-level downtime, missed rewards, or any \"mining/participation\" outcomes are not covered."

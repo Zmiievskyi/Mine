@@ -3,8 +3,8 @@ import { GridBackground } from '@/components/ui/GridBackground';
 import { LandingPageClient } from '@/components/landing/LandingPageClient';
 import { Header } from '@/components/landing/Header';
 import { HeroSection } from '@/components/landing/HeroSection';
+import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { ForWho } from '@/components/landing/ForWho';
-import { ServiceAddon } from '@/components/landing/ServiceAddon';
 import { PricingSection } from '@/components/landing/PricingSection';
 import { EfficiencySection } from '@/components/landing/EfficiencySection';
 import { HowItWorks } from '@/components/landing/HowItWorks';
@@ -18,7 +18,7 @@ interface PageProps {
 
 /**
  * Landing page with optimized Server/Client component split:
- * - Server Components: FeaturesSection, ForWho, ServiceAddon, ManagedServices, FaqSection, Footer
+ * - Server Components: FeaturesSection, ForWho, ManagedServices, FaqSection, Footer
  * - Client Components: Header, HeroSection, PricingSection, EfficiencySection, HowItWorks
  *   (these need HubspotContext for openModal() or client-side interactivity)
  */
@@ -27,7 +27,7 @@ export default async function LandingPage({ params }: PageProps) {
   setRequestLocale(locale);
 
   return (
-    <div className="snap-container bg-background text-foreground antialiased overflow-x-hidden">
+    <div className="bg-background text-foreground antialiased overflow-x-hidden">
       {/* Grid Pattern Background */}
       <GridBackground />
 
@@ -35,35 +35,35 @@ export default async function LandingPage({ params }: PageProps) {
       <LandingPageClient>
         <Header />
         <main className="relative z-10">
-          <section className="snap-section">
+          <section>
             <HeroSection />
           </section>
-          <section className="snap-section">
+          <section>
+            <FeaturesSection />
+          </section>
+          <section>
             <ForWho />
           </section>
-          <section className="snap-section">
-            <ServiceAddon />
-          </section>
-          <section className="snap-section">
+          <section>
             <PricingSection />
           </section>
-          <section className="snap-section">
+          <section>
             <EfficiencySection />
           </section>
-          <section className="snap-section">
+          <section>
             <HowItWorks />
           </section>
-          <section className="snap-section">
+          <section>
             <ManagedServices />
           </section>
-          <section className="snap-section">
+          <section>
             <FaqSection />
           </section>
         </main>
       </LandingPageClient>
 
       {/* Footer as Server Component (no HubspotContext needed) */}
-      <section className="snap-section">
+      <section>
         <Footer />
       </section>
     </div>

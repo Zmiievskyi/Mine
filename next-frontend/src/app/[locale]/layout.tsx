@@ -17,7 +17,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: 'MineGNK - GPU Mining as a Service',
+  title: 'MineGNK - GPU for Mining',
   description:
     'Rent enterprise-grade GPUs to mine cryptocurrency on the Gonka network. Pay in fiat currency and earn GNK tokens.',
 };
