@@ -91,8 +91,29 @@ function RequestGpuForm() {
       `script[src*="js-${HUBSPOT_CONFIG.region}.hsforms.net/forms/embed/${HUBSPOT_CONFIG.portalId}.js"]`
     );
 
+    // If script already loaded and HubSpotForms is ready, trigger a rescan
     if (existingScript || scriptLoadedRef.current) {
       scriptLoadedRef.current = true;
+      // Script tag exists but HubSpotForms may not be ready yet - poll for it
+      if (window.HubSpotForms) {
+        window.HubSpotForms.reload();
+      } else {
+        // Poll for HubSpotForms to become available (handles race condition on client-side nav)
+        let pollAttempts = 0;
+        const maxAttempts = 50; // 5 seconds max
+        const pollInterval = setInterval(() => {
+          pollAttempts++;
+          if (window.HubSpotForms) {
+            clearInterval(pollInterval);
+            window.HubSpotForms.reload();
+          } else if (pollAttempts >= maxAttempts) {
+            clearInterval(pollInterval);
+            if (isMountedRef.current) {
+              setLoadState('error');
+            }
+          }
+        }, 100);
+      }
       return;
     }
 

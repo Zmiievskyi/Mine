@@ -11,8 +11,15 @@ interface UseScrollRevealOptions {
 // Check if user prefers reduced motion (SSR-safe)
 function subscribeToPrefersReducedMotion(callback: () => void) {
   const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  mediaQuery.addEventListener('change', callback);
-  return () => mediaQuery.removeEventListener('change', callback);
+  // Use addEventListener if available, fall back to addListener for older Safari (<14)
+  if (mediaQuery.addEventListener) {
+    mediaQuery.addEventListener('change', callback);
+    return () => mediaQuery.removeEventListener('change', callback);
+  } else {
+    // Deprecated but needed for Safari 13 and earlier
+    mediaQuery.addListener(callback);
+    return () => mediaQuery.removeListener(callback);
+  }
 }
 
 function getPrefersReducedMotion() {

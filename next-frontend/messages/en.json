@@ -172,7 +172,11 @@
         "title": "Updates & Patches",
         "description": "New Gonka versions, patches, and hotfixes applied automatically"
       }
-    ]
+    ],
+    "dashboardTitle": "GPU Monitoring Dashboard",
+    "dashboardSubtitle": "Real-time infrastructure visibility",
+    "dashboardAlt": "GPU monitoring dashboard showing node state, GPU temperatures, utilization, and memory usage",
+    "dashboardCaption": "Monitor node state, GPU temperatures, utilization, and memory across your entire cluster in real-time"
   },
   "pricing": {
     "badge": "Simple Pricing",

@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
         {/* Preconnect to HubSpot for faster form loading */}
         <link rel="preconnect" href="https://js-eu1.hsforms.net" crossOrigin="anonymous" />

@@ -172,7 +172,11 @@
         "title": "更新和补丁",
         "description": "新的 Gonka 版本、补丁和修复程序自动应用"
       }
-    ]
+    ],
+    "dashboardTitle": "GPU 监控仪表板",
+    "dashboardSubtitle": "实时基础设施可见性",
+    "dashboardAlt": "GPU 监控仪表板显示节点状态、GPU 温度、利用率和内存使用情况",
+    "dashboardCaption": "实时监控整个集群的节点状态、GPU 温度、利用率和内存"
   },
   "pricing": {
     "badge": "简单定价",

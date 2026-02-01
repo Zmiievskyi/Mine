@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import Image from 'next/image';
 import {
   UploadIcon,
   DatabaseIcon,
@@ -67,6 +68,59 @@ export async function ManagedServices() {
               </div>
             );
           })}
+        </div>
+
+        {/* Dashboard Preview */}
+        <div className="scroll-reveal mt-12 md:mt-16" style={{ animationDelay: '400ms' }}>
+          <div className="relative group">
+            {/* Glow effect behind the dashboard */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-accent/20 via-accent/10 to-accent/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+            {/* Dashboard container */}
+            <div className="relative rounded-xl border border-border bg-card/30 backdrop-blur-sm p-4 md:p-6 overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <ChartBarIcon className="w-4 h-4 text-accent" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {t('dashboardTitle')}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    {t('dashboardSubtitle')}
+                  </p>
+                </div>
+                {/* Live indicator */}
+                <div className="ml-auto flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                  </span>
+                  <span className="text-xs text-green-500 font-medium">Live</span>
+                </div>
+              </div>
+
+              {/* Dashboard screenshot */}
+              <div className="relative rounded-lg overflow-hidden border border-border/50">
+                <Image
+                  src="/dashboard1.png"
+                  alt={t('dashboardAlt')}
+                  width={1568}
+                  height={600}
+                  className="w-full h-auto"
+                  priority={false}
+                />
+                {/* Subtle overlay gradient at edges */}
+                <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-background/20 via-transparent to-transparent" />
+              </div>
+
+              {/* Caption */}
+              <p className="mt-4 text-xs text-muted-foreground text-center">
+                {t('dashboardCaption')}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>

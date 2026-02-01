@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 const CHAIN_STATUS_URL = 'https://node4.gonka.ai/chain-rpc/status';
 const EPOCH_PARTICIPANTS_URL = 'https://node4.gonka.ai/v1/epochs/current/participants';
@@ -48,6 +48,8 @@ export function NetworkStatus() {
     updatedAt: null,
   });
   const [isUpdating, setIsUpdating] = useState(false);
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
 
   const fetchData = useCallback(async () => {
     setIsUpdating(true);
@@ -73,11 +75,15 @@ export function NetworkStatus() {
       const latestHeight = parseInt(syncInfo?.latest_block_height ?? syncInfo?.latestBlockHeight ?? '0', 10);
       const latestTime = syncInfo?.latest_block_time ?? syncInfo?.latestBlockTime;
 
-      // Calculate block age
+      // Calculate block age (with validation)
       let blockAge: number | null = null;
       if (latestTime) {
         const blockDate = new Date(latestTime);
-        blockAge = (updatedAt.getTime() - blockDate.getTime()) / 1000;
+        const blockTimestamp = blockDate.getTime();
+        // Validate that the date parsed correctly (not NaN)
+        if (!Number.isNaN(blockTimestamp)) {
+          blockAge = (updatedAt.getTime() - blockTimestamp) / 1000;
+        }
       }
 
       // Extract epoch from active_participants
@@ -107,14 +113,29 @@ export function NetworkStatus() {
         updatedAt,
       }));
     } finally {
-      setTimeout(() => setIsUpdating(false), 300);
+      // Clear any existing timeout to prevent race conditions with overlapping requests
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+      updateTimeoutRef.current = setTimeout(() => {
+        if (isMountedRef.current) {
+          setIsUpdating(false);
+        }
+      }, 300);
     }
   }, []);
 
   useEffect(() => {
+    isMountedRef.current = true;
     fetchData();
     const interval = setInterval(fetchData, POLL_INTERVAL);
-    return () => clearInterval(interval);
+    return () => {
+      isMountedRef.current = false;
+      clearInterval(interval);
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
   }, [fetchData]);
 
   const statusConfig = {
