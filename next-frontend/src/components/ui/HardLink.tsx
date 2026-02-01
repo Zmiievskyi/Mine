@@ -16,6 +16,11 @@ export function HardLink({ href, children, onClick, ...props }: HardLinkProps) {
   const locale = useLocale();
 
   const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
+    // Allow normal browser behavior for middle-click, Cmd+click, Ctrl+click, etc.
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+      return;
+    }
+
     e.preventDefault();
     onClick?.(e);
 

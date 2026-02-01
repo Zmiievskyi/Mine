@@ -30,10 +30,10 @@ export function LanguageSwitcher({ showLabels = false }: LanguageSwitcherProps) 
     document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000;samesite=lax`;
 
     // Force full page reload to reset HubSpot form state
-    // Always use explicit locale path for non-default, or root for default
-    const newPath = newLocale === routing.defaultLocale
-      ? pathname
-      : `/${newLocale}${pathname}`;
+    // Always use explicit locale prefix (required for static export)
+    // Preserve query params (e.g., ?gpu=... on /request-gpu)
+    const queryString = typeof window !== 'undefined' ? window.location.search : '';
+    const newPath = `/${newLocale}${pathname}${queryString}`;
     window.location.href = newPath;
   };
 
