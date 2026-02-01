@@ -17,8 +17,9 @@ MineGNK is a marketing landing page that allows visitors to:
 |-------|------------|
 | Framework | Next.js 16 (App Router) |
 | Styling | Tailwind CSS v4 |
-| i18n | next-intl (EN/RU) |
+| i18n | next-intl (EN/RU/ZH) |
 | Forms | HubSpot embedded forms |
+| Network Monitoring | Gonka blockchain APIs |
 | Deployment | Static export |
 
 ## Quick Start
@@ -67,6 +68,12 @@ Form configuration is hardcoded in `src/components/ui/HubspotModal.tsx`:
 
 ## Landing Page Sections
 
+**Header**
+- Navigation with language switcher (EN/RU/ZH)
+- Live network status ticker (block height, age, epoch)
+- "Rent GPU" CTA button
+
+**Main Sections**
 1. **Hero** - Value proposition with animated badge
 2. **Network Stats** - Gonka network overview
 3. **Efficiency** - GPU efficiency comparison
@@ -78,6 +85,23 @@ Form configuration is hardcoded in `src/components/ui/HubspotModal.tsx`:
 9. **Service Addon** - Additional services
 10. **FAQ** - Common questions
 11. **Footer** - Links and copyright
+
+## Network Status Monitoring
+
+Live ticker in header showing real-time Gonka blockchain metrics:
+
+- **Status**: Live (green), Syncing (amber), Stale (red), or Unknown (gray)
+- **Block Height**: Latest block number
+- **Block Age**: Time since last block
+- **Epoch**: Current network epoch
+- **Auto-refresh**: Every 20 seconds
+- **Responsive**: Metrics progressively hidden on smaller screens
+
+**API Endpoints**:
+- Chain status: `https://node4.gonka.ai/chain-rpc/status`
+- Epoch data: `https://node4.gonka.ai/v1/epochs/current/participants`
+
+Both APIs support CORS without proxy requirements.
 
 ## Deployment
 
