@@ -99,19 +99,23 @@ export function NetworkStatus() {
         status = 'stale';
       }
 
-      setData({
-        status,
-        blockHeight: latestHeight || null,
-        blockAge,
-        epochId,
-        updatedAt,
-      });
+      if (isMountedRef.current) {
+        setData({
+          status,
+          blockHeight: latestHeight || null,
+          blockAge,
+          epochId,
+          updatedAt,
+        });
+      }
     } catch (error) {
-      setData((prev) => ({
-        ...prev,
-        status: 'unknown',
-        updatedAt,
-      }));
+      if (isMountedRef.current) {
+        setData((prev) => ({
+          ...prev,
+          status: 'unknown',
+          updatedAt,
+        }));
+      }
     } finally {
       // Clear any existing timeout to prevent race conditions with overlapping requests
       if (updateTimeoutRef.current) {

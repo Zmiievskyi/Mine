@@ -91,29 +91,38 @@ function RequestGpuForm() {
       `script[src*="js-${HUBSPOT_CONFIG.region}.hsforms.net/forms/embed/${HUBSPOT_CONFIG.portalId}.js"]`
     );
 
-    // If script already loaded and HubSpotForms is ready, trigger a rescan
-    if (existingScript || scriptLoadedRef.current) {
+    // If HubSpotForms is already available, just reload
+    if (window.HubSpotForms) {
       scriptLoadedRef.current = true;
-      // Script tag exists but HubSpotForms may not be ready yet - poll for it
-      if (window.HubSpotForms) {
-        window.HubSpotForms.reload();
-      } else {
-        // Poll for HubSpotForms to become available (handles race condition on client-side nav)
-        let pollAttempts = 0;
-        const maxAttempts = 50; // 5 seconds max
-        const pollInterval = setInterval(() => {
-          pollAttempts++;
-          if (window.HubSpotForms) {
-            clearInterval(pollInterval);
-            window.HubSpotForms.reload();
-          } else if (pollAttempts >= maxAttempts) {
-            clearInterval(pollInterval);
-            if (isMountedRef.current) {
-              setLoadState('error');
-            }
+      window.HubSpotForms.reload();
+      return;
+    }
+
+    // Script tag exists but HubSpotForms isn't available - script may have failed to load
+    // Remove the stale script tag so we can try loading fresh
+    if (existingScript && !window.HubSpotForms) {
+      existingScript.remove();
+      scriptLoadedRef.current = false;
+    }
+
+    // If we previously loaded successfully, poll for HubSpotForms (handles race condition)
+    if (scriptLoadedRef.current) {
+      let pollAttempts = 0;
+      const maxAttempts = 50; // 5 seconds max
+      const pollInterval = setInterval(() => {
+        pollAttempts++;
+        if (window.HubSpotForms) {
+          clearInterval(pollInterval);
+          window.HubSpotForms.reload();
+        } else if (pollAttempts >= maxAttempts) {
+          clearInterval(pollInterval);
+          // Script was marked as loaded but HubSpotForms never appeared - reset and retry
+          scriptLoadedRef.current = false;
+          if (isMountedRef.current) {
+            setLoadState('error');
           }
-        }, 100);
-      }
+        }
+      }, 100);
       return;
     }
 
@@ -154,10 +163,14 @@ function RequestGpuForm() {
   }, []);
 
   const handleRetry = useCallback(() => {
+    // Clear any stale timeouts/observers before starting fresh
+    cleanup();
     setLoadState('loading');
 
     timeoutRef.current = setTimeout(() => {
-      setLoadState('error');
+      if (isMountedRef.current) {
+        setLoadState('error');
+      }
     }, FORM_LOAD_TIMEOUT_MS);
 
     setupFormObserver();
@@ -167,7 +180,7 @@ function RequestGpuForm() {
     } else {
       recreateForm();
     }
-  }, [loadScript, setupFormObserver, recreateForm]);
+  }, [cleanup, loadScript, setupFormObserver, recreateForm]);
 
   // Handle form loading on mount
   useEffect(() => {
