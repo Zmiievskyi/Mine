@@ -157,6 +157,11 @@ body {
     transition: none;
     animation: none;
   }
+
+  /* Disable badge rotation animation */
+  .badge-spark::before {
+    animation: none;
+  }
 }
 
 /* ForWho card glow effects */
@@ -176,6 +181,24 @@ body {
     linear-gradient(90deg, #ff4c00 1px, transparent 1px),
     linear-gradient(180deg, #ff4c00 1px, transparent 1px);
   background-size: 32px 32px;
+}
+
+/* Card hover glow effect */
+.card-glow {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 76, 0, 0.5) 0%,
+    rgba(255, 76, 0, 0.1) 50%,
+    rgba(255, 76, 0, 0.5) 100%
+  );
+}
+
+/* Grid pattern overlay for cards */
+.card-grid-pattern {
+  background-image:
+    linear-gradient(90deg, #FF4C00 1px, transparent 1px),
+    linear-gradient(180deg, #FF4C00 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 /* HubSpot form container styling */

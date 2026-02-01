@@ -42,7 +42,7 @@ export function HeroSection() {
               </HardLink>
 
               {/* Heading */}
-              <h1 className="text-4xl font-semibold lg:text-5xl leading-[1.1] mb-6">
+              <h1 className="text-4xl font-semibold lg:text-5xl leading-[1.1] mb-6 font-heading">
                 {t('title')}{' '}
                 <span className="bg-gradient-to-r from-[#FF4C00] to-[#FF7A45] bg-clip-text text-transparent">
                   {t('titleHighlight')}
@@ -57,7 +57,7 @@ export function HeroSection() {
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
                 <HardLink
                   href="/request-gpu"
-                  className="inline-flex items-center justify-center gap-2 w-full sm:w-auto sm:px-8 py-2.5 bg-accent hover:bg-accent-hover text-white font-medium text-sm rounded-md transition-colors duration-200 shadow-lg shadow-accent/25"
+                  className="inline-flex items-center justify-center gap-2 w-full sm:w-auto sm:px-8 py-2.5 bg-accent hover:bg-accent-hover text-white font-semibold text-sm rounded-lg transition-all duration-300 shadow-lg shadow-accent/30 hover:shadow-xl hover:shadow-accent/40 hover:-translate-y-0.5"
                 >
                   {t('cta')}
                   <svg
@@ -77,7 +77,7 @@ export function HeroSection() {
                 </HardLink>
                 <a
                   href="#pricing"
-                  className="inline-flex items-center justify-center gap-2 w-full sm:w-auto sm:px-8 py-2.5 border border-border hover:border-accent/50 text-foreground hover:text-white font-medium text-sm rounded-md transition-colors duration-200"
+                  className="inline-flex items-center justify-center gap-2 w-full sm:w-auto sm:px-8 py-2.5 border border-border hover:border-accent/50 hover:bg-accent/5 text-foreground hover:text-white font-medium text-sm rounded-lg transition-all duration-300"
                 >
                   {t('ctaSecondary')}
                 </a>

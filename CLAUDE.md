@@ -33,6 +33,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Framework**: Next.js 16 with App Router
 - **Styling**: Tailwind CSS v4
+- **Animations**: Motion (Framer Motion)
 - **i18n**: next-intl (EN/RU/ZH)
 - **Forms**: HubSpot embedded forms (EU1 region)
 
@@ -64,6 +65,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
           FaqSection.tsx
           Footer.tsx
         ui/                 # Reusable UI components
+          MotionReveal.tsx  # Scroll-triggered animations
         icons/              # SVG icons
       data/                 # Static data
         pricing.ts
@@ -94,6 +96,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 All data is in `src/data/` folder:
 - `pricing.ts` - GPU pricing data
 - `efficiency.ts` - Efficiency metrics
+
+### Design System
+
+**Typography**
+- `font-heading` (Outfit) - Used for all h1/h2 headings
+- `font-body` (Inter) - Body text
+
+**CSS Utilities** (in `globals.css`):
+- `.cta-glow` - Pulsing glow animation for CTAs
+- `.glass-card` - Glass morphism card effect
+- `.text-gradient` - Orange gradient text
+- `.page-grid` - Subtle background grid pattern
+
+**Animation Components** (`ui/MotionReveal.tsx`):
+- `MotionReveal` - Scroll-triggered fade-in with direction
+- `MotionStagger` - Container for staggered child animations
+- `MotionItem` - Child item for stagger animations
+- `MotionScale` - Scale-up animation on scroll
 
 ## Development Commands
 
@@ -248,7 +268,8 @@ When user clicks "Request GPU" on a pricing card:
 
 | Skill | Use For |
 |-------|---------|
-| `context7` | Fetch library documentation |
+| `context7` | Fetch library documentation (Motion, Next.js, etc.) |
 | `nextjs` | Next.js 16 App Router patterns, Server/Client Components |
 | `nextjs-anti-patterns` | Detect/fix common Next.js mistakes |
 | `tailwindcss` | Tailwind CSS v4 styling, responsive design, dark mode |
+| `frontend-design` | UI/UX improvements, visual polish |

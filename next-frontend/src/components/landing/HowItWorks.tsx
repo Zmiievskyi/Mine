@@ -18,7 +18,7 @@ export function HowItWorks() {
             <span className="inline-flex items-center justify-center rounded-full border border-accent/50 bg-transparent px-4 py-1.5 text-sm font-medium text-white mb-4">
               {t('badge')}
             </span>
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 font-heading">
               {t('title')}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -40,7 +40,7 @@ export function HowItWorks() {
               const isEven = index % 2 === 0;
 
               return (
-                <ScrollReveal key={index} delay={index * 75}>
+                <ScrollReveal key={step.title} delay={index * 75}>
                   <div
                     className={`
                       relative flex items-start gap-6
@@ -83,15 +83,7 @@ export function HowItWorks() {
                     >
                       <div className="group relative">
                         {/* Card glow on hover */}
-                        <div
-                          className="absolute -inset-[1px] rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm"
-                          style={{
-                            background: `linear-gradient(135deg,
-                              rgba(255,76,0,0.3) 0%,
-                              rgba(255,76,0,0.1) 50%,
-                              rgba(255,76,0,0.3) 100%)`,
-                          }}
-                        />
+                        <div className="card-glow absolute -inset-[1px] rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
 
                         {/* Card content */}
                         <div
@@ -104,14 +96,7 @@ export function HowItWorks() {
                           "
                         >
                           {/* Grid pattern overlay */}
-                          <div
-                            className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-[0.02] transition-opacity duration-500 overflow-hidden"
-                            style={{
-                              backgroundImage: `linear-gradient(90deg, #FF4C00 1px, transparent 1px),
-                                                linear-gradient(180deg, #FF4C00 1px, transparent 1px)`,
-                              backgroundSize: '20px 20px',
-                            }}
-                          />
+                          <div className="card-grid-pattern absolute inset-0 rounded-xl opacity-0 group-hover:opacity-[0.02] transition-opacity duration-500 overflow-hidden" />
 
                           {/* Content */}
                           <div className="relative z-10">
@@ -179,7 +164,7 @@ export function HowItWorks() {
           <div className="mt-12 text-center">
             <HardLink
               href="/request-gpu"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white font-semibold text-lg rounded-lg transition-colors duration-200 shadow-lg shadow-accent/25"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white font-semibold text-lg rounded-lg transition-all duration-300 shadow-lg shadow-accent/30 hover:shadow-xl hover:shadow-accent/50 hover:-translate-y-0.5"
             >
               {t('cta')}
               <svg

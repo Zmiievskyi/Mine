@@ -33,7 +33,7 @@ export async function ManagedServices() {
           <span className="inline-flex items-center justify-center rounded-full border border-accent/50 bg-transparent px-4 py-1.5 text-sm font-medium text-white mb-4">
             {t('badge')}
           </span>
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 font-heading">
             {t('title')}
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">

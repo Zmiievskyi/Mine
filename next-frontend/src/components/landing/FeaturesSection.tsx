@@ -21,7 +21,7 @@ export async function FeaturesSection() {
           <span className="inline-flex items-center justify-center rounded-full border border-accent/50 bg-transparent px-4 py-1.5 text-sm font-medium text-white mb-4">
             {t('badge')}
           </span>
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">{t('title')}</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 font-heading">{t('title')}</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             {t('subtitle')}
           </p>
@@ -34,7 +34,7 @@ export async function FeaturesSection() {
 
             return (
               <div
-                key={index}
+                key={feature.title}
                 className="scroll-reveal"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
@@ -50,14 +50,7 @@ export async function FeaturesSection() {
                   "
                 >
                   {/* Grid pattern overlay on hover */}
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500"
-                    style={{
-                      backgroundImage: `linear-gradient(90deg, #FF4C00 1px, transparent 1px),
-                                        linear-gradient(180deg, #FF4C00 1px, transparent 1px)`,
-                      backgroundSize: '24px 24px',
-                    }}
-                  />
+                  <div className="card-grid-pattern absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500" />
 
                   {/* Glow effect on hover */}
                   <div className="absolute -inset-px rounded-xl bg-gradient-to-r from-accent/20 via-transparent to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />

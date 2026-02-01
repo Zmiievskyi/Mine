@@ -13,7 +13,7 @@ export async function FaqSection() {
           <span className="inline-flex items-center justify-center rounded-full border border-accent/50 bg-transparent px-4 py-1.5 text-sm font-medium text-white mb-4">
             {t('badge')}
           </span>
-          <h2 className="text-2xl md:text-3xl font-bold">
+          <h2 className="text-2xl md:text-3xl font-bold font-heading">
             {t('title')}
           </h2>
         </div>
@@ -22,7 +22,7 @@ export async function FaqSection() {
         <div className="max-w-3xl mx-auto space-y-4">
           {faqs.map((faq, index) => (
             <div
-              key={index}
+              key={faq.question}
               className="scroll-reveal rounded-xl border border-border bg-card/30 p-6"
               style={{ animationDelay: `${index * 50}ms` }}
             >
