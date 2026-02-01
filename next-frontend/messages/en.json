@@ -1,9 +1,9 @@
 {
   "hero": {
     "badge": "GPU for Mining",
-    "title": "Mine",
-    "titleHighlight": "Gonka",
-    "titleSuffix": "on managed GPU infrastructure",
+    "title": "Mine Gonka on",
+    "titleHighlight": "Gcore",
+    "titleSuffix": "managed GPU infrastructure",
     "subtitle": "Rent enterprise-grade GPUs to mine cryptocurrency on our network with clear billing and predictable operations. For operators and pools who care about node stability, transparent payment terms, and scaling without surprises.",
     "cta": "Request GPU",
     "ctaSecondary": "View pricing packages",
