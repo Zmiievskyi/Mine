@@ -66,6 +66,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
           Footer.tsx
         ui/                 # Reusable UI components
           MotionReveal.tsx  # Scroll-triggered animations
+          NetworkStatus.tsx # Live network status monitoring
         icons/              # SVG icons
       data/                 # Static data
         pricing.ts
@@ -91,6 +92,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Sections: Hero, Stats, Features, For Who, Efficiency, How It Works, Managed Services, Service Addon, Pricing, FAQ
 - Language switcher (EN/RU/ZH)
 - **HubSpot Form Integration**: "Rent GPU" buttons open modal with embedded form
+- **Network Status Monitoring**: Live Gonka network status ticker in header
 
 ### Static Data
 All data is in `src/data/` folder:
@@ -114,6 +116,14 @@ All data is in `src/data/` folder:
 - `MotionStagger` - Container for staggered child animations
 - `MotionItem` - Child item for stagger animations
 - `MotionScale` - Scale-up animation on scroll
+
+**Network Status Component** (`ui/NetworkStatus.tsx`):
+- Live monitoring of Gonka blockchain network
+- Real-time metrics: block height, block age, current epoch
+- Auto-refresh every 20 seconds with manual refresh option
+- Status indicators: Live (green), Syncing (amber), Stale (red), Unknown (gray)
+- Responsive design with progressive metric hiding on smaller screens
+- Hydration-safe (renders placeholders during SSR)
 
 ## Development Commands
 
@@ -245,13 +255,83 @@ When user clicks "Request GPU" on a pricing card:
 | GPU not pre-filled | URL params not set | Check `addGpuToUrlParams()` function |
 | Form stuck loading | MutationObserver not triggering | Check if form/iframe element exists |
 
+## Network Status Monitoring
+
+### Overview
+Live network status ticker integrated into the header that displays real-time Gonka blockchain metrics.
+
+### API Endpoints
+
+| Endpoint | Purpose | Data Used |
+|----------|---------|-----------|
+| `https://node4.gonka.ai/chain-rpc/status` | Chain status | Block height, block time, catching_up flag |
+| `https://node4.gonka.ai/v1/epochs/current/participants` | Epoch data | Current epoch ID from `active_participants.epoch_id` |
+
+**Note**: Both endpoints support CORS without proxy requirements.
+
+### Status Logic
+
+| Status | Condition | Indicator Color |
+|--------|-----------|-----------------|
+| Live | Block age ≤ 120s AND not catching up | Green (emerald) |
+| Syncing | Chain is catching up | Amber |
+| Stale | Block age > 120s | Red |
+| Unknown | API error or no data | Gray (zinc) |
+
+### Features
+
+- **Auto-refresh**: Polls every 20 seconds
+- **Manual refresh**: Refresh button with loading animation
+- **Responsive metrics**: Progressively hidden on smaller screens
+  - Mobile: Status indicator only
+  - sm (640px+): + Block height
+  - md (768px+): + Block age
+  - lg (1024px+): + Epoch
+- **Animated status indicator**: Pulsing dot with color-coded states
+- **Last updated time**: Shows when data was last fetched
+- **Hydration-safe**: No layout shift during SSR/client hydration
+
+### Integration
+
+Located in Header component as a sub-header strip below the main navigation bar.
+
+```tsx
+<header className="sticky top-0 inset-x-0 w-full z-50">
+  {/* Main Navigation Bar */}
+  <div className="h-14 bg-background/80 backdrop-blur-md border-b border-border/50">
+    {/* Navigation content */}
+  </div>
+
+  {/* Network Status Strip */}
+  <NetworkStatus />
+</header>
+```
+
+### Testing
+
+Full test coverage available at `src/components/ui/__tests__/NetworkStatus.test.tsx`:
+- API response parsing
+- Status logic validation
+- Responsive behavior
+- Error handling
+- Auto-refresh functionality
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `src/components/ui/NetworkStatus.tsx` | Network status component |
+| `src/components/landing/Header.tsx` | Integration point (includes NetworkStatus) |
+| `src/components/ui/__tests__/NetworkStatus.test.tsx` | Unit tests |
+
 ## Key Decisions
 
-1. **Fully Static**: No backend, no API calls, all data hardcoded
+1. **Fully Static**: No backend, no API calls (except client-side network status), all data hardcoded
 2. **Next.js 16**: App Router with static export
 3. **HubSpot Integration**: External form for lead capture
 4. **i18n**: next-intl with EN/RU/ZH translations
 5. **Tailwind CSS v4**: All styling via utility classes with oklch colors
+6. **Network Monitoring**: Client-side API calls to Gonka network (CORS-enabled, no proxy needed)
 
 ## Local AI Agents & Skills
 
