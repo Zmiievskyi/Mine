@@ -33,7 +33,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Framework**: Next.js 16 with App Router
 - **Styling**: Tailwind CSS v4
-- **i18n**: next-intl (EN/RU)
+- **i18n**: next-intl (EN/RU/ZH)
 - **Forms**: HubSpot embedded forms (EU1 region)
 
 ## Project Structure
@@ -46,12 +46,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
         [locale]/           # i18n routes
           layout.tsx        # Root layout with providers
           page.tsx          # Landing page
+          request-gpu/      # HubSpot form page
+            page.tsx
+            RequestGpuClient.tsx
         globals.css         # Tailwind + custom styles
       components/
         landing/            # Landing page sections
           Header.tsx
           HeroSection.tsx
-          NetworkStats.tsx
           FeaturesSection.tsx
           ForWho.tsx
           EfficiencySection.tsx
@@ -61,7 +63,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
           PricingSection.tsx
           FaqSection.tsx
           Footer.tsx
-          LandingPageClient.tsx
         ui/                 # Reusable UI components
         icons/              # SVG icons
       data/                 # Static data
@@ -69,7 +70,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
         efficiency.ts
       i18n/                 # Internationalization config
       lib/hooks/            # Custom React hooks
-    messages/               # Translation files (en.json, ru.json)
+    messages/               # Translation files (en.json, ru.json, zh.json)
     Dockerfile             # Multi-stage build
     docker-compose.yml     # Port 8000
     nginx.conf             # Static file serving
@@ -86,7 +87,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Public Access**: No authentication
 - Dark theme with Tailwind CSS v4 (oklch colors)
 - Sections: Hero, Stats, Features, For Who, Efficiency, How It Works, Managed Services, Service Addon, Pricing, FAQ
-- Language switcher (EN/RU)
+- Language switcher (EN/RU/ZH)
 - **HubSpot Form Integration**: "Rent GPU" buttons open modal with embedded form
 
 ### Static Data
@@ -131,7 +132,7 @@ Types: `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`
 
 ### Configuration
 
-Form credentials (hardcoded in `HubspotModal.tsx`):
+Form credentials (hardcoded in `RequestGpuClient.tsx`):
 
 | Portal ID | Form ID | Region |
 |-----------|---------|--------|
@@ -141,18 +142,16 @@ Form credentials (hardcoded in `HubspotModal.tsx`):
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ HubspotContext (lib/contexts/HubspotContext.tsx)            │
-│ - Manages modal open/close state                            │
-│ - Stores selected GPU type                                  │
-│ - Provides openModal(gpuType?) and closeModal()             │
+│ PricingSection                                              │
+│ - "Request GPU" buttons link to /request-gpu?gpu=...        │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ HubspotModal (components/ui/HubspotModal.tsx)               │
-│ - Renders modal with HubSpot form                           │
+│ /request-gpu page (RequestGpuClient.tsx)                    │
+│ - Dedicated page with HubSpot form                          │
+│ - Reads ?gpu= param and pre-fills form                      │
 │ - Uses DECLARATIVE embed (hs-form-frame)                    │
-│ - Pre-fills GPU via URL parameters                          │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -186,15 +185,15 @@ Form credentials (hardcoded in `HubspotModal.tsx`):
 ### GPU Pre-fill via URL Parameters
 
 When user clicks "Request GPU" on a pricing card:
-1. `openModal(gpuType)` is called with GPU name (e.g., "NVIDIA H100")
-2. Modal adds URL parameters for HubSpot pre-fill:
+1. User is navigated to `/request-gpu?gpu=NVIDIA%20H100`
+2. `RequestGpuClient` reads the `gpu` param and calls `addGpuToUrlParams()`
+3. URL is updated with HubSpot pre-fill params:
    ```
-   ?form_gonka_preffered_configuration=8 x H100&form_gonka_servers_number=1
+   /request-gpu?gpu=NVIDIA%20H100&form_gonka_preffered_configuration=8%20x%20H100&form_gonka_servers_number=1
    ```
-3. HubSpot form reads these parameters and pre-selects the GPU field
-4. On modal close, URL parameters are removed
+4. HubSpot form reads these parameters and pre-selects the GPU field
 
-**GPU mapping** (in `HubspotModal.tsx`):
+**GPU mapping** (in `RequestGpuClient.tsx`):
 | GPU Name Contains | HubSpot Value |
 |-------------------|---------------|
 | A100 | 8 x A100 |
@@ -202,21 +201,20 @@ When user clicks "Request GPU" on a pricing card:
 | H200 | 8 x H200 |
 | B200 | 8 x B200 |
 
-### Modal Behavior
+### Page Behavior
 
-- **No unmount on close**: Modal stays in DOM, hidden via CSS (`opacity-0 invisible pointer-events-none`)
-- **Form persistence**: Once loaded, form is reused for same GPU type
-- **Form recreation**: If GPU type changes, form is recreated with new URL params
+- **Dedicated page**: Form lives at `/[locale]/request-gpu`
 - **Loading states**: Shows spinner while form loads, error state with retry button
+- **Form recreation**: Uses MutationObserver to detect when form is ready
+- **Timeout**: 10-second timeout triggers error state with retry option
 
 ### Key Files
 
 | File | Purpose |
 |------|---------|
-| `src/components/ui/HubspotModal.tsx` | Modal component with form embed |
-| `src/lib/contexts/HubspotContext.tsx` | React context for modal state |
-| `src/components/landing/LandingPageClient.tsx` | Provider wrapper + modal instance |
-| `src/components/landing/PricingSection.tsx` | Calls `openModal(gpuName)` |
+| `src/app/[locale]/request-gpu/page.tsx` | Server component, sets locale |
+| `src/app/[locale]/request-gpu/RequestGpuClient.tsx` | Client component with form logic |
+| `src/components/landing/PricingSection.tsx` | Links to `/request-gpu?gpu=...` |
 
 ### Troubleshooting
 
@@ -225,14 +223,14 @@ When user clicks "Request GPU" on a pricing card:
 | 403 Forbidden | Using v2.js programmatic API | Use declarative embed (hs-form-frame) |
 | Form not loading | Script blocked or timeout | Check network tab, retry button |
 | GPU not pre-filled | URL params not set | Check `addGpuToUrlParams()` function |
-| Modal won't reopen | Component unmounting | Keep modal in DOM, toggle visibility |
+| Form stuck loading | MutationObserver not triggering | Check if form/iframe element exists |
 
 ## Key Decisions
 
 1. **Fully Static**: No backend, no API calls, all data hardcoded
 2. **Next.js 16**: App Router with static export
 3. **HubSpot Integration**: External form for lead capture
-4. **i18n**: next-intl with EN/RU translations
+4. **i18n**: next-intl with EN/RU/ZH translations
 5. **Tailwind CSS v4**: All styling via utility classes with oklch colors
 
 ## Local AI Agents & Skills
