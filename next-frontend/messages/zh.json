@@ -5,7 +5,7 @@
     "titleHighlight": "Gonka",
     "titleSuffix": "托管 GPU 基础设施",
     "subtitle": "租用企业级 GPU 在我们的网络上挖矿加密货币，计费清晰，运营可预测。适合关注节点稳定性、透明付款条款和无意外扩展的运营商和矿池。",
-    "cta": "租用 GPU",
+    "cta": "请求 GPU",
     "ctaSecondary": "查看价格套餐",
     "features": {
       "fiat": "法币支付",
@@ -281,10 +281,11 @@
       }
     ]
   },
-  "modal": {
-    "title": "租用 GPU",
+  "requestGpu": {
+    "title": "请求 GPU",
     "selected": "已选择：",
     "loading": "加载表单...",
+    "backToHome": "返回首页",
     "error": {
       "title": "无法加载表单",
       "description": "表单无法加载。请检查您的连接并重试。",

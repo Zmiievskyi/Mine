@@ -1,6 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
 import { GridBackground } from '@/components/ui/GridBackground';
-import { LandingPageClient } from '@/components/landing/LandingPageClient';
 import { Header } from '@/components/landing/Header';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
@@ -16,12 +16,10 @@ interface PageProps {
   params: Promise<{ locale: string }>;
 }
 
-/**
- * Landing page with optimized Server/Client component split:
- * - Server Components: FeaturesSection, ForWho, ManagedServices, FaqSection, Footer
- * - Client Components: Header, HeroSection, PricingSection, EfficiencySection, HowItWorks
- *   (these need HubspotContext for openModal() or client-side interactivity)
- */
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
 export default async function LandingPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -31,38 +29,34 @@ export default async function LandingPage({ params }: PageProps) {
       {/* Grid Pattern Background */}
       <GridBackground />
 
-      {/* Client wrapper for components needing HubspotContext */}
-      <LandingPageClient>
-        <Header />
-        <main className="relative z-10">
-          <section>
-            <HeroSection />
-          </section>
-          <section>
-            <FeaturesSection />
-          </section>
-          <section>
-            <ForWho />
-          </section>
-          <section>
-            <PricingSection />
-          </section>
-          <section>
-            <EfficiencySection />
-          </section>
-          <section>
-            <HowItWorks />
-          </section>
-          <section>
-            <ManagedServices />
-          </section>
-          <section>
-            <FaqSection />
-          </section>
-        </main>
-      </LandingPageClient>
+      <Header />
+      <main className="relative z-10">
+        <section>
+          <HeroSection />
+        </section>
+        <section>
+          <FeaturesSection />
+        </section>
+        <section>
+          <ForWho />
+        </section>
+        <section>
+          <PricingSection />
+        </section>
+        <section>
+          <EfficiencySection />
+        </section>
+        <section>
+          <HowItWorks />
+        </section>
+        <section>
+          <ManagedServices />
+        </section>
+        <section>
+          <FaqSection />
+        </section>
+      </main>
 
-      {/* Footer as Server Component (no HubspotContext needed) */}
       <section>
         <Footer />
       </section>

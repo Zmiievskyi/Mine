@@ -3,12 +3,11 @@
 import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
+import { HardLink } from '@/components/ui/HardLink';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
-import { useHubspot } from '@/lib/contexts/HubspotContext';
 
 export function Header() {
   const t = useTranslations();
-  const { openModal } = useHubspot();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -26,11 +25,6 @@ export function Header() {
     }
     setIsMobileMenuOpen(false);
   }, []);
-
-  const handleRentClick = useCallback(() => {
-    openModal();
-    setIsMobileMenuOpen(false);
-  }, [openModal]);
 
   return (
     <header className="sticky top-0 inset-x-0 h-14 w-full z-50">
@@ -63,13 +57,12 @@ export function Header() {
           {/* Right side: Language Switcher + Rent Button */}
           <div className="hidden md:flex items-center gap-4">
             <LanguageSwitcher />
-            <button
-              type="button"
+            <HardLink
+              href="/request-gpu"
               className="inline-flex items-center gap-2 px-5 py-2 bg-accent hover:bg-accent-hover text-white font-semibold text-sm rounded-lg transition-colors duration-200"
-              onClick={handleRentClick}
             >
               {t('hero.cta')}
-            </button>
+            </HardLink>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -137,13 +130,13 @@ export function Header() {
               </div>
 
               {/* Rent GPU Button (Mobile) */}
-              <button
-                type="button"
-                className="w-full py-3 px-4 bg-accent hover:bg-accent-hover text-white font-semibold text-sm rounded-lg transition-colors duration-200 mt-2"
-                onClick={handleRentClick}
+              <HardLink
+                href="/request-gpu"
+                className="w-full py-3 px-4 bg-accent hover:bg-accent-hover text-white font-semibold text-sm rounded-lg transition-colors duration-200 mt-2 text-center"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
                 {t('hero.cta')}
-              </button>
+              </HardLink>
             </div>
           </div>
         )}

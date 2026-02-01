@@ -5,7 +5,7 @@
     "titleHighlight": "Gonka",
     "titleSuffix": "on managed GPU infrastructure",
     "subtitle": "Rent enterprise-grade GPUs to mine cryptocurrency on our network with clear billing and predictable operations. For operators and pools who care about node stability, transparent payment terms, and scaling without surprises.",
-    "cta": "Rent GPU",
+    "cta": "Request GPU",
     "ctaSecondary": "View pricing packages",
     "features": {
       "fiat": "Pay in fiat currency",
@@ -281,10 +281,11 @@
       }
     ]
   },
-  "modal": {
-    "title": "Rent GPUs",
+  "requestGpu": {
+    "title": "Request GPUs",
     "selected": "Selected:",
     "loading": "Loading form...",
+    "backToHome": "Back to home",
     "error": {
       "title": "Unable to load form",
       "description": "The form could not be loaded. Please check your connection and try again.",

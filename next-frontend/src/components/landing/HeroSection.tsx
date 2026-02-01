@@ -1,12 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { HardLink } from '@/components/ui/HardLink';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
-import { useHubspot } from '@/lib/contexts/HubspotContext';
 
 export function HeroSection() {
   const t = useTranslations('hero');
-  const { openModal } = useHubspot();
 
   return (
     <section id="home" className="py-12 sm:py-16 md:py-32">
@@ -16,7 +15,10 @@ export function HeroSection() {
           <ScrollReveal className="lg:col-span-2">
             <div className="md:pr-6 lg:pr-0">
               {/* Animated Badge */}
-              <button className="group relative grid overflow-hidden rounded-full px-4 py-1 shadow-[0_1000px_0_0_hsl(0_0%_20%)_inset] transition-colors duration-200 mb-6">
+              <HardLink
+                href="/request-gpu"
+                className="group relative grid overflow-hidden rounded-full px-4 py-1 shadow-[0_1000px_0_0_hsl(0_0%_20%)_inset] transition-colors duration-200 mb-6"
+              >
                 <span className="badge-spark" />
                 <span className="badge-backdrop" />
                 <span className="relative z-10 py-0.5 text-sm text-neutral-100 flex items-center justify-center gap-1">
@@ -37,7 +39,7 @@ export function HeroSection() {
                     />
                   </svg>
                 </span>
-              </button>
+              </HardLink>
 
               {/* Heading */}
               <h1 className="text-4xl font-semibold lg:text-5xl leading-[1.1] mb-6">
@@ -53,10 +55,9 @@ export function HeroSection() {
             {/* CTA Buttons */}
             <ScrollReveal delay={100}>
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <button
-                  type="button"
+                <HardLink
+                  href="/request-gpu"
                   className="inline-flex items-center justify-center gap-2 w-full sm:w-auto sm:px-8 py-2.5 bg-accent hover:bg-accent-hover text-white font-medium text-sm rounded-md transition-colors duration-200 shadow-lg shadow-accent/25"
-                  onClick={() => openModal()}
                 >
                   {t('cta')}
                   <svg
@@ -73,7 +74,7 @@ export function HeroSection() {
                       d="M17 8l4 4m0 0l-4 4m4-4H3"
                     />
                   </svg>
-                </button>
+                </HardLink>
                 <a
                   href="#pricing"
                   className="inline-flex items-center justify-center gap-2 w-full sm:w-auto sm:px-8 py-2.5 border border-border hover:border-accent/50 text-foreground hover:text-white font-medium text-sm rounded-md transition-colors duration-200"

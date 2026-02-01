@@ -1,12 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { HardLink } from '@/components/ui/HardLink';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { pricing, formatPrice, formatMonthlyPrice } from '@/data/pricing';
-import { useHubspot } from '@/lib/contexts/HubspotContext';
 
 export function PricingSection() {
-  const { openModal } = useHubspot();
   const t = useTranslations('pricing');
 
   return (
@@ -109,21 +108,21 @@ export function PricingSection() {
                   <div className="flex-1" />
 
                   {/* CTA Button */}
-                  <button
-                    type="button"
+                  <HardLink
+                    href={`/request-gpu?gpu=${encodeURIComponent(item.name)}`}
                     className="
                       relative z-10 w-full py-3 px-4
                       bg-accent/90 hover:bg-accent
                       text-white font-semibold text-sm rounded-lg
                       transition-all duration-300
                       group-hover:shadow-[0_0_20px_rgba(255,76,0,0.4)]
+                      text-center block
                     "
-                    onClick={() => openModal(item.name)}
                   >
                     {item.isContactSales || item.pricePerHour === null
                       ? t('contactSales')
                       : t('rentNow')}
-                  </button>
+                  </HardLink>
 
                   {/* Corner glow accent */}
                   <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-tr-xl" />

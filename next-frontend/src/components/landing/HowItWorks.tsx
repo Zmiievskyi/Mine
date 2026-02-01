@@ -1,13 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { HardLink } from '@/components/ui/HardLink';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { validateTitleDescription } from '@/lib/validation';
-import { useHubspot } from '@/lib/contexts/HubspotContext';
 
 export function HowItWorks() {
   const t = useTranslations('howItWorks');
-  const { openModal } = useHubspot();
   const steps = validateTitleDescription(t.raw('steps'));
 
   return (
@@ -178,10 +177,9 @@ export function HowItWorks() {
         {/* CTA Button */}
         <ScrollReveal delay={500}>
           <div className="mt-12 text-center">
-            <button
-              type="button"
+            <HardLink
+              href="/request-gpu"
               className="inline-flex items-center gap-2 px-8 py-4 bg-accent hover:bg-accent-hover text-white font-semibold text-lg rounded-lg transition-colors duration-200 shadow-lg shadow-accent/25"
-              onClick={() => openModal()}
             >
               {t('cta')}
               <svg
@@ -198,7 +196,7 @@ export function HowItWorks() {
                   d="M17 8l4 4m0 0l-4 4m4-4H3"
                 />
               </svg>
-            </button>
+            </HardLink>
           </div>
         </ScrollReveal>
       </div>
