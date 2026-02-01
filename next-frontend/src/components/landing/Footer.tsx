@@ -1,5 +1,4 @@
 import { getTranslations } from 'next-intl/server';
-import { Link } from '@/i18n/navigation';
 
 export async function Footer() {
   const t = await getTranslations('footer');
@@ -113,12 +112,14 @@ export async function Footer() {
                 </a>
               </li>
               <li>
-                <Link
-                  href="/terms/gonka"
+                <a
+                  href="https://gcore.com/legal?tab=gpu_terms_gonka"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {t('legal.gpuTermsGonka')}
-                </Link>
+                </a>
               </li>
               <li>
                 <a

@@ -23,6 +23,7 @@ export default function Error({ error, reset }: ErrorProps) {
       <div className="text-center max-w-md">
         <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-accent/10 flex items-center justify-center">
           <svg
+            aria-hidden="true"
             className="w-8 h-8 text-accent"
             fill="none"
             stroke="currentColor"

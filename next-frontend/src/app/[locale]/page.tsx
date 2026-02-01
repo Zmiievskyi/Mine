@@ -57,9 +57,7 @@ export default async function LandingPage({ params }: PageProps) {
         </section>
       </main>
 
-      <section>
-        <Footer />
-      </section>
+      <Footer />
     </div>
   );
 }

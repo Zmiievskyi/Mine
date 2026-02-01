@@ -7,12 +7,6 @@
     "subtitle": "租用企业级 GPU 在我们的网络上挖矿加密货币，计费清晰，运营可预测。适合关注节点稳定性、透明付款条款和无意外扩展的运营商和矿池。",
     "cta": "请求 GPU",
     "ctaSecondary": "查看价格套餐",
-    "features": {
-      "fiat": "法币支付",
-      "enterprise": "企业级 GPU",
-      "monitoring": "实时监控",
-      "support": "24/7 专属支持"
-    },
     "panel": {
       "kicker": "上线即获得",
       "description": "状态一目了然，风险提前预警，付款/续约条款和责任从一开始就明确。",
@@ -77,41 +71,6 @@
         "通过监控减少运营盲区",
         "通过可重复流程保持集群一致性"
       ]
-    }
-  },
-  "stats": {
-    "title": "Gonka 网络统计",
-    "subtitle": "网络概览",
-    "networkStatus": {
-      "label": "网络状态",
-      "tooltip": "基于公共网络信号的 Live / 同步中 / 过期状态。",
-      "live": "在线",
-      "active": "活跃"
-    },
-    "currentEpoch": {
-      "label": "当前纪元",
-      "tooltip": "当前网络纪元（活跃参与/记账窗口）。",
-      "description": "挖矿纪元"
-    },
-    "participants": {
-      "label": "参与者",
-      "tooltip": "参与网络的节点总数。",
-      "healthy": "健康"
-    },
-    "totalGpus": {
-      "label": "GPU 总数",
-      "tooltip": "网络中提供 AI 推理能力的 GPU 总数。",
-      "description": "计算节点"
-    },
-    "activeModels": {
-      "label": "活跃模型",
-      "tooltip": "网络当前服务的 AI 模型。",
-      "description": "AI 模型"
-    },
-    "nextEpoch": {
-      "label": "下一纪元",
-      "tooltip": "奖励在纪元边界分发。",
-      "description": "纪元周期"
     }
   },
   "howItWorks": {

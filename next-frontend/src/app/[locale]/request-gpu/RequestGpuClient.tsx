@@ -51,10 +51,10 @@ function RequestGpuForm() {
 
   const formContainerRef = useRef<HTMLDivElement>(null);
   const [loadState, setLoadState] = useState<LoadState>('idle');
-  const [formKey] = useState(0);
   const scriptLoadedRef = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const observerRef = useRef<MutationObserver | null>(null);
+  const isMountedRef = useRef(true);
 
   // Cleanup function for timeout and observer
   const cleanup = useCallback(() => {
@@ -74,7 +74,7 @@ function RequestGpuForm() {
 
     observerRef.current = new MutationObserver(() => {
       const formElement = formContainerRef.current?.querySelector('form, iframe');
-      if (formElement) {
+      if (formElement && isMountedRef.current) {
         cleanup();
         setLoadState('ready');
       }
@@ -104,7 +104,9 @@ function RequestGpuForm() {
     };
     script.onerror = () => {
       cleanup();
-      setLoadState('error');
+      if (isMountedRef.current) {
+        setLoadState('error');
+      }
     };
     document.head.appendChild(script);
   }, [cleanup]);
@@ -159,15 +161,19 @@ function RequestGpuForm() {
     setLoadState('loading');
 
     timeoutRef.current = setTimeout(() => {
-      setLoadState((current) => (current === 'loading' ? 'error' : current));
+      if (isMountedRef.current) {
+        setLoadState((current) => (current === 'loading' ? 'error' : current));
+      }
     }, FORM_LOAD_TIMEOUT_MS);
 
+    // Allow time for DOM to settle after component mount before setting up observer
     const mountDelay = setTimeout(() => {
       setupFormObserver();
       loadScript();
     }, 50);
 
     return () => {
+      isMountedRef.current = false;
       clearTimeout(mountDelay);
       cleanup();
     };
@@ -233,7 +239,6 @@ function RequestGpuForm() {
         )}
 
         <div
-          key={formKey}
           ref={formContainerRef}
           className={`hubspot-form-container min-h-[200px] ${loadState !== 'ready' ? 'opacity-0 h-0 overflow-hidden' : ''}`}
         >

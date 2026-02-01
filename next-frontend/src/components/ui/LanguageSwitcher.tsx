@@ -2,7 +2,7 @@
 
 import { useLocale } from 'next-intl';
 import { usePathname } from '@/i18n/navigation';
-import type { Locale } from '@/i18n/routing';
+import { routing, type Locale } from '@/i18n/routing';
 
 const languages: { code: Locale; short: string; label: string }[] = [
   { code: 'en', short: 'EN', label: 'English' },
@@ -10,19 +10,30 @@ const languages: { code: Locale; short: string; label: string }[] = [
   { code: 'zh', short: '中文', label: '中文' },
 ];
 
+function isValidLocale(value: string): value is Locale {
+  return routing.locales.includes(value as Locale);
+}
+
 interface LanguageSwitcherProps {
   showLabels?: boolean;
 }
 
 export function LanguageSwitcher({ showLabels = false }: LanguageSwitcherProps) {
-  const locale = useLocale() as Locale;
+  const rawLocale = useLocale();
+  const locale: Locale = isValidLocale(rawLocale) ? rawLocale : routing.defaultLocale;
   const pathname = usePathname();
 
   const switchLocale = (newLocale: Locale) => {
     if (newLocale === locale) return;
 
+    // Set cookie to persist locale preference (prevents middleware from auto-detecting)
+    document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000;samesite=lax`;
+
     // Force full page reload to reset HubSpot form state
-    const newPath = newLocale === 'en' ? pathname : `/${newLocale}${pathname}`;
+    // Always use explicit locale path for non-default, or root for default
+    const newPath = newLocale === routing.defaultLocale
+      ? pathname
+      : `/${newLocale}${pathname}`;
     window.location.href = newPath;
   };
 
@@ -32,6 +43,7 @@ export function LanguageSwitcher({ showLabels = false }: LanguageSwitcherProps) 
         <button
           key={lang.code}
           type="button"
+          aria-label={`Switch language to ${lang.label}`}
           onClick={() => switchLocale(lang.code)}
           className={`px-2 py-1 text-sm rounded transition-colors hover:text-foreground ${
             locale === lang.code

@@ -52,27 +52,18 @@ export async function ForWho() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {audiences.map((audience, index) => {
             const Icon = audienceIcons[index];
+            if (!Icon) return null;
 
             return (
               <div
-                key={index}
+                key={audience.title}
                 className="scroll-reveal"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 {/* Glowing Card Container */}
                 <div className="group relative h-full">
                   {/* Animated glow border */}
-                  <div
-                    className="absolute -inset-[1px] rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm"
-                    style={{
-                      background: `linear-gradient(135deg,
-                        rgba(255,76,0,0.4) 0%,
-                        rgba(255,76,0,0.1) 25%,
-                        rgba(255,76,0,0.4) 50%,
-                        rgba(255,76,0,0.1) 75%,
-                        rgba(255,76,0,0.4) 100%)`,
-                    }}
-                  />
+                  <div className="for-who-glow absolute -inset-[1px] rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
 
                   {/* Card content */}
                   <div
@@ -85,14 +76,7 @@ export async function ForWho() {
                     "
                   >
                     {/* Grid pattern overlay */}
-                    <div
-                      className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-[0.02] transition-opacity duration-500 overflow-hidden"
-                      style={{
-                        backgroundImage: `linear-gradient(90deg, #FF4C00 1px, transparent 1px),
-                                          linear-gradient(180deg, #FF4C00 1px, transparent 1px)`,
-                        backgroundSize: '32px 32px',
-                      }}
-                    />
+                    <div className="for-who-grid absolute inset-0 rounded-xl opacity-0 group-hover:opacity-[0.02] transition-opacity duration-500 overflow-hidden" />
 
                     {/* Content */}
                     <div className="relative z-10">
@@ -112,10 +96,10 @@ export async function ForWho() {
                       </p>
 
                       {/* Points list */}
-                      <ul className="space-y-3">
-                        {audience.points.map((point, pointIndex) => (
+                      <ul className="space-y-3" role="list">
+                        {audience.points.map((point) => (
                           <li
-                            key={pointIndex}
+                            key={`${audience.title}-${point.slice(0, 20)}`}
                             className="flex items-start gap-3 group/item"
                           >
                             {/* Animated checkmark */}

@@ -45,10 +45,11 @@ export async function ManagedServices() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {services.map((service, index) => {
             const Icon = serviceIcons[index];
+            if (!Icon) return null;
             const isWide = index === 6; // Last item (Updates & Patches) is wide
             return (
               <div
-                key={index}
+                key={service.title}
                 className={`scroll-reveal ${isWide ? 'col-span-2' : ''}`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >

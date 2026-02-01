@@ -41,7 +41,7 @@ export default async function LocaleLayout({
     <html lang={locale} className={`${inter.variable} ${outfit.variable}`} suppressHydrationWarning>
       <head>
         {/* Preconnect to HubSpot for faster form loading */}
-        <link rel="preconnect" href="https://js-eu1.hsforms.net" />
+        <link rel="preconnect" href="https://js-eu1.hsforms.net" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://js-eu1.hsforms.net" />
       </head>
       <body className="antialiased">

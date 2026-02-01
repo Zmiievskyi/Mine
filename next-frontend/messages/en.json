@@ -7,12 +7,6 @@
     "subtitle": "Rent enterprise-grade GPUs to mine cryptocurrency on our network with clear billing and predictable operations. For operators and pools who care about node stability, transparent payment terms, and scaling without surprises.",
     "cta": "Request GPU",
     "ctaSecondary": "View pricing packages",
-    "features": {
-      "fiat": "Pay in fiat currency",
-      "enterprise": "Enterprise-grade GPUs",
-      "monitoring": "Real-time monitoring",
-      "support": "24/7 dedicated support"
-    },
     "panel": {
       "kicker": "What you get at go-live",
       "description": "Statuses are visible in one place, risks are highlighted in advance, and payment/renewal terms and responsibilities are fixed upfront.",
@@ -77,41 +71,6 @@
         "Reduce operational blind spots with monitoring",
         "Fleet consistency with repeatable process"
       ]
-    }
-  },
-  "stats": {
-    "title": "Gonka Network Stats",
-    "subtitle": "Network overview",
-    "networkStatus": {
-      "label": "Network Status",
-      "tooltip": "Live / Syncing / Stale based on public network signals.",
-      "live": "Live",
-      "active": "Active"
-    },
-    "currentEpoch": {
-      "label": "Current Epoch",
-      "tooltip": "Current network epoch (active participation/accounting window).",
-      "description": "Mining epoch"
-    },
-    "participants": {
-      "label": "Participants",
-      "tooltip": "Total number of nodes participating in the network.",
-      "healthy": "healthy"
-    },
-    "totalGpus": {
-      "label": "Total GPUs",
-      "tooltip": "Total GPUs in the network providing AI inference capacity.",
-      "description": "Compute nodes"
-    },
-    "activeModels": {
-      "label": "Active Models",
-      "tooltip": "AI models currently being served by the network.",
-      "description": "AI models"
-    },
-    "nextEpoch": {
-      "label": "Next Epoch",
-      "tooltip": "Rewards are distributed at epoch boundaries.",
-      "description": "Epoch cycle"
     }
   },
   "howItWorks": {
