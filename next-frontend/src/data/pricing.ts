@@ -76,12 +76,23 @@ export const pricing: GpuPricing[] = [
 ];
 
 /**
+ * Maps our locale codes to Intl.NumberFormat locale strings
+ */
+const localeMap: Record<string, string> = {
+  en: 'en-US',
+  ru: 'ru-RU',
+  zh: 'zh-CN',
+};
+
+/**
  * Formats a price value with 2 decimal places
  * @param price - Price value to format
- * @returns Formatted price string with commas and 2 decimals
+ * @param locale - Locale code (en, ru, zh) for number formatting
+ * @returns Formatted price string with locale-appropriate separators and 2 decimals
  */
-export function formatPrice(price: number): string {
-  return price.toLocaleString('en-US', {
+export function formatPrice(price: number, locale: string = 'en'): string {
+  const intlLocale = localeMap[locale] || 'en-US';
+  return price.toLocaleString(intlLocale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -90,10 +101,12 @@ export function formatPrice(price: number): string {
 /**
  * Formats a monthly price value with no decimal places
  * @param price - Monthly price value to format
- * @returns Formatted price string with commas and no decimals
+ * @param locale - Locale code (en, ru, zh) for number formatting
+ * @returns Formatted price string with locale-appropriate separators and no decimals
  */
-export function formatMonthlyPrice(price: number): string {
-  return price.toLocaleString('en-US', {
+export function formatMonthlyPrice(price: number, locale: string = 'en'): string {
+  const intlLocale = localeMap[locale] || 'en-US';
+  return price.toLocaleString(intlLocale, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   });

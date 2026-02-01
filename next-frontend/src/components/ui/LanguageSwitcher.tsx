@@ -33,7 +33,9 @@ export function LanguageSwitcher({ showLabels = false }: LanguageSwitcherProps) 
     // Always use explicit locale prefix (required for static export)
     // Preserve query params (e.g., ?gpu=... on /request-gpu)
     const queryString = typeof window !== 'undefined' ? window.location.search : '';
-    const newPath = `/${newLocale}${pathname}${queryString}`;
+    // Ensure trailing slash for static export compatibility
+    const normalizedPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
+    const newPath = `/${newLocale}${normalizedPath}${queryString}`;
     window.location.href = newPath;
   };
 

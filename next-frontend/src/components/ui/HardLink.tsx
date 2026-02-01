@@ -15,6 +15,17 @@ interface HardLinkProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'h
 export function HardLink({ href, children, onClick, ...props }: HardLinkProps) {
   const locale = useLocale();
 
+  // Ensure trailing slash for static export compatibility
+  const ensureTrailingSlash = (path: string) => {
+    // Don't add trailing slash if path has query params or hash
+    if (path.includes('?') || path.includes('#')) {
+      const [basePath, rest] = path.split(/([?#])/);
+      const normalizedBase = basePath.endsWith('/') ? basePath : `${basePath}/`;
+      return `${normalizedBase}${rest}${path.slice(basePath.length + 1)}`;
+    }
+    return path.endsWith('/') ? path : `${path}/`;
+  };
+
   const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
     // Allow normal browser behavior for middle-click, Cmd+click, Ctrl+click, etc.
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
@@ -24,13 +35,13 @@ export function HardLink({ href, children, onClick, ...props }: HardLinkProps) {
     e.preventDefault();
     onClick?.(e);
 
-    // Construct the full URL with locale prefix
-    const fullPath = href.startsWith('/') ? `/${locale}${href}` : href;
+    // Construct the full URL with locale prefix and trailing slash
+    const fullPath = href.startsWith('/') ? `/${locale}${ensureTrailingSlash(href)}` : href;
     window.location.href = fullPath;
   };
 
   // Construct href for accessibility (right-click, middle-click)
-  const fullHref = href.startsWith('/') ? `/${locale}${href}` : href;
+  const fullHref = href.startsWith('/') ? `/${locale}${ensureTrailingSlash(href)}` : href;
 
   return (
     <a href={fullHref} onClick={handleClick} {...props}>

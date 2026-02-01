@@ -10,7 +10,8 @@ import {
 } from '@/data/efficiency';
 
 /**
- * Animated counter component that counts up when visible
+ * Animated counter component that counts up when visible.
+ * Respects prefers-reduced-motion by showing the final value immediately.
  */
 function AnimatedNumber({ value, decimals = 2 }: { value: number; decimals?: number }) {
   const [displayValue, setDisplayValue] = useState(0);
@@ -19,6 +20,16 @@ function AnimatedNumber({ value, decimals = 2 }: { value: number; decimals?: num
   const animationFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // If user prefers reduced motion, show final value immediately
+    if (prefersReducedMotion) {
+      setDisplayValue(value);
+      hasAnimated.current = true;
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated.current) {
@@ -76,7 +87,7 @@ export function EfficiencySection() {
             <span className="inline-flex items-center justify-center rounded-full border border-accent/50 bg-transparent px-4 py-1.5 text-sm font-medium text-white mb-4">
               {t('badge')}
             </span>
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">{t('title')}</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 font-heading">{t('title')}</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               {t('subtitle')}
             </p>
@@ -93,14 +104,7 @@ export function EfficiencySection() {
               </h3>
               <div className="relative overflow-hidden rounded-lg bg-black/50 border border-accent/20 p-6">
                 {/* Grid pattern overlay */}
-                <div
-                  className="absolute inset-0 opacity-5"
-                  style={{
-                    backgroundImage: `linear-gradient(90deg, #FF4C00 1px, transparent 1px),
-                                      linear-gradient(180deg, #FF4C00 1px, transparent 1px)`,
-                    backgroundSize: '20px 20px'
-                  }}
-                />
+                <div className="card-grid-pattern absolute inset-0 opacity-5" />
 
                 <div className="relative flex flex-col items-center gap-4">
                   <div className="flex items-center gap-3 text-lg md:text-xl font-mono">

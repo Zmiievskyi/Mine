@@ -1,12 +1,13 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { HardLink } from '@/components/ui/HardLink';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { pricing, formatPrice, formatMonthlyPrice } from '@/data/pricing';
 
 export function PricingSection() {
   const t = useTranslations('pricing');
+  const locale = useLocale();
 
   return (
     <section id="pricing" className="py-16 md:py-24">
@@ -17,7 +18,7 @@ export function PricingSection() {
             <span className="inline-flex items-center justify-center rounded-full border border-accent/50 bg-transparent px-4 py-1.5 text-sm font-medium text-white mb-4">
               {t('badge')}
             </span>
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 font-heading">
               {t('title')}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -33,15 +34,7 @@ export function PricingSection() {
               {/* Glass-morphism Card Container */}
               <div className="group relative h-full">
                 {/* Animated glow border on hover */}
-                <div
-                  className="absolute -inset-[1px] rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm"
-                  style={{
-                    background: `linear-gradient(135deg,
-                      rgba(255,76,0,0.5) 0%,
-                      rgba(255,76,0,0.1) 50%,
-                      rgba(255,76,0,0.5) 100%)`,
-                  }}
-                />
+                <div className="card-glow absolute -inset-[1px] rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
 
                 {/* Card content with glass-morphism */}
                 <div
@@ -54,14 +47,7 @@ export function PricingSection() {
                   "
                 >
                   {/* Grid pattern overlay on hover */}
-                  <div
-                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-[0.02] transition-opacity duration-500 overflow-hidden"
-                    style={{
-                      backgroundImage: `linear-gradient(90deg, #FF4C00 1px, transparent 1px),
-                                        linear-gradient(180deg, #FF4C00 1px, transparent 1px)`,
-                      backgroundSize: '24px 24px',
-                    }}
-                  />
+                  <div className="card-grid-pattern absolute inset-0 rounded-xl opacity-0 group-hover:opacity-[0.02] transition-opacity duration-500 overflow-hidden" />
 
                   {/* GPU Name Badge */}
                   <div className="relative z-10 mb-4">
@@ -86,7 +72,7 @@ export function PricingSection() {
                       <div className="flex flex-col">
                         <div className="flex items-baseline gap-1">
                           <span className="text-3xl font-bold text-accent">
-                            ${formatMonthlyPrice(item.pricePerMonth)}
+                            ${formatMonthlyPrice(item.pricePerMonth, locale)}
                           </span>
                           <span className="text-muted-foreground text-sm">
                             {t('perMonth')}
@@ -94,7 +80,7 @@ export function PricingSection() {
                         </div>
                         {item.pricePerHour && (
                           <p className="text-sm text-muted-foreground mt-2">
-                            <span className="text-foreground font-medium">${formatPrice(item.pricePerHour)}</span> {t('perGpuHour')}
+                            <span className="text-foreground font-medium">${formatPrice(item.pricePerHour, locale)}</span> {t('perGpuHour')}
                           </p>
                         )}
                         <p className="text-sm text-muted-foreground">

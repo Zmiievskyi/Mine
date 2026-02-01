@@ -4,10 +4,11 @@ import { useEffect } from 'react';
 import { routing } from '@/i18n/routing';
 
 /**
- * Root page that redirects to the default locale.
+ * Redirect page for /request-gpu without locale prefix.
  * Uses client-side redirect because server-side redirect() doesn't work with static export.
+ * Preserves query parameters (e.g., ?gpu=...) when redirecting.
  */
-export default function RootPage() {
+export default function RequestGpuRedirectPage() {
   useEffect(() => {
     // Check for stored locale preference
     const storedLocale = document.cookie
@@ -21,8 +22,11 @@ export default function RootPage() {
         ? storedLocale
         : routing.defaultLocale;
 
-    // Redirect to locale-prefixed path, preserving trailing slash
-    window.location.replace(`/${targetLocale}/`);
+    // Preserve query params (e.g., ?gpu=...)
+    const queryString = window.location.search;
+
+    // Redirect to locale-prefixed path with trailing slash
+    window.location.replace(`/${targetLocale}/request-gpu/${queryString}`);
   }, []);
 
   // Show loading state while redirecting
