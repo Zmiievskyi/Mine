@@ -55,6 +55,13 @@ export async function FeaturesSection() {
                   {/* Glow effect on hover */}
                   <div className="absolute -inset-px rounded-xl bg-gradient-to-r from-accent/20 via-transparent to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
 
+                  {/* Optional Service Badge for Managed Service */}
+                  {index === 1 && (
+                    <span className="absolute top-4 right-4 z-10 text-[10px] font-medium text-muted-foreground border border-accent/30 bg-accent/10 rounded px-2 py-0.5">
+                      {t('optionalBadge')}
+                    </span>
+                  )}
+
                   {/* Content */}
                   <div className="relative z-10">
                     {/* Icon */}

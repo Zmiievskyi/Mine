@@ -17,7 +17,7 @@
           "description": "alerts and clear incident updates."
         },
         "opaque": {
-          "title": "Transparent pricing:",
+          "title": "Pricing uncertainty:",
           "description": "clear billing and transaction history."
         },
         "blind": {
@@ -48,7 +48,8 @@
         "description": "Installation and updates of Gonka software, 24/7 monitoring, and dashboards. We handle the technical complexity so you can focus on earning."
       }
     ],
-    "slaFootnote": "* SLA applies to infrastructure availability only: network-level downtime, missed rewards, or any \"mining/participation\" outcomes are not covered."
+    "slaFootnote": "* SLA applies to infrastructure availability only: network-level downtime, missed rewards, or any \"mining/participation\" outcomes are not covered.",
+    "optionalBadge": "Optional service"
   },
   "forWho": {
     "badge": "Who it's for",
