@@ -1,17 +1,12 @@
 import { NextResponse } from 'next/server';
 import { gpuEfficiencyData, type GpuEfficiency } from '@/data/efficiency';
-
-const PARTICIPANTS_URL = 'http://202.78.161.32:8000/v1/epochs/current/participants';
-const HARDWARE_NODES_URL = 'http://202.78.161.32:8000/chain-api/productscience/inference/inference/hardware_nodes_all';
-const CACHE_DURATION = 60; // seconds
-
-// GPU pricing (per GPU per hour)
-const GPU_PRICING: Record<string, number> = {
-  A100: 0.99,
-  H100: 1.80,
-  H200: 2.40,
-  B200: 3.02,
-};
+import {
+  GONKA_ENDPOINTS,
+  GPU_PRICING,
+  GPU_WEIGHTS_CACHE_DURATION,
+  MIN_POC_WEIGHT_THRESHOLD,
+} from '@/lib/gonka/constants';
+import { fetchWithTimeout } from '@/lib/gonka/fetch';
 
 interface MlNode {
   node_id: string;
@@ -66,11 +61,11 @@ function extractGpuType(hardwareType: string): string | null {
 export async function GET() {
   try {
     const [participantsRes, hardwareRes] = await Promise.all([
-      fetch(PARTICIPANTS_URL, {
+      fetchWithTimeout(GONKA_ENDPOINTS.participants, {
         cache: 'no-store',
         headers: { Accept: 'application/json' },
       }),
-      fetch(HARDWARE_NODES_URL, {
+      fetchWithTimeout(GONKA_ENDPOINTS.hardwareNodes, {
         cache: 'no-store',
         headers: { Accept: 'application/json' },
       }),
@@ -83,8 +78,8 @@ export async function GET() {
     const participantsData: ParticipantData = await participantsRes.json();
     const hardwareData: HardwareNodesData = await hardwareRes.json();
 
-    // Step 1: Build node_participands map
-    // Maps participant_address -> node_id -> poc_weight (only if poc_weight > 100)
+    // Step 1: Build node participants map
+    // Maps participant_address -> node_id -> poc_weight
     const nodeParticipants = new Map<string, Map<string, number>>();
 
     const participants = participantsData.active_participants?.participants ?? [];
@@ -93,7 +88,7 @@ export async function GET() {
 
       for (const mlNodeGroup of participant.ml_nodes) {
         for (const node of mlNodeGroup.ml_nodes ?? []) {
-          if (node.poc_weight > 100) {
+          if (node.poc_weight > MIN_POC_WEIGHT_THRESHOLD) {
             if (!nodeParticipants.has(participant.index)) {
               nodeParticipants.set(participant.index, new Map());
             }
@@ -104,7 +99,7 @@ export async function GET() {
     }
 
     // Step 2: Process hardware nodes
-    // Build: nodes_hw_list (GPU type -> count) and nodes_hw_dict (participant -> node_id -> hardware)
+    // Build: nodesHwList (GPU type -> count) and nodesHwDict (participant -> node_id -> hardware)
     const nodesHwList = new Map<string, { count: number }>();
     const nodesHwDict = new Map<string, Map<string, Hardware[]>>();
 
@@ -218,7 +213,7 @@ export async function GET() {
       },
       {
         headers: {
-          'Cache-Control': `s-maxage=${CACHE_DURATION}, stale-while-revalidate`,
+          'Cache-Control': `s-maxage=${GPU_WEIGHTS_CACHE_DURATION}, stale-while-revalidate`,
         },
       }
     );

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-
-const CHAIN_STATUS_URL = 'http://202.78.161.32:8000/chain-rpc/status';
-const EPOCH_PARTICIPANTS_URL = 'http://202.78.161.32:8000/v1/epochs/current/participants';
-const FRESH_THRESHOLD = 120; // seconds
+import { GONKA_ENDPOINTS, FRESH_BLOCK_THRESHOLD } from '@/lib/gonka/constants';
+import { fetchWithTimeout } from '@/lib/gonka/fetch';
 
 type NetworkState = 'live' | 'syncing' | 'stale' | 'unknown';
 
@@ -19,11 +17,11 @@ export async function GET() {
 
   try {
     const [chainRes, epochRes] = await Promise.all([
-      fetch(CHAIN_STATUS_URL, {
+      fetchWithTimeout(GONKA_ENDPOINTS.chainStatus, {
         cache: 'no-store',
         headers: { Accept: 'application/json' },
       }),
-      fetch(EPOCH_PARTICIPANTS_URL, {
+      fetchWithTimeout(GONKA_ENDPOINTS.participants, {
         cache: 'no-store',
         headers: { Accept: 'application/json' },
       }),
@@ -63,7 +61,7 @@ export async function GET() {
     let status: NetworkState = 'unknown';
     if (catchingUp) {
       status = 'syncing';
-    } else if (blockAge !== null && blockAge <= FRESH_THRESHOLD) {
+    } else if (blockAge !== null && blockAge <= FRESH_BLOCK_THRESHOLD) {
       status = 'live';
     } else if (blockAge !== null) {
       status = 'stale';
