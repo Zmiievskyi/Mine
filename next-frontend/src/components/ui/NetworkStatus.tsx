@@ -2,10 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-const CHAIN_STATUS_URL = 'https://node4.gonka.ai/chain-rpc/status';
-const EPOCH_PARTICIPANTS_URL = 'https://node4.gonka.ai/v1/epochs/current/participants';
 const POLL_INTERVAL = 20000; // 20 seconds
-const FRESH_THRESHOLD = 120; // seconds
 
 type NetworkState = 'live' | 'syncing' | 'stale' | 'unknown';
 
@@ -53,67 +50,31 @@ export function NetworkStatus() {
 
   const fetchData = useCallback(async () => {
     setIsUpdating(true);
-    const updatedAt = new Date();
 
     try {
-      const [chainRes, epochRes] = await Promise.all([
-        fetch(CHAIN_STATUS_URL, { cache: 'no-store' }),
-        fetch(EPOCH_PARTICIPANTS_URL, { cache: 'no-store' }),
-      ]);
+      const res = await fetch('/api/network-status', { cache: 'no-store' });
 
-      if (!chainRes.ok || !epochRes.ok) {
+      if (!res.ok) {
         throw new Error('API request failed');
       }
 
-      const chainData = await chainRes.json();
-      const epochData = await epochRes.json();
-
-      // Extract chain status
-      const result = chainData?.result || chainData;
-      const syncInfo = result?.sync_info || result?.syncInfo;
-      const catchingUp = syncInfo?.catching_up ?? syncInfo?.catchingUp ?? false;
-      const latestHeight = parseInt(syncInfo?.latest_block_height ?? syncInfo?.latestBlockHeight ?? '0', 10);
-      const latestTime = syncInfo?.latest_block_time ?? syncInfo?.latestBlockTime;
-
-      // Calculate block age (with validation)
-      let blockAge: number | null = null;
-      if (latestTime) {
-        const blockDate = new Date(latestTime);
-        const blockTimestamp = blockDate.getTime();
-        // Validate that the date parsed correctly (not NaN)
-        if (!Number.isNaN(blockTimestamp)) {
-          blockAge = (updatedAt.getTime() - blockTimestamp) / 1000;
-        }
-      }
-
-      // Extract epoch from active_participants
-      const epochId = epochData?.active_participants?.epoch_id ?? null;
-
-      // Determine status
-      let status: NetworkState = 'unknown';
-      if (catchingUp) {
-        status = 'syncing';
-      } else if (blockAge !== null && blockAge <= FRESH_THRESHOLD) {
-        status = 'live';
-      } else if (blockAge !== null) {
-        status = 'stale';
-      }
+      const json = await res.json();
 
       if (isMountedRef.current) {
         setData({
-          status,
-          blockHeight: latestHeight || null,
-          blockAge,
-          epochId,
-          updatedAt,
+          status: json.status,
+          blockHeight: json.blockHeight,
+          blockAge: json.blockAge,
+          epochId: json.epochId,
+          updatedAt: new Date(json.updatedAt),
         });
       }
-    } catch (error) {
+    } catch {
       if (isMountedRef.current) {
         setData((prev) => ({
           ...prev,
           status: 'unknown',
-          updatedAt,
+          updatedAt: new Date(),
         }));
       }
     } finally {

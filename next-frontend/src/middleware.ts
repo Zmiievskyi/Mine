@@ -5,5 +5,6 @@ export default createMiddleware(routing);
 
 export const config = {
   // Match only paths that need locale handling
-  matcher: ['/', '/(en|ru|zh)/:path*', '/((?!_next|.*\\..*).*)', '/request-gpu']
+  // Exclude: _next, api routes, files with extensions
+  matcher: ['/', '/(en|ru|zh)/:path*', '/((?!_next|api|.*\\..*).*)', '/request-gpu']
 };
