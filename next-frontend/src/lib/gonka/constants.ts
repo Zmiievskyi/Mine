@@ -1,8 +1,17 @@
 // Gonka Network API Configuration
 
+const FALLBACK_API_URL = 'http://202.78.161.32:8000';
+
 /** Base URL for Gonka API - can be overridden via environment variable */
-export const GONKA_API_BASE =
-  process.env.GONKA_API_URL || 'http://202.78.161.32:8000';
+export const GONKA_API_BASE = (() => {
+  const url = process.env.GONKA_API_URL;
+  if (!url && process.env.NODE_ENV === 'production') {
+    console.warn(
+      '[Gonka API] GONKA_API_URL environment variable not set in production. Using fallback IP address.'
+    );
+  }
+  return url || FALLBACK_API_URL;
+})();
 
 /** API endpoints */
 export const GONKA_ENDPOINTS = {
