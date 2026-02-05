@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**MineGNK** is a **static landing page** for Gcore's GPU mining offering on the Gonka network.
+**MineGNK** is a **landing page** for Gcore's GPU mining offering on the Gonka network.
 
-**Key Principle**: Fully static Next.js landing page with HubSpot form integration for lead capture. No backend, no API calls.
+**Key Principle**: Next.js landing page with server-side API routes for fetching live Gonka network data, and HubSpot form integration for lead capture.
 
 ## Architecture
 
@@ -17,15 +17,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
          |
          v
 +--------+---------+
-| Frontend         |
 | Next.js 16       |
-| Static Export    |
+| Standalone       |
++--------+---------+
+    |         |
+    v         v
++-------+  +------------------+
+| API   |  | HubSpot Forms    |
+| Routes|  | Lead Capture     |
++---+---+  +------------------+
+    |
+    v
 +------------------+
-         |
-         v (iframe)
-+------------------+
-| HubSpot Forms    |
-| Lead Capture     |
+| Gonka Network    |
+| (External APIs)  |
 +------------------+
 ```
 
@@ -50,6 +55,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
           request-gpu/      # HubSpot form page
             page.tsx
             RequestGpuClient.tsx
+        api/                # API routes (server-side)
+          gpu-weights/      # GPU efficiency data from Gonka
+            route.ts
+          network-status/   # Chain status & epoch data
+            route.ts
         globals.css         # Tailwind + custom styles
       components/
         landing/            # Landing page sections
@@ -68,15 +78,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
           MotionReveal.tsx  # Scroll-triggered animations
           NetworkStatus.tsx # Live network status monitoring
         icons/              # SVG icons
-      data/                 # Static data
+      data/                 # Static/fallback data
         pricing.ts
-        efficiency.ts
+        efficiency.ts       # Fallback GPU efficiency data
       i18n/                 # Internationalization config
       lib/hooks/            # Custom React hooks
     messages/               # Translation files (en.json, ru.json, zh.json)
-    Dockerfile             # Multi-stage build
+    Dockerfile             # Multi-stage build (Node.js runtime)
     docker-compose.yml     # Port 8000
-    nginx.conf             # Static file serving
   .claude/
     agents/                 # AI agents
     skills/                 # nextjs, nextjs-anti-patterns, tailwindcss, context7
@@ -94,10 +103,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **HubSpot Form Integration**: "Rent GPU" buttons open modal with embedded form
 - **Network Status Monitoring**: Live Gonka network status ticker in header
 
-### Static Data
-All data is in `src/data/` folder:
+### API Routes
+
+Server-side API routes fetch live data from Gonka network:
+
+| Route | Purpose | Source | Cache |
+|-------|---------|--------|-------|
+| `/api/gpu-weights` | GPU efficiency data | Gonka participants + hardware nodes | 60s |
+| `/api/network-status` | Chain status & epoch | Gonka chain-rpc + epoch API | No cache |
+
+Both routes have fallback to static data when external APIs are unavailable.
+
+### Static/Fallback Data
+Fallback data is in `src/data/` folder:
 - `pricing.ts` - GPU pricing data
-- `efficiency.ts` - Efficiency metrics
+- `efficiency.ts` - Fallback GPU efficiency metrics
 
 ### Design System
 
@@ -131,7 +151,7 @@ All data is in `src/data/` folder:
 cd next-frontend
 npm install
 npm run dev        # http://localhost:3000
-npm run build      # Static export to /out
+npm run build      # Standalone build to .next/standalone
 npm run start      # Serve production build
 ```
 
@@ -260,14 +280,14 @@ When user clicks "Request GPU" on a pricing card:
 ### Overview
 Live network status ticker integrated into the header that displays real-time Gonka blockchain metrics.
 
-### API Endpoints
+### API Route
 
-| Endpoint | Purpose | Data Used |
+The NetworkStatus component fetches from `/api/network-status` which proxies to:
+
+| External Endpoint | Purpose | Data Used |
 |----------|---------|-----------|
-| `https://node4.gonka.ai/chain-rpc/status` | Chain status | Block height, block time, catching_up flag |
-| `https://node4.gonka.ai/v1/epochs/current/participants` | Epoch data | Current epoch ID from `active_participants.epoch_id` |
-
-**Note**: Both endpoints support CORS without proxy requirements.
+| `http://202.78.161.32:8000/chain-rpc/status` | Chain status | Block height, block time, catching_up flag |
+| `http://202.78.161.32:8000/v1/epochs/current/participants` | Epoch data | Current epoch ID from `active_participants.epoch_id` |
 
 ### Status Logic
 
@@ -326,12 +346,13 @@ Full test coverage available at `src/components/ui/__tests__/NetworkStatus.test.
 
 ## Key Decisions
 
-1. **Fully Static**: No backend, no API calls (except client-side network status), all data hardcoded
-2. **Next.js 16**: App Router with static export
-3. **HubSpot Integration**: External form for lead capture
-4. **i18n**: next-intl with EN/RU/ZH translations
-5. **Tailwind CSS v4**: All styling via utility classes with oklch colors
-6. **Network Monitoring**: Client-side API calls to Gonka network (CORS-enabled, no proxy needed)
+1. **Standalone Output**: Node.js server with API routes for live data fetching
+2. **Next.js 16**: App Router with standalone build
+3. **Server-Side Data Fetching**: API routes proxy Gonka network calls with caching and fallback
+4. **HubSpot Integration**: External form for lead capture
+5. **i18n**: next-intl with EN/RU/ZH translations
+6. **Tailwind CSS v4**: All styling via utility classes with oklch colors
+7. **Docker**: Node.js runtime (not nginx) for API route support
 
 ## Local AI Agents & Skills
 

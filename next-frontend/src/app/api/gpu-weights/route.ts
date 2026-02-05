@@ -1,0 +1,244 @@
+import { NextResponse } from 'next/server';
+import { gpuEfficiencyData, type GpuEfficiency } from '@/data/efficiency';
+
+const PARTICIPANTS_URL = 'http://202.78.161.32:8000/v1/epochs/current/participants';
+const HARDWARE_NODES_URL = 'http://202.78.161.32:8000/chain-api/productscience/inference/inference/hardware_nodes_all';
+const CACHE_DURATION = 60; // seconds
+
+// GPU pricing (per GPU per hour)
+const GPU_PRICING: Record<string, number> = {
+  A100: 0.99,
+  H100: 1.80,
+  H200: 2.40,
+  B200: 3.02,
+};
+
+interface MlNode {
+  node_id: string;
+  poc_weight: number;
+}
+
+interface MlNodeGroup {
+  ml_nodes: MlNode[];
+}
+
+interface Participant {
+  index: string;
+  weight: number;
+  ml_nodes?: MlNodeGroup[];
+}
+
+interface ParticipantData {
+  active_participants?: {
+    participants?: Participant[];
+  };
+}
+
+interface Hardware {
+  type: string; // e.g., "NVIDIA H200 | 140GB"
+  count: number;
+}
+
+interface HardwareNode {
+  local_id: string;
+  status: string;
+  hardware?: Hardware[];
+}
+
+interface ParticipantHardware {
+  participant: string;
+  hardware_nodes?: HardwareNode[];
+}
+
+interface HardwareNodesData {
+  nodes?: ParticipantHardware[];
+}
+
+function extractGpuType(hardwareType: string): string | null {
+  // Hardware type format: "NVIDIA H200 | 140GB"
+  if (hardwareType.includes('A100')) return 'A100';
+  if (hardwareType.includes('H100')) return 'H100';
+  if (hardwareType.includes('H200')) return 'H200';
+  if (hardwareType.includes('B200')) return 'B200';
+  return null;
+}
+
+export async function GET() {
+  try {
+    const [participantsRes, hardwareRes] = await Promise.all([
+      fetch(PARTICIPANTS_URL, {
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+      }),
+      fetch(HARDWARE_NODES_URL, {
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+      }),
+    ]);
+
+    if (!participantsRes.ok || !hardwareRes.ok) {
+      throw new Error('Failed to fetch data from Gonka network');
+    }
+
+    const participantsData: ParticipantData = await participantsRes.json();
+    const hardwareData: HardwareNodesData = await hardwareRes.json();
+
+    // Step 1: Build node_participands map
+    // Maps participant_address -> node_id -> poc_weight (only if poc_weight > 100)
+    const nodeParticipants = new Map<string, Map<string, number>>();
+
+    const participants = participantsData.active_participants?.participants ?? [];
+    for (const participant of participants) {
+      if (!participant.ml_nodes) continue;
+
+      for (const mlNodeGroup of participant.ml_nodes) {
+        for (const node of mlNodeGroup.ml_nodes ?? []) {
+          if (node.poc_weight > 100) {
+            if (!nodeParticipants.has(participant.index)) {
+              nodeParticipants.set(participant.index, new Map());
+            }
+            nodeParticipants.get(participant.index)!.set(node.node_id, node.poc_weight);
+          }
+        }
+      }
+    }
+
+    // Step 2: Process hardware nodes
+    // Build: nodes_hw_list (GPU type -> count) and nodes_hw_dict (participant -> node_id -> hardware)
+    const nodesHwList = new Map<string, { count: number }>();
+    const nodesHwDict = new Map<string, Map<string, Hardware[]>>();
+
+    const hardwareNodes = hardwareData.nodes ?? [];
+    for (const info of hardwareNodes) {
+      const address = info.participant;
+
+      // Skip if participant doesn't have valid nodes
+      if (!nodeParticipants.has(address)) continue;
+
+      nodesHwDict.set(address, new Map());
+
+      for (const node of info.hardware_nodes ?? []) {
+        // Only include INFERENCE nodes
+        if (node.status !== 'INFERENCE') continue;
+
+        if (node.hardware) {
+          nodesHwDict.get(address)!.set(node.local_id, node.hardware);
+
+          for (const hw of node.hardware) {
+            const current = nodesHwList.get(hw.type) ?? { count: 0 };
+            current.count += hw.count;
+            nodesHwList.set(hw.type, current);
+          }
+        }
+      }
+    }
+
+    // Step 3: Calculate total weight per GPU type
+    const totalHwWeight = new Map<string, number>();
+
+    for (const [participantAddr, nodes] of nodesHwDict) {
+      const participantNodes = nodeParticipants.get(participantAddr);
+      if (!participantNodes) continue;
+
+      for (const [nodeId, hardwareList] of nodes) {
+        const weight = participantNodes.get(nodeId);
+        if (weight === undefined) continue;
+
+        for (const hw of hardwareList) {
+          const gpuModel = hw.type;
+          const currentWeight = totalHwWeight.get(gpuModel) ?? 0;
+          totalHwWeight.set(gpuModel, currentWeight + weight);
+        }
+      }
+    }
+
+    // Step 4: Calculate weight per GPU for each variant, then pick best per GPU type
+    // We pick the variant with the highest weight/GPU as it represents the best available option
+    const bestByGpuType = new Map<string, { weight: number; count: number }>();
+
+    for (const [gpuType, data] of nodesHwList) {
+      const totalWeight = totalHwWeight.get(gpuType) ?? 0;
+      if (data.count === 0) continue;
+
+      const weightPerGpu = totalWeight / data.count;
+
+      // Extract simplified GPU type for pricing lookup
+      const simplifiedType = extractGpuType(gpuType);
+      if (!simplifiedType) continue;
+
+      const existing = bestByGpuType.get(simplifiedType);
+      if (!existing || weightPerGpu > existing.weight) {
+        bestByGpuType.set(simplifiedType, { weight: weightPerGpu, count: data.count });
+      }
+    }
+
+    // Build efficiency data from best variants
+    const finalData: GpuEfficiency[] = [];
+
+    for (const [gpuType, data] of bestByGpuType) {
+      const pricePerHour = GPU_PRICING[gpuType];
+      if (!pricePerHour) continue;
+
+      const efficiency = data.weight / pricePerHour;
+
+      finalData.push({
+        name: gpuType,
+        weight: data.weight,
+        pricePerHour,
+        efficiency,
+        isEstimated: gpuType === 'B200',
+      });
+    }
+
+    // Sort by efficiency (highest first)
+    finalData.sort((a, b) => b.efficiency - a.efficiency);
+
+    // If no data was calculated, fall back to static data
+    if (finalData.length === 0) {
+      return NextResponse.json(
+        {
+          data: gpuEfficiencyData,
+          fetchedAt: new Date().toISOString(),
+          source: 'fallback',
+          reason: 'No GPU data calculated from network',
+        },
+        {
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        data: finalData,
+        fetchedAt: new Date().toISOString(),
+        source: 'live',
+      },
+      {
+        headers: {
+          'Cache-Control': `s-maxage=${CACHE_DURATION}, stale-while-revalidate`,
+        },
+      }
+    );
+  } catch (error) {
+    console.error('GPU weights API error:', error);
+
+    // Return fallback data
+    return NextResponse.json(
+      {
+        data: gpuEfficiencyData,
+        fetchedAt: new Date().toISOString(),
+        source: 'fallback',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      {
+        status: 200, // Still return 200 with fallback data
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      }
+    );
+  }
+}
