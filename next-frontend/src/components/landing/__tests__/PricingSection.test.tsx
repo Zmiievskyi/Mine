@@ -14,7 +14,7 @@ jest.mock('next-intl', () => ({
       customPricing: 'Custom pricing',
       rentNow: 'Rent Now',
       contactSales: 'Contact Sales',
-      volumeDiscount: 'Volume discounts available',
+      volumeDiscount: 'Volume discounts possible',
       volumeDiscountNote: 'for larger deployments',
     };
     return translations[key] || key;
@@ -162,7 +162,7 @@ describe('PricingSection', () => {
   it('displays volume discount notice', () => {
     render(<PricingSection />);
 
-    expect(screen.getByText('Volume discounts available')).toBeInTheDocument();
+    expect(screen.getByText('Volume discounts possible')).toBeInTheDocument();
     expect(screen.getByText('for larger deployments')).toBeInTheDocument();
   });
 

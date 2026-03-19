@@ -190,7 +190,7 @@
     "rentNow": "Request GPU",
     "contactSales": "Contact Sales",
     "customPricing": "Custom pricing",
-    "volumeDiscount": "Volume discounts available",
+    "volumeDiscount": "Volume discounts possible",
     "volumeDiscountNote": "from 10+ servers. Contact us for custom pricing."
   },
   "efficiency": {
@@ -233,7 +233,7 @@
       },
       {
         "question": "Can I scale up or down?",
-        "answer": "Upgrade available anytime (subject to capacity). Downgrade once per month. Volume discounts available from 10+ servers."
+        "answer": "Upgrade available anytime (subject to capacity). Downgrade once per month. Volume discounts possible from 10+ servers."
       },
       {
         "question": "Do you offer discounts?",
