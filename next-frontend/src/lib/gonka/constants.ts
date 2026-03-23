@@ -35,7 +35,7 @@ export const GPU_WEIGHTS_CACHE_DURATION = 60;
 /** GPU pricing (per GPU per hour in USD) */
 export const GPU_PRICING: Record<string, number> = {
   A100: 0.99,
-  H100: 1.8,
-  H200: 2.4,
-  B200: 3.02,
+  H100: 2.1,
+  H200: 3.05,
+  B200: 3.95,
 };

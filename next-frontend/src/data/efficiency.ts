@@ -18,9 +18,9 @@ export interface GpuEfficiency {
  */
 export const gpuEfficiencyData: GpuEfficiency[] = [
   { name: 'A100', weight: 100.593, pricePerHour: 0.99, efficiency: 101.61 },
-  { name: 'H100', weight: 305.655, pricePerHour: 1.80, efficiency: 169.81 },
-  { name: 'H200', weight: 240.674, pricePerHour: 2.40, efficiency: 100.28 },
-  { name: 'B200', weight: 307.853, pricePerHour: 3.02, efficiency: 101.94, isEstimated: true },
+  { name: 'H100', weight: 305.655, pricePerHour: 2.10, efficiency: 145.55 },
+  { name: 'H200', weight: 240.674, pricePerHour: 3.05, efficiency: 78.91 },
+  { name: 'B200', weight: 307.853, pricePerHour: 3.95, efficiency: 77.94, isEstimated: true },
 ];
 
 // Sort by efficiency (highest first) and find best value
