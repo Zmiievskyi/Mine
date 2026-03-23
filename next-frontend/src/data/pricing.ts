@@ -21,7 +21,7 @@ export const pricing: GpuPricing[] = [
     name: '8x A100 Server',
     description: 'Entry-level high-performance GPU',
     pricePerHour: 0.99,
-    pricePerMonth: 5780,
+    pricePerMonth: 5800,
     isContactSales: false,
     features: [
       '8x NVIDIA A100 80GB',
@@ -34,8 +34,8 @@ export const pricing: GpuPricing[] = [
   {
     name: '8x H100 Server',
     description: 'Next-gen AI training powerhouse',
-    pricePerHour: 1.8,
-    pricePerMonth: 10510,
+    pricePerHour: 2.1,
+    pricePerMonth: 12300,
     isContactSales: false,
     features: [
       '8x NVIDIA H100 80GB',
@@ -48,8 +48,8 @@ export const pricing: GpuPricing[] = [
   {
     name: '8x H200 Server',
     description: 'Maximum memory for large models',
-    pricePerHour: 2.4,
-    pricePerMonth: 14020,
+    pricePerHour: 3.05,
+    pricePerMonth: 17800,
     isContactSales: false,
     features: [
       '8x NVIDIA H200 141GB',
@@ -62,8 +62,8 @@ export const pricing: GpuPricing[] = [
   {
     name: '8x B200 Server',
     description: 'Latest Blackwell architecture',
-    pricePerHour: 3.02,
-    pricePerMonth: 17640,
+    pricePerHour: 3.95,
+    pricePerMonth: 23100,
     isContactSales: false,
     features: [
       '8x NVIDIA B200 192GB',

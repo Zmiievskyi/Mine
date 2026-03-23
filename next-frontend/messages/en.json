@@ -141,7 +141,7 @@
     "note": "Note: monitoring/health scope should match the actually available tooling."
   },
   "managedServices": {
-    "badge": "Fully Managed",
+    "badge": "Optional Service",
     "title": "We handle the technical complexity",
     "subtitle": "Focus on earning while we manage the infrastructure. Our team takes care of everything from setup to maintenance.",
     "services": [
@@ -182,7 +182,7 @@
   "pricing": {
     "badge": "Simple Pricing",
     "title": "Choose your 8x GPU server package",
-    "subtitle": "All packages include managed infrastructure, 24/7 monitoring, and month-to-month contracts. No setup fees or long-term commitment.",
+    "subtitle": "All plans are month-to-month with no setup fees. Optional managed services for setup and monitoring.",
     "perMonth": "/month",
     "perHour": "/GPU/hour",
     "perGpuHour": "per GPU/hour",
