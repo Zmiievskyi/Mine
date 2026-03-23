@@ -12,6 +12,7 @@ if (!globalThis.crypto || !globalThis.crypto.subtle) {
 
 // Polyfill TextEncoder if not available
 if (typeof TextEncoder === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { TextEncoder: NodeTextEncoder } = require('util');
   (globalThis as unknown as { TextEncoder: typeof NodeTextEncoder }).TextEncoder = NodeTextEncoder;
 }

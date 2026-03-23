@@ -11,7 +11,8 @@ jest.mock('next-intl', () => ({
 }));
 
 jest.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Link: ({ children, href, ...props }: Record<string, any>) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -27,7 +28,8 @@ jest.mock('@/components/ui/LanguageSwitcher', () => ({
 }));
 
 jest.mock('@/components/ui/HardLink', () => ({
-  HardLink: ({ children, href, onClick, ...props }: any) => (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  HardLink: ({ children, href, onClick, ...props }: Record<string, any>) => (
     <a href={href} onClick={onClick} {...props}>
       {children}
     </a>

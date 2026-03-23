@@ -27,6 +27,7 @@ export function LanguageSwitcher({ showLabels = false }: LanguageSwitcherProps) 
     if (newLocale === locale) return;
 
     // Set cookie to persist locale preference (prevents middleware from auto-detecting)
+    // eslint-disable-next-line react-hooks/immutability
     document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000;samesite=lax`;
 
     // Force full page reload to reset HubSpot form state
@@ -36,6 +37,7 @@ export function LanguageSwitcher({ showLabels = false }: LanguageSwitcherProps) 
     // Ensure trailing slash for static export compatibility
     const normalizedPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
     const newPath = `/${newLocale}${normalizedPath}${queryString}`;
+    // eslint-disable-next-line react-hooks/immutability
     window.location.href = newPath;
   };
 

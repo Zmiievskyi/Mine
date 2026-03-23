@@ -24,7 +24,8 @@ jest.mock('next-intl', () => ({
 
 // Mock HardLink
 jest.mock('@/components/ui/HardLink', () => ({
-  HardLink: ({ children, href, ...props }: any) => (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  HardLink: ({ children, href, ...props }: Record<string, any>) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -33,7 +34,7 @@ jest.mock('@/components/ui/HardLink', () => ({
 
 // Mock ScrollReveal
 jest.mock('@/components/ui/ScrollReveal', () => ({
-  ScrollReveal: ({ children }: any) => <div>{children}</div>,
+  ScrollReveal: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
 // Mock pricing data

@@ -13,21 +13,16 @@ import {
  * Respects prefers-reduced-motion by showing the final value immediately.
  */
 function AnimatedNumber({ value, decimals = 2 }: { value: number; decimals?: number }) {
-  const [displayValue, setDisplayValue] = useState(0);
+  const prefersReducedMotion = typeof window !== 'undefined'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const [displayValue, setDisplayValue] = useState(prefersReducedMotion ? value : 0);
   const ref = useRef<HTMLSpanElement>(null);
-  const hasAnimated = useRef(false);
+  const hasAnimated = useRef(prefersReducedMotion);
   const animationFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
-    // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    // If user prefers reduced motion, show final value immediately
-    if (prefersReducedMotion) {
-      setDisplayValue(value);
-      hasAnimated.current = true;
-      return;
-    }
+    // If user prefers reduced motion, skip animation entirely
+    if (hasAnimated.current) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {

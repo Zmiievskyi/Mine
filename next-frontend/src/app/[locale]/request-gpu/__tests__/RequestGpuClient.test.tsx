@@ -18,7 +18,8 @@ jest.mock('next/navigation', () => ({
 }));
 
 jest.mock('@/i18n/navigation', () => ({
-  Link: ({ children, href, ...props }: any) => (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Link: ({ children, href, ...props }: Record<string, any>) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -76,6 +77,7 @@ function expectReplaceStateCalledWithGpuValue(expectedValue: string) {
 // ---------------------------------------------------------------------------
 
 describe('RequestGpuClient', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { useSearchParams } = require('next/navigation');
 
   beforeEach(() => {
