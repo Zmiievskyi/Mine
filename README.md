@@ -122,6 +122,36 @@ docker compose up -d --build   # Build and run on port 8000
 
 Access at http://localhost:8000
 
+## CI/CD
+
+GitHub Actions runs automatically on every push and pull request.
+
+### Pipeline
+
+| Job | Runs on | Steps |
+|-----|---------|-------|
+| `ci` | Push to main, all PRs | Install → Lint → Test → Build |
+| `deploy` | Push to main only (after CI passes) | SSH into VM → git pull → docker compose up |
+
+### Workflow
+
+```
+PR opened → ci job runs (lint + test + build)
+push to main → ci job passes → deploy job runs
+```
+
+The deploy job SSHes into `revops-vm1`, pulls the latest code, rebuilds the Docker image, and prunes old images.
+
+### Required GitHub Secrets
+
+| Secret | Description |
+|--------|-------------|
+| `VM_HOST` | Production VM IP/hostname |
+| `VM_USER` | SSH username |
+| `VM_SSH_KEY` | Private SSH key |
+
+Configure these in **GitHub → Settings → Secrets and variables → Actions**.
+
 ## Development
 
 ### Git Workflow

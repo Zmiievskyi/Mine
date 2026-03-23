@@ -168,6 +168,52 @@ docker compose down            # Stop
 
 Access at **http://localhost:8000**
 
+## CI/CD
+
+### Workflow File
+
+`.github/workflows/ci.yml` — runs on every push to `main` and on pull requests targeting `main`.
+
+### Jobs
+
+| Job | Trigger | Steps |
+|-----|---------|-------|
+| `ci` | push to main, PRs | checkout → Node 22 setup → `npm ci` → lint → test → build |
+| `deploy` | push to main only (after `ci` passes) | SSH into VM → `git pull` → `docker compose up -d --build` → `docker image prune -f` |
+
+### Deploy Flow
+
+```
+push to main
+     │
+     ▼
+ci job passes (lint + test + build)
+     │
+     ▼
+deploy job SSHes into revops-vm1
+     │
+     ├── cd ~/Mine && git pull
+     ├── cd next-frontend
+     ├── sudo docker compose up -d --build
+     └── sudo docker image prune -f
+```
+
+### Required GitHub Secrets
+
+| Secret | Description |
+|--------|-------------|
+| `VM_HOST` | Production VM hostname or IP (`ed-c16-61-125-69`) |
+| `VM_USER` | SSH username on the VM |
+| `VM_SSH_KEY` | Private SSH key for authentication |
+
+Set these in **GitHub → Settings → Secrets and variables → Actions**.
+
+### Notes
+
+- The `deploy` job only runs on `push` events to `main`, never on PRs.
+- Docker images are pruned after each deploy to reclaim disk space.
+- The working directory for the CI job is `next-frontend` (set via `defaults.run.working-directory`).
+
 ## Git Workflow
 
 ```
@@ -355,6 +401,7 @@ Full test coverage available at `src/components/ui/__tests__/NetworkStatus.test.
 5. **i18n**: next-intl with EN/RU/ZH translations
 6. **Tailwind CSS v4**: All styling via utility classes with oklch colors
 7. **Docker**: Node.js runtime (not nginx) for API route support
+8. **GitHub Actions CI/CD**: Automated lint/test/build on PRs, auto-deploy to VM on merge to main
 
 ## Local AI Agents & Skills
 
