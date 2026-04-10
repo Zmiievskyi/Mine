@@ -27,6 +27,9 @@
       }
     }
   },
+  "banner": {
+    "cryptoPayments": "Мы принимаем оплату криптовалютой — BTC, USDT, USDC и другие"
+  },
   "nav": {
     "features": "Что мы предлагаем",
     "pricing": "Цены",
