@@ -47,6 +47,7 @@ coverage/
 .mcp.json
 .playwright-mcp/
 .claude/
+!.claude/agents/
 
 # Local documentation (research, notes)
 docs/

@@ -93,6 +93,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   README.md
 ```
 
+## Critical Rules
+
+### i18n: All Languages Must Stay In Sync
+
+This project uses next-intl with **3 languages**: EN, RU, ZH. Translation files are in `next-frontend/messages/`.
+
+**When any translation key is added, modified, or removed in one language file, the same change MUST be applied to ALL three files** (`en.json`, `ru.json`, `zh.json`). No exceptions.
+
+This applies to:
+- Code changes (Claude Code on issues, PRs)
+- Code reviews (must flag missing translations as CRITICAL)
+
+Failing to update all languages means users see stale/wrong content. This is a **production-breaking issue**.
+
 ## Core Features
 
 ### Landing Page
