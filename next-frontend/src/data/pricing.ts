@@ -63,7 +63,7 @@ export const pricing: GpuPricing[] = [
     name: '8x B200 Server',
     description: 'Latest Blackwell architecture',
     pricePerHour: 5.8,
-    pricePerMonth: 23100,
+    pricePerMonth: 33900,
     isContactSales: false,
     features: [
       '8x NVIDIA B200 192GB',
