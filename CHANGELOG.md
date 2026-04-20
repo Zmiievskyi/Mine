@@ -6,6 +6,55 @@ Format: `[YYYY-MM-DD] type: description`
 
 ---
 
+## [2026-04-20]
+
+### Changed
+
+- `feat: add crypto payment announcement banner to header` (PR #4, commit `f131b60`)
+  - New announcement strip above the main nav with `header.cryptoPayments` in EN/RU/ZH
+- `fix: update crypto payments banner text` (PR #6, commit `8a331ff`)
+  - EN copy shortened to "We accept crypto payments USDT"
+- `fix: update crypto banner text in RU and ZH translations` (PR #8, commit `98e6c17`)
+  - RU: "Мы принимаем оплату криптовалютой — USDC", ZH: "我们接受加密货币付款 — USDC"
+- `fix: update B200 price to $5.8/hr` (PR #10, commit `cbb6fe9`)
+  - B200 hourly bumped from \$3.95 → \$5.80
+
+### Fixed
+
+- `fix: recalculate B200 monthly price after hourly update` (PR #12, commit `5d31a49`)
+  - `pricePerMonth` bumped \$23,100 → \$33,900 to match the new \$5.80/hr rate (PR #10 had left the monthly stale)
+
+### Added
+
+- `chore: add i18n and pricing consistency rules to code review` (PR #11)
+  - Critical i18n rule in `CLAUDE.md` and `.claude/agents/code-review-agent.md` — any change to one of `messages/{en,ru,zh}.json` must be mirrored in all three
+  - Critical pricing rule — if `pricePerHour` changes, `pricePerMonth` must be recalculated in the same commit
+  - Code-review (local + GitHub Actions) flags violations as CRITICAL
+
+### Refactored
+
+- `refactor: centralize GPU hourly rates in pricing.ts` (PR #15)
+  - Introduced `GPU_HOURLY_RATES` map in `src/data/pricing.ts` as the **single source of truth** for per-GPU hourly rate
+  - `pricing[].pricePerMonth` is now derived: `Math.round(hourly × 8 × 730 / 100) × 100`
+  - `efficiency.ts` no longer holds `pricePerHour` or `efficiency` literals — both are computed from `GPU_HOURLY_RATES` and the raw `weight` at module load
+  - Removed duplicate `GPU_PRICING` map from `src/lib/gonka/constants.ts`; `/api/gpu-weights` and its tests import `GPU_HOURLY_RATES` directly
+  - Added two invariant tests in `pricing.test.ts`: monthly matches the formula, and `efficiency.ts` shares hourly rates with `pricing.ts`
+  - **Result**: changing a GPU price is now a one-line edit in `GPU_HOURLY_RATES`; the bug class that caused PR #10 → PR #12 is no longer expressible
+  - Closes #14
+
+### Docs
+
+- `docs: clarify that deploy job is Skipped on PRs by design` (PR #13)
+  - Added a one-line note to the CI/CD section of `CLAUDE.md` explaining that a "Skipped" deploy on PR checks is expected
+- Updated "Pricing" section in `CLAUDE.md` to reflect the SSOT model with a step-by-step "how to update a GPU price" instruction for future contributors (and agents)
+
+### Process / Repo
+
+- Enabled `delete_branch_on_merge` on the GitHub repo — merged PR branches are now deleted automatically
+- Cleaned up 5 stale merged branches locally and on remote
+
+---
+
 ## [2026-03-23]
 
 ### Added

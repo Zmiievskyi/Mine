@@ -58,11 +58,16 @@ When you need detailed guidance on specific topics, use the Skill tool to invoke
 - Removed key in one file → must be removed from all three
 - Flag as **CRITICAL** if translations are out of sync — this means users see wrong content in production
 
-### Pricing Consistency (CRITICAL)
-- GPU pricing lives in `next-frontend/src/data/pricing.ts`. Each tier has both `pricePerHour` and `pricePerMonth`.
-- The monthly value is **derived** from the hourly one: `pricePerMonth ≈ pricePerHour × 8 × 730`, rounded to the nearest hundred (verify against the other tiers — all of them follow this convention).
-- If a PR changes `pricePerHour` for a tier, `pricePerMonth` for that tier MUST be recalculated in the same change. Do the math: multiply the new hourly by `8 × 730 = 5840`, round to the nearest hundred, and compare against the stored monthly.
-- Flag as **CRITICAL** if the stored monthly does not match the formula — the pricing page will show an inconsistent total to users. This happened in PR #10 (B200 hourly bumped without recalculating monthly).
+### Pricing: Single Source of Truth (CRITICAL)
+- All GPU hourly rates live in one map: `GPU_HOURLY_RATES` in `next-frontend/src/data/pricing.ts`. Monthly price, efficiency page's hourly, and the `/api/gpu-weights` route all derive from it.
+- To change a GPU price, a PR should modify **exactly one line** in `GPU_HOURLY_RATES`. Nothing else.
+- Flag as **CRITICAL** if any PR:
+  - Hardcodes a GPU hourly rate outside `GPU_HOURLY_RATES` (in `efficiency.ts`, `constants.ts`, a component, a test literal, anywhere).
+  - Hardcodes a `pricePerMonth` value in `pricing.ts` instead of letting the derivation run.
+  - Hardcodes an `efficiency` number in `efficiency.ts` instead of deriving from `weight / pricePerHour`.
+  - Re-introduces a duplicate map like `GPU_PRICING` in `constants.ts`.
+- These are **not** style nits — they re-introduce the exact class of bug that caused PR #10 → PR #12 (B200 hourly bumped, monthly left stale) and the `fix: sync efficiency section prices with updated GPU pricing` incident (commit `d5c65e6`, three prices drifted at once). PR #15 eliminated it by centralizing; don't regress.
+- The invariant tests in `src/data/__tests__/pricing.test.ts` should also remain — if a PR deletes or weakens them, flag as HIGH.
 
 ### File Size & Structure
 - Components under 200 lines (prefer 100-150)

@@ -107,19 +107,42 @@ This applies to:
 
 Failing to update all languages means users see stale/wrong content. This is a **production-breaking issue**.
 
-### Pricing: Hourly and Monthly Must Stay In Sync
+### Pricing: Single Source of Truth
 
-GPU pricing lives in `next-frontend/src/data/pricing.ts`. Each tier stores both `pricePerHour` and `pricePerMonth`, and the monthly value is derived — **not** independent data.
+GPU hourly rates live in **one place**: the `GPU_HOURLY_RATES` map at the top of `next-frontend/src/data/pricing.ts`. Everything else (monthly price on the pricing page, hourly rate on the efficiency page, hourly rate used by `/api/gpu-weights`) is derived from this map.
 
-**Formula**: `pricePerMonth ≈ pricePerHour × 8 GPUs × 730 hours` (rounded to the nearest hundred, matching the other tiers).
+**To change a GPU price, edit exactly one line:**
 
-**When `pricePerHour` changes for any tier, `pricePerMonth` for the same tier MUST be recalculated in the same commit.** No exceptions.
+```ts
+// next-frontend/src/data/pricing.ts
+export const GPU_HOURLY_RATES = {
+  A100: 0.99,
+  H100: 2.1,
+  H200: 3.05,
+  B200: 5.8,   // ← change this, nothing else
+} as const satisfies Record<string, number>;
+```
 
-This applies to:
-- Code changes (Claude Code on issues, PRs)
-- Code reviews (must flag a stale `pricePerMonth` as CRITICAL)
+What propagates automatically:
+- `pricing.ts` — `pricePerMonth` via `Math.round(hourly × 8 × 730 / 100) × 100` (rounded to nearest \$100)
+- `efficiency.ts` — `pricePerHour` and `efficiency` (= `weight / pricePerHour`) recomputed at module load
+- `/api/gpu-weights` (live Gonka data) — imports `GPU_HOURLY_RATES` directly
 
-Failing to update the monthly price means the pricing page shows an inconsistent total — this happened in PR #10 (B200 hourly bumped, monthly left stale) and required a follow-up fix (PR #12).
+**DO NOT:**
+- Hardcode an hourly rate anywhere else in the repo (efficiency.ts, constants.ts, component files).
+- Hardcode a monthly price in `pricing.ts` — let the derivation run.
+- Hardcode efficiency values in `efficiency.ts` — only the raw `weight` is kept.
+
+**Tests that guard this invariant** (in `src/data/__tests__/pricing.test.ts`):
+- Every tier's `pricePerMonth` matches the formula.
+- Every row in `gpuEfficiencyData` uses `GPU_HOURLY_RATES[name]`.
+
+If a PR adds a literal hourly or monthly price outside `GPU_HOURLY_RATES`, code review must flag it as CRITICAL — this re-introduces the exact class of bug fixed in PR #12 / PR #15.
+
+**Reference incidents:**
+- PR #10 changed B200 hourly but left `pricePerMonth` stale → PR #12 fixed it.
+- `fix: sync efficiency section prices with updated GPU pricing` (commit `d5c65e6`) — three prices drifted at once because `efficiency.ts` used to hold its own copy.
+- PR #15 introduced the SSOT to make these failures impossible.
 
 ## Core Features
 
