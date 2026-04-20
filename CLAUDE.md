@@ -107,6 +107,20 @@ This applies to:
 
 Failing to update all languages means users see stale/wrong content. This is a **production-breaking issue**.
 
+### Pricing: Hourly and Monthly Must Stay In Sync
+
+GPU pricing lives in `next-frontend/src/data/pricing.ts`. Each tier stores both `pricePerHour` and `pricePerMonth`, and the monthly value is derived — **not** independent data.
+
+**Formula**: `pricePerMonth ≈ pricePerHour × 8 GPUs × 730 hours` (rounded to the nearest hundred, matching the other tiers).
+
+**When `pricePerHour` changes for any tier, `pricePerMonth` for the same tier MUST be recalculated in the same commit.** No exceptions.
+
+This applies to:
+- Code changes (Claude Code on issues, PRs)
+- Code reviews (must flag a stale `pricePerMonth` as CRITICAL)
+
+Failing to update the monthly price means the pricing page shows an inconsistent total — this happened in PR #10 (B200 hourly bumped, monthly left stale) and required a follow-up fix (PR #12).
+
 ## Core Features
 
 ### Landing Page

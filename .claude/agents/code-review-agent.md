@@ -58,6 +58,12 @@ When you need detailed guidance on specific topics, use the Skill tool to invoke
 - Removed key in one file → must be removed from all three
 - Flag as **CRITICAL** if translations are out of sync — this means users see wrong content in production
 
+### Pricing Consistency (CRITICAL)
+- GPU pricing lives in `next-frontend/src/data/pricing.ts`. Each tier has both `pricePerHour` and `pricePerMonth`.
+- The monthly value is **derived** from the hourly one: `pricePerMonth ≈ pricePerHour × 8 × 730`, rounded to the nearest hundred (verify against the other tiers — all of them follow this convention).
+- If a PR changes `pricePerHour` for a tier, `pricePerMonth` for that tier MUST be recalculated in the same change. Do the math: multiply the new hourly by `8 × 730 = 5840`, round to the nearest hundred, and compare against the stored monthly.
+- Flag as **CRITICAL** if the stored monthly does not match the formula — the pricing page will show an inconsistent total to users. This happened in PR #10 (B200 hourly bumped without recalculating monthly).
+
 ### File Size & Structure
 - Components under 200 lines (prefer 100-150)
 - One component per file
