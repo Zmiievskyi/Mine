@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { gpuEfficiencyData, type GpuEfficiency } from '@/data/efficiency';
+import { GPU_HOURLY_RATES } from '@/data/pricing';
 import {
   GONKA_ENDPOINTS,
-  GPU_PRICING,
   GPU_WEIGHTS_CACHE_DURATION,
   MIN_POC_WEIGHT_THRESHOLD,
 } from '@/lib/gonka/constants';
@@ -167,7 +167,7 @@ export async function GET() {
     const finalData: GpuEfficiency[] = [];
 
     for (const [gpuType, data] of aggregatedByGpuType) {
-      const pricePerHour = GPU_PRICING[gpuType];
+      const pricePerHour = GPU_HOURLY_RATES[gpuType as keyof typeof GPU_HOURLY_RATES];
       if (!pricePerHour || data.totalCount === 0) continue;
 
       const weightPerGpu = data.totalWeight / data.totalCount;

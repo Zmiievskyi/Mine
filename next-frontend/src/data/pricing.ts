@@ -13,15 +13,40 @@ export interface GpuPricing {
 }
 
 /**
+ * Single source of truth for per-GPU hourly rate (USD).
+ * Keyed by short GPU name (matches efficiency.ts and API route usage).
+ * Any price change happens here and propagates to:
+ *   - `pricing` below (monthly is recomputed from this)
+ *   - `efficiency.ts` (efficiency is `weight / pricePerHour`)
+ *   - `/api/gpu-weights` (live efficiency calc)
+ */
+export const GPU_HOURLY_RATES = {
+  A100: 0.99,
+  H100: 2.1,
+  H200: 3.05,
+  B200: 5.8,
+} as const satisfies Record<string, number>;
+
+export type GpuShortName = keyof typeof GPU_HOURLY_RATES;
+
+/**
+ * Monthly price derived from hourly, rounded to the nearest hundred
+ * (matches the stored values in the `pricing` array below).
+ */
+function deriveMonthlyPrice(pricePerHour: number): number {
+  return Math.round((pricePerHour * 8 * 730) / 100) * 100;
+}
+
+/**
  * Hardcoded GPU pricing data
- * Monthly = hourly × 8 GPUs × 730 hours/month
+ * Monthly = hourly × 8 GPUs × 730 hours/month, rounded to nearest $100
  */
 export const pricing: GpuPricing[] = [
   {
     name: '8x A100 Server',
     description: 'Entry-level high-performance GPU',
-    pricePerHour: 0.99,
-    pricePerMonth: 5800,
+    pricePerHour: GPU_HOURLY_RATES.A100,
+    pricePerMonth: deriveMonthlyPrice(GPU_HOURLY_RATES.A100),
     isContactSales: false,
     features: [
       '8x NVIDIA A100 80GB',
@@ -34,8 +59,8 @@ export const pricing: GpuPricing[] = [
   {
     name: '8x H100 Server',
     description: 'Next-gen AI training powerhouse',
-    pricePerHour: 2.1,
-    pricePerMonth: 12300,
+    pricePerHour: GPU_HOURLY_RATES.H100,
+    pricePerMonth: deriveMonthlyPrice(GPU_HOURLY_RATES.H100),
     isContactSales: false,
     features: [
       '8x NVIDIA H100 80GB',
@@ -48,8 +73,8 @@ export const pricing: GpuPricing[] = [
   {
     name: '8x H200 Server',
     description: 'Maximum memory for large models',
-    pricePerHour: 3.05,
-    pricePerMonth: 17800,
+    pricePerHour: GPU_HOURLY_RATES.H200,
+    pricePerMonth: deriveMonthlyPrice(GPU_HOURLY_RATES.H200),
     isContactSales: false,
     features: [
       '8x NVIDIA H200 141GB',
@@ -62,8 +87,8 @@ export const pricing: GpuPricing[] = [
   {
     name: '8x B200 Server',
     description: 'Latest Blackwell architecture',
-    pricePerHour: 5.8,
-    pricePerMonth: 33900,
+    pricePerHour: GPU_HOURLY_RATES.B200,
+    pricePerMonth: deriveMonthlyPrice(GPU_HOURLY_RATES.B200),
     isContactSales: false,
     features: [
       '8x NVIDIA B200 192GB',

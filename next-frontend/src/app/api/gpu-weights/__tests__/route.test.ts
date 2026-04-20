@@ -13,7 +13,8 @@ jest.mock('@/lib/gonka/fetch', () => ({
 import { fetchWithTimeout } from '@/lib/gonka/fetch';
 import { GET } from '../route';
 import { gpuEfficiencyData } from '@/data/efficiency';
-import { GPU_PRICING, GPU_WEIGHTS_CACHE_DURATION } from '@/lib/gonka/constants';
+import { GPU_HOURLY_RATES } from '@/data/pricing';
+import { GPU_WEIGHTS_CACHE_DURATION } from '@/lib/gonka/constants';
 
 // Silence console.error output produced by the catch branch
 jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -162,11 +163,11 @@ describe('GET /api/gpu-weights', () => {
 
     // weightPerGpu = totalWeight / totalCount = pocWeight / gpuCount
     const expectedWeightPerGpu = pocWeight / gpuCount;
-    const expectedEfficiency = expectedWeightPerGpu / GPU_PRICING['A100'];
+    const expectedEfficiency = expectedWeightPerGpu / GPU_HOURLY_RATES.A100;
 
     expect(a100.weight).toBeCloseTo(expectedWeightPerGpu, 5);
     expect(a100.efficiency).toBeCloseTo(expectedEfficiency, 5);
-    expect(a100.pricePerHour).toBe(GPU_PRICING['A100']);
+    expect(a100.pricePerHour).toBe(GPU_HOURLY_RATES.A100);
   });
 
   // 3. Aggregates multiple variants of the same GPU type
@@ -319,7 +320,7 @@ describe('GET /api/gpu-weights', () => {
     const response = await GET();
     const body = await response.json();
 
-    // T4 is not in GPU_PRICING → extractGpuType returns null → no data → fallback
+    // T4 is not in GPU_HOURLY_RATES → extractGpuType returns null → no data → fallback
     expect(body.source).toBe('fallback');
     expect(body.data).toEqual(gpuEfficiencyData);
   });
