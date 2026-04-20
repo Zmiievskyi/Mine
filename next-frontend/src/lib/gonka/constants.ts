@@ -37,5 +37,5 @@ export const GPU_PRICING: Record<string, number> = {
   A100: 0.99,
   H100: 2.1,
   H200: 3.05,
-  B200: 3.95,
+  B200: 5.8,
 };
