@@ -1,4 +1,5 @@
-import { pricing, formatPrice, formatMonthlyPrice, type GpuPricing } from '../pricing';
+import { pricing, formatPrice, formatMonthlyPrice, GPU_HOURLY_RATES, type GpuPricing } from '../pricing';
+import { gpuEfficiencyData } from '../efficiency';
 
 describe('pricing data', () => {
   it('exports an array of GPU pricing', () => {
@@ -36,6 +37,20 @@ describe('pricing data', () => {
         expect(typeof feature).toBe('string');
         expect(feature.length).toBeGreaterThan(0);
       });
+    });
+  });
+
+  it('derives pricePerMonth from pricePerHour (hourly × 8 × 730, rounded to $100)', () => {
+    pricing.forEach((gpu) => {
+      if (gpu.pricePerHour === null || gpu.pricePerMonth === null) return;
+      const expected = Math.round((gpu.pricePerHour * 8 * 730) / 100) * 100;
+      expect(gpu.pricePerMonth).toBe(expected);
+    });
+  });
+
+  it('shares hourly rates with efficiency.ts (single source of truth)', () => {
+    gpuEfficiencyData.forEach((eff) => {
+      expect(eff.pricePerHour).toBe(GPU_HOURLY_RATES[eff.name as keyof typeof GPU_HOURLY_RATES]);
     });
   });
 });
