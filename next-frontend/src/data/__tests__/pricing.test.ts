@@ -9,10 +9,11 @@ describe('pricing data', () => {
 
   it('contains expected GPU types', () => {
     const names = pricing.map((p) => p.name);
-    expect(names).toContain('8x A100 Server');
     expect(names).toContain('8x H100 Server');
     expect(names).toContain('8x H200 Server');
     expect(names).toContain('8x B200 Server');
+    expect(names).toContain('8x B300 Server');
+    expect(names).not.toContain('8x A100 Server');
   });
 
   it('has valid pricing structure for each GPU', () => {

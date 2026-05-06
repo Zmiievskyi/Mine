@@ -21,10 +21,10 @@ export interface GpuPricing {
  *   - `/api/gpu-weights` (live efficiency calc)
  */
 export const GPU_HOURLY_RATES = {
-  A100: 0.99,
   H100: 2.1,
   H200: 3.05,
   B200: 5.8,
+  B300: 10.0,
 } as const satisfies Record<string, number>;
 
 export type GpuShortName = keyof typeof GPU_HOURLY_RATES;
@@ -42,20 +42,6 @@ function deriveMonthlyPrice(pricePerHour: number): number {
  * Monthly = hourly × 8 GPUs × 730 hours/month, rounded to nearest $100
  */
 export const pricing: GpuPricing[] = [
-  {
-    name: '8x A100 Server',
-    description: 'Entry-level high-performance GPU',
-    pricePerHour: GPU_HOURLY_RATES.A100,
-    pricePerMonth: deriveMonthlyPrice(GPU_HOURLY_RATES.A100),
-    isContactSales: false,
-    features: [
-      '8x NVIDIA A100 80GB',
-      '80GB HBM2e memory per GPU',
-      '2TB NVMe storage',
-      '24/7 monitoring',
-      'Managed infrastructure',
-    ],
-  },
   {
     name: '8x H100 Server',
     description: 'Next-gen AI training powerhouse',
@@ -92,6 +78,20 @@ export const pricing: GpuPricing[] = [
     isContactSales: false,
     features: [
       '8x NVIDIA B200 192GB',
+      '192GB HBM3e memory per GPU',
+      '8TB NVMe storage',
+      '24/7 monitoring',
+      'Managed infrastructure',
+    ],
+  },
+  {
+    name: '8x B300 Server',
+    description: 'Newest Blackwell Ultra GPU server',
+    pricePerHour: GPU_HOURLY_RATES.B300,
+    pricePerMonth: deriveMonthlyPrice(GPU_HOURLY_RATES.B300),
+    isContactSales: false,
+    features: [
+      '8x NVIDIA B300 192GB',
       '192GB HBM3e memory per GPU',
       '8TB NVMe storage',
       '24/7 monitoring',

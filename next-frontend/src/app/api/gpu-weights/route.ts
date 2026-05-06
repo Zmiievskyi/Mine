@@ -51,9 +51,9 @@ interface HardwareNodesData {
 
 function extractGpuType(hardwareType: string): string | null {
   // Hardware type format: "NVIDIA H200 | 140GB"
-  if (hardwareType.includes('A100')) return 'A100';
   if (hardwareType.includes('H100')) return 'H100';
   if (hardwareType.includes('H200')) return 'H200';
+  if (hardwareType.includes('B300')) return 'B300';
   if (hardwareType.includes('B200')) return 'B200';
   return null;
 }
@@ -178,7 +178,7 @@ export async function GET() {
         weight: weightPerGpu,
         pricePerHour,
         efficiency,
-        isEstimated: gpuType === 'B200',
+        isEstimated: gpuType === 'B200' || gpuType === 'B300',
       });
     }
 

@@ -144,13 +144,22 @@ describe('RequestGpuClient', () => {
   // their combined effect: the URL written to replaceState must contain the
   // correct HubSpot pre-fill parameter for each GPU type.
 
-  it('maps "NVIDIA A100" to HubSpot value "8 x A100"', async () => {
+  it('maps "B300" to HubSpot value "8 x B300"', async () => {
+    (useSearchParams as jest.Mock).mockReturnValue(
+      new URLSearchParams('gpu=B300')
+    );
+
+    await renderAndSettle();
+    expectReplaceStateCalledWithGpuValue('8 x B300');
+  });
+
+  it('does not call replaceState for removed GPU type "NVIDIA A100"', async () => {
     (useSearchParams as jest.Mock).mockReturnValue(
       new URLSearchParams('gpu=NVIDIA A100')
     );
 
     await renderAndSettle();
-    expectReplaceStateCalledWithGpuValue('8 x A100');
+    expect(replaceStateMock).not.toHaveBeenCalled();
   });
 
   it('maps "H100" to HubSpot value "8 x H100"', async () => {
