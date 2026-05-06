@@ -20,7 +20,7 @@ type LoadState = 'idle' | 'loading' | 'ready' | 'error';
  * Maps GPU type string to HubSpot-compatible format
  */
 function getHubSpotGpuValue(gpuType: string): string | null {
-  const validIds = ['A100', 'H100', 'H200', 'B200'];
+  const validIds = ['H100', 'H200', 'B200', 'B300'];
   const upperType = gpuType.toUpperCase();
 
   for (const id of validIds) {

@@ -147,7 +147,7 @@ describe('GET /api/gpu-weights', () => {
         participant: 'p1',
         nodeId: 'n1',
         status: 'INFERENCE',
-        hardware: [{ type: 'NVIDIA A100 | 80GB', count: gpuCount }],
+        hardware: [{ type: 'NVIDIA H100 | 80GB', count: gpuCount }],
       },
     ]);
 
@@ -157,17 +157,17 @@ describe('GET /api/gpu-weights', () => {
 
     const response = await GET();
     const body = await response.json();
-    const a100 = body.data.find((d: { name: string }) => d.name === 'A100');
+    const h100 = body.data.find((d: { name: string }) => d.name === 'H100');
 
-    expect(a100).toBeDefined();
+    expect(h100).toBeDefined();
 
     // weightPerGpu = totalWeight / totalCount = pocWeight / gpuCount
     const expectedWeightPerGpu = pocWeight / gpuCount;
-    const expectedEfficiency = expectedWeightPerGpu / GPU_HOURLY_RATES.A100;
+    const expectedEfficiency = expectedWeightPerGpu / GPU_HOURLY_RATES.H100;
 
-    expect(a100.weight).toBeCloseTo(expectedWeightPerGpu, 5);
-    expect(a100.efficiency).toBeCloseTo(expectedEfficiency, 5);
-    expect(a100.pricePerHour).toBe(GPU_HOURLY_RATES.A100);
+    expect(h100.weight).toBeCloseTo(expectedWeightPerGpu, 5);
+    expect(h100.efficiency).toBeCloseTo(expectedEfficiency, 5);
+    expect(h100.pricePerHour).toBe(GPU_HOURLY_RATES.H100);
   });
 
   // 3. Aggregates multiple variants of the same GPU type
@@ -186,13 +186,13 @@ describe('GET /api/gpu-weights', () => {
         participant: 'p1',
         nodeId: 'n1',
         status: 'INFERENCE',
-        hardware: [{ type: 'NVIDIA A100 | 80GB', count: 8 }],
+        hardware: [{ type: 'NVIDIA H100 | 80GB', count: 8 }],
       },
       {
         participant: 'p1',
         nodeId: 'n2',
         status: 'INFERENCE',
-        hardware: [{ type: 'NVIDIA A100 SXM4 | 80GB', count: 8 }],
+        hardware: [{ type: 'NVIDIA H100 SXM5 | 80GB', count: 8 }],
       },
     ]);
 
@@ -203,13 +203,13 @@ describe('GET /api/gpu-weights', () => {
     const response = await GET();
     const body = await response.json();
 
-    // Both variants collapse into a single A100 entry
-    const a100Entries = body.data.filter((d: { name: string }) => d.name === 'A100');
-    expect(a100Entries).toHaveLength(1);
+    // Both variants collapse into a single H100 entry
+    const h100Entries = body.data.filter((d: { name: string }) => d.name === 'H100');
+    expect(h100Entries).toHaveLength(1);
 
     // totalWeight = 200 + 400 = 600, totalCount = 8 + 8 = 16
     const expectedWeightPerGpu = (200 + 400) / (8 + 8);
-    expect(a100Entries[0].weight).toBeCloseTo(expectedWeightPerGpu, 5);
+    expect(h100Entries[0].weight).toBeCloseTo(expectedWeightPerGpu, 5);
   });
 
   // 4. Filters nodes at or below MIN_POC_WEIGHT_THRESHOLD (100)

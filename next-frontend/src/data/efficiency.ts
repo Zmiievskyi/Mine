@@ -24,10 +24,10 @@ interface GpuWeight {
  * These values need to be manually updated if Gonka's weight numbers change.
  */
 const gpuWeights: GpuWeight[] = [
-  { name: 'A100', weight: 100.593 },
   { name: 'H100', weight: 305.655 },
   { name: 'H200', weight: 240.674 },
   { name: 'B200', weight: 307.853, isEstimated: true },
+  { name: 'B300', weight: 450.0, isEstimated: true },
 ];
 
 /**

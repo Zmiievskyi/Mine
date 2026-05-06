@@ -6,7 +6,7 @@
     "titleSuffix": "managed GPU infrastructure",
     "subtitle": "Rent enterprise-grade GPUs to mine cryptocurrency on our network with clear billing and predictable operations. For operators and pools who care about node stability, transparent payment terms, and scaling without surprises.",
     "cta": "Request GPU",
-    "ctaSecondary": "View pricing packages",
+    "ctaSecondary": "View GPU servers",
     "panel": {
       "kicker": "What you get at go-live",
       "description": "Statuses are visible in one place, risks are highlighted in advance, and payment/renewal terms and responsibilities are fixed upfront.",
@@ -17,8 +17,8 @@
           "description": "alerts and clear incident updates."
         },
         "opaque": {
-          "title": "Pricing uncertainty:",
-          "description": "clear billing and transaction history."
+          "title": "Commercial uncertainty:",
+          "description": "clear request flow, quote confirmation, and billing history."
         },
         "blind": {
           "title": "\"Buying blind\" risk:",
@@ -28,11 +28,11 @@
     }
   },
   "banner": {
-    "cryptoPayments": "We accept crypto payments USDT"
+    "cryptoPayments": "We accept crypto payments — USDC"
   },
   "nav": {
     "features": "What we offer",
-    "pricing": "Pricing",
+    "pricing": "GPU Servers",
     "efficiency": "Efficiency",
     "howItWorks": "How It Works",
     "faq": "FAQ"
@@ -40,7 +40,7 @@
   "features": {
     "badge": "What we offer",
     "title": "Mining infrastructure that reduces your risk",
-    "subtitle": "We handle the infrastructure so you can focus on earning. Clear pricing, predictable operations, and accountable uptime.",
+    "subtitle": "We handle the infrastructure so you can focus on earning. Clear request flow, predictable operations, and accountable uptime.",
     "items": [
       {
         "title": "Dedicated GPUs with SLA",
@@ -80,7 +80,7 @@
   "howItWorks": {
     "badge": "How it works",
     "title": "From request to mining in 7 steps",
-    "subtitle": "We handle the infrastructure while you focus on earning tokens. Month-to-month contracts with no long-term commitment.",
+    "subtitle": "We handle the infrastructure while you focus on earning tokens. Month-to-month and longer commitment options are available.",
     "steps": [
       {
         "title": "Submit Request",
@@ -92,11 +92,11 @@
       },
       {
         "title": "Review Quote",
-        "description": "Confirm availability and fit before committing. Review your configuration and pricing details."
+        "description": "Review your configuration, availability, region, contract duration, and commercial terms."
       },
       {
         "title": "Sign & Pay",
-        "description": "Sign a 1-month contract and pay for the first month upfront. Payment is required before server assignment."
+        "description": "Sign the agreed contract and pay the first invoice upfront. Payment is required before server assignment."
       },
       {
         "title": "Provisioning",
@@ -108,7 +108,7 @@
       },
       {
         "title": "Billing & Renewal",
-        "description": "Monthly invoices at calendar month end. Renew by paying no later than 10 days before contract end. Downtime credits applied automatically. Adjustments handled according to contract terms."
+        "description": "Invoices and renewal terms follow the agreed contract. Downtime credits are applied according to contract terms. Adjustments are handled according to the contract."
       }
     ],
     "note": "Infrastructure downtime credits apply to infrastructure issues only and do not cover missed network rewards.",
@@ -183,18 +183,18 @@
     "dashboardCaption": "Monitor node state, GPU temperatures, utilization, and memory across your entire cluster in real-time"
   },
   "pricing": {
-    "badge": "Simple Pricing",
-    "title": "Choose your 8x GPU server package",
-    "subtitle": "All plans are on a month-by-month basis and do not include setup or monitoring fees. Pricing for this managed service is available on request when purchasing.",
-    "perMonth": "/month",
-    "perHour": "/GPU/hour",
-    "perGpuHour": "per GPU/hour",
-    "contractType": "Month-to-month contract",
+    "badge": "GPU server options",
+    "title": "Choose your 8x GPU server type",
+    "subtitle": "We offer 8x GPU servers based on H100, H200, B200, and B300 GPUs. Availability, region, contract duration, and commercial terms are confirmed after request. Month-to-month and longer commitment options are available.",
     "rentNow": "Request GPU",
-    "contactSales": "Contact Sales",
-    "customPricing": "Custom pricing",
-    "volumeDiscount": "Volume discounts possible",
-    "volumeDiscountNote": "from 10+ servers. Contact us for custom pricing."
+    "availableOnRequest": "Available on request",
+    "commitmentOptions": "Month-to-month or longer commitment available",
+    "gpuDescriptions": {
+      "H100": "Next-gen GPU server for high-performance workloads",
+      "H200": "High-memory GPU server for demanding workloads",
+      "B200": "Blackwell GPU server for advanced workloads",
+      "B300": "Newest Blackwell Ultra GPU server option"
+    }
   },
   "efficiency": {
     "badge": "Efficiency",
@@ -224,7 +224,7 @@
       },
       {
         "question": "Can I confirm infrastructure fit before committing budget?",
-        "answer": "Yes. You can confirm the quote and availability before payment. We provide a clear checklist of required documentation to streamline the process. No surprises after you sign."
+        "answer": "Yes. You can confirm availability, configuration, region, contract duration, and commercial terms before payment. We provide a clear checklist of required documentation to streamline the process."
       },
       {
         "question": "What happens if servers are down?",
@@ -232,15 +232,11 @@
       },
       {
         "question": "How does billing work?",
-        "answer": "Month-to-month contracts. Payment for the first month is required before server assignment. Monthly invoices are issued at calendar month end. Renew by paying no later than 10 days before contract end."
+        "answer": "Billing terms depend on the agreed contract. We support month-to-month and longer commitment options. The first invoice must be paid before server assignment. Renewal, invoicing, and adjustments follow the contract terms."
       },
       {
         "question": "Can I scale up or down?",
-        "answer": "Upgrade available anytime (subject to capacity). Downgrade once per month. Volume discounts possible from 10+ servers."
-      },
-      {
-        "question": "Do you offer discounts?",
-        "answer": "Volume discounts can be discussed when ordering multiple servers. Contact us for custom pricing from 10+ servers."
+        "answer": "Scaling is available subject to capacity and contract terms. You can request additional servers or discuss changes to your current setup with our team."
       },
       {
         "question": "What support is available?",
@@ -276,7 +272,7 @@
     "product": {
       "title": "Product",
       "features": "Features",
-      "pricing": "Pricing"
+      "pricing": "GPU Servers"
     },
     "resources": {
       "title": "Resources",
